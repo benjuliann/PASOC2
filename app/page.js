@@ -1,42 +1,14 @@
 "use client";
 import * as React from "react";
 import { HeroSection } from "./UI/HeroSection.jsx";
-// import { SocialFunctions } from "./Frontend/Home/SocialFunctions";
-// import { SponsorSection } from "./Frontend/Home/SponsorSection";
-// import { NewsSection } from "./Frontend/Home/NewsSection";
-// import { ScholarsSection } from "./Frontend/Home/ScholarsSection";
-// import { GallerySection } from "./Frontend/Home/GallerySection";
-// import { FloatingButton } from "./Frontend/FloatingButton";
+import { FloatingButton } from "./UI/FloatingButton.jsx";
 
 function App() {
 	return (
-		<div style={{ backgroundColor: "#F8F3EF" }}>
-			{/* <FloatingButton /> */}
-			<div
-				style={{
-					backgroundColor: "#F8F3EF",
-					display: "flex",
-					flexDirection: "column",
-					marginTop: 4,
-				}}
-			>
+		<div style={{ display: "flex", flexDirection: "column"}}>
+			<FloatingButton />
+			<div className="flex flex-col">
 				<HeroSection />
-				<main
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						alignItems: "flex-start",
-						margin: "20px auto 0",
-						width: "100%",
-						maxWidth: 1720,
-					}}
-				>
-					{/* <SocialFunctions />
-          <SponsorSection />
-          <NewsSection />
-          <ScholarsSection />
-          <GallerySection /> */}
-				</main>
 			</div>
 		</div>
 	);
