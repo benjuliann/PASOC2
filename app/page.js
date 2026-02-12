@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { HeroSection } from "./UI/HeroSection.jsx";
-// import { SocialFunctions } from "./Frontend/Home/SocialFunctions";
+import SocialFunctions from "./UI/SocialFunctions.jsx";
 // import { SponsorSection } from "./Frontend/Home/SponsorSection";
 // import { NewsSection } from "./Frontend/Home/NewsSection";
 // import { ScholarsSection } from "./Frontend/Home/ScholarsSection";
@@ -31,8 +31,8 @@ function App() {
 						maxWidth: 1720,
 					}}
 				>
-					{/* <SocialFunctions />
-          <SponsorSection />
+					<SocialFunctions />
+					{/* <SponsorSection />
           <NewsSection />
           <ScholarsSection />
           <GallerySection /> */}
