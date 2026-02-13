@@ -1,44 +1,11 @@
-import * as React from "react";
+import React from 'react';
 
 export function FloatingButton() {
-  const styles = {
-    button: {
-      position: "fixed",
-      bottom: 32,
-      right: 32,
-      alignSelf: "flex-start",
-      marginTop: 8,
-      fontSize: 28,
-      fontWeight: 600,
-      textAlign: "center",
-      background: "transparent",
-      border: "none",
-      cursor: "pointer",
-      zIndex: 50,
-    },
-    bigCircle: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: 55,
-      height: 55,
-      borderRadius: 9999,
-      background: "#556B2F",
-      border: "5px solid #84A44D",
-      color: "#f8fafc",
-    },
-    text: {
-      color: "#f8fafc",
-      fontSize: 22,
-      margin: 0,
-    },
-  };
-
-  return (
-    <button style={styles.button} aria-label="More info">
-      <div style={styles.bigCircle}>
-        <span style={styles.text}>?</span>
-      </div>
-    </button>
-  );
-}
+    return (
+        <button className="fixed bottom-4 right-4 w-12 h-12 rounded-full bg-green-700 border-4 border-green-600 flex items-center justify-center shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+            <div className="w-6 h-6 rounded-full">
+                <span className="text-white text-lg">?</span>
+            </div>
+        </button>
+    );
+};

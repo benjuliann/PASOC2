@@ -10,33 +10,11 @@ import SocialFunctions from "./UI/SocialFunctions.jsx";
 
 function App() {
 	return (
-		<div style={{ backgroundColor: "#F8F3EF" }}>
-			{/* <FloatingButton /> */}
-			<div
-				style={{
-					backgroundColor: "#F8F3EF",
-					display: "flex",
-					flexDirection: "column",
-					marginTop: 4,
-				}}
-			>
+		<div style={{ display: "flex", flexDirection: "column"}}>
+			<FloatingButton />
+			<div className="flex flex-col">
 				<HeroSection />
-				<main
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						alignItems: "flex-start",
-						margin: "20px auto 0",
-						width: "100%",
-						maxWidth: 1720,
-					}}
-				>
-					<SocialFunctions />
-					{/* <SponsorSection />
-          <NewsSection />
-          <ScholarsSection />
-          <GallerySection /> */}
-				</main>
+				<SocialFunctions />
 			</div>
 		</div>
 	);

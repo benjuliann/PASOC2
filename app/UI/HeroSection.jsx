@@ -48,7 +48,7 @@ export function HeroSection() {
       <div style={styles.gradientOverlay}></div>
       <div style={styles.overlay}>
         <div style={styles.container}>
-          <h2 style={styles.heading}>Welcome to PASOC!</h2>
+          <h1 style={styles.heading}>Welcome to PASOC!</h1>
           <p style={styles.greeting}>It is our pleasure to receive you in our online Office May you find this visit interesting and informative.</p>
           <div style={styles.actions}>
             <button style={styles.button}>Become a Member</button>
