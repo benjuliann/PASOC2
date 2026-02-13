@@ -3,7 +3,7 @@ import React from "react";
 function SocialFunctionItem({ number, description }) {
 	return (
 		<div className="w-full max-w-244 text-zinc-800">
-			<div className="flex items-start gap-4 rounded-xl border-b-[3px] border-zinc-800 px-3 pb-4.5 pt-2">
+			<div className="flex items-start gap-4 rounded-xl border-b-[3px] border-zinc-800 px-3 pb-4.5 pt-2 bg-[#f5f5f4]">
 				<div className="flex h-12.5 w-12.5 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-yellow-400">
 					<span className="text-base font-medium">{number}</span>
 				</div>
