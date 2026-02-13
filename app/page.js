@@ -3,8 +3,9 @@ import * as React from "react";
 import { HeroSection } from "./UI/HeroSection.jsx";
 import SocialFunctions from "./UI/SocialFunctions.jsx";
 import { FloatingButton } from "./UI/FloatingButton";
+import { SponsorSection } from "./UI/SponsorSection.jsx";
+import { NewsSection } from "./UI/NewsSection";
 // import { SponsorSection } from "./Frontend/Home/SponsorSection";
-// import { NewsSection } from "./Frontend/Home/NewsSection";
 // import { ScholarsSection } from "./Frontend/Home/ScholarsSection";
 // import { GallerySection } from "./Frontend/Home/GallerySection";
 
@@ -15,6 +16,8 @@ function App() {
 			<div className="flex flex-col">
 				<HeroSection />
 				<SocialFunctions />
+        <SponsorSection />
+        <NewsSection />
 			</div>
 		</div>
 	);
