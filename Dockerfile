@@ -1,20 +1,20 @@
-# Use the official Node.js LTS image
+# Use Node.js 20 LTS
 FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies first (cache-friendly)
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install --production
 
-# Copy the rest of the app
+# Copy all source code
 COPY . .
 
-# Build the app (for Next.js production)
+# Build the app
 RUN npm run build
 
-# Expose the default Next.js port
+# Expose default Next.js port
 EXPOSE 3000
 
 # Start the app
