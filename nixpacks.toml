@@ -1,0 +1,16 @@
+[phases.setup]
+# Optional: set Node version
+node_version = "20"
+
+[phases.install]
+# Install dependencies
+install = "npm install"
+
+[phases.build]
+# Build the app
+build = "npm run build"
+
+[phases.start]
+# Start the app
+start = "npm start"
+port = 3000
