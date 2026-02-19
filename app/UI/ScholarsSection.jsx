@@ -54,7 +54,7 @@ const ScholarsSection = () => {
 				</p>
 
 				{/* Scholars flexbox */}
-				<div className="flex flex-wrap justify-center gap-6 mb-12">
+				<div className="flex flex-wrap justify-center gap-6 mb-12 rounded-xl border-b-[3px] border-zinc-800 px-3 pb-4.5 pt-2 bg-[#f5f5f4]">
 					{scholars.map((scholar) => (
 						<div
 							key={scholar.id}
@@ -71,7 +71,7 @@ const ScholarsSection = () => {
 				</div>
 
 				{/* Description */}
-				<div className="text-left max-w-4xl mx-auto">
+				<div className="text-left max-w-4xl mx-auto rounded-xl border-b-[3px] border-zinc-800 px-3 pb-4.5 pt-2 bg-[#f5f5f4]">
 					<p className="text-gray-700 leading-relaxed">
 						The Pangasinan Society of Calgary (PASOC) offers
 						scholarship to children (General Public) who are now
