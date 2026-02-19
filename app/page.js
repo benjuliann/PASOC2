@@ -6,9 +6,7 @@ import { FloatingButton } from "./UI/FloatingButton";
 import { SponsorSection } from "./UI/SponsorSection.jsx";
 import { NewsSection } from "./UI/NewsSection.jsx";
 import ScholarsSection from "./UI/ScholarsSection.jsx";
-// import { SponsorSection } from "./Frontend/Home/SponsorSection";
-// import { ScholarsSection } from "./Frontend/Home/ScholarsSection";
-// import { GallerySection } from "./Frontend/Home/GallerySection";
+import { GallerySection } from "./UI/GallerySection.jsx";
 
 function App() {
 	return (
@@ -20,6 +18,7 @@ function App() {
 				<SponsorSection />
 				<NewsSection />
 				<ScholarsSection />
+        <GallerySection />
 			</div>
 		</div>
 	);
