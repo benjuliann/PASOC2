@@ -107,7 +107,7 @@ export function Header() {
       <div style={styles.container}>
         <div style={styles.topRow}>
           <div style={styles.brandRow}>
-            <div style={{ width: "100%", maxWidth: 167 }}>
+            <div style={{ width: "100%", maxWidth: 130 }}>
               <Link href="/" style={{ textDecoration: "none" }}>
                 <img
                   src="https://api.builder.io/api/v1/image/assets/TEMP/59857bbe636f97ab4cebcfbc3ad030ee40910eb4?placeholderIfAbsent=true&apiKey=fbbee8c7a138402fba2a2964fb2f753d"
@@ -169,20 +169,22 @@ export function Header() {
           >
             News
           </div>
-          <div
+          <Link
+            href="/Pages/Events"
             style={styles.navItem(hoveredNav === "events")}
             onMouseEnter={() => setHoveredNav("events")}
             onMouseLeave={() => setHoveredNav(null)}
           >
             Events
-          </div>
-          <div
+          </Link>
+          <Link
+            href="/Pages/AboutUs"
             style={styles.navItem(hoveredNav === "about")}
             onMouseEnter={() => setHoveredNav("about")}
             onMouseLeave={() => setHoveredNav(null)}
           >
             About Us
-          </div>
+          </Link>
           <Link  
             href="/Pages/Donate/"
             style={styles.navItem(hoveredNav === "donate")}
