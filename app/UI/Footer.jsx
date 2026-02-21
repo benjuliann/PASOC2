@@ -9,7 +9,6 @@ export function Footer() {
       alignItems: "flex-end",
       padding: "24px",
       marginTop: "44px",
-      maxWidth: 1920,
       fontWeight: 700,
       color: "#fff",
       backgroundColor: "#556B2F",
@@ -23,20 +22,20 @@ export function Footer() {
   };
 
   return (
-    <footer style={styles.footer}>
-      <div style={styles.inner}>
+    <footer className="mt-12 bg-[#556B2F] text-white font-bold py-6 px-4 shadow-inner">
+      <div className="relative max-w-4xl mx-auto flex items-center justify-between">
         <img
           src="https://api.builder.io/api/v1/image/assets/TEMP/7e60ee9e68fcf520263f834dedfab402fb8b6539?placeholderIfAbsent=true&apiKey=fbbee8c7a138402fba2a2964fb2f753d"
           alt="PASOC footer logo"
-          style={styles.logo}
+          className="w-7 h-7 object-contain"
         />
 
-        <p style={styles.copyright}>© Copyright PASOC 2004 - 2025</p>
+        <p className="absolute left-1/2 transform -translate-x-1/2 m-0 text-1xl text-center">© Copyright PASOC 2004 - 2025</p>
 
-        <div style={styles.contact}>
+        <div className="text-right text-sm w-1/4">
           For any site issues and inquires: <br />
           Email{' '}
-          <a href="mailto:dgsv0508@yahoo.ca" style={styles.link}>
+          <a href="mailto:dgsv0508@yahoo.ca" className="underline">
             dgsv0508@yahoo.ca
           </a>
         </div>
