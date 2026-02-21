@@ -1,9 +1,33 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function LoginPage() {
+  const [error, setError] = useState(null);
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Basic validation
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+    // Simple email format check
+    if (!email.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    // Mock authentication (used to test since I cant connect to a real backend)
+    if (email !== "test@pasoc.com" || password !== "password123") {
+      setError("We could not find an account with that email. Try signing up!");
+      return;
+    }
+    // If everything is fine, clear the error and proceed (e.g., redirect to dashboard)
+    setError("");
+    alert("Login successful!");
   };
 
   return (
@@ -46,20 +70,42 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
+          <form onSubmit={handleSubmit}
+          className="w-full flex flex-col items-center"
+          noValidate>
             <div className="w-full max-w-[460px] space-y-6">
 
               <input
                 type="email"
                 placeholder="Email Address"
-                className="w-full rounded-xl border border-black/25 bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError(""); // Clear error when user starts typing
+                }} 
+                className={`w-full rounded-xl border bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2
+                    ${error ? "border-red-400 focus:ring-red-200" : "border-black/25 focus:ring-[#556B2F]/50"}
+                    `}              
               />
 
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full rounded-xl border border-black/25 bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
+                className={`w-full rounded-xl border bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2
+                    ${error ? "border-red-400 focus:ring-red-200" : "border-black/25 focus:ring-[#556B2F]/50"}
+                    `}
               />
+
+              {error && (
+                <div className="rounded-lg bg-red-100 border border-red-300 text-red-700 text-sm px-4 py-2 text-center">
+                  {error}
+                </div>
+              )}
 
               {/* Remember + Forgot Password */}
               <div className="flex items-center justify-between text-xs text-black/70">
