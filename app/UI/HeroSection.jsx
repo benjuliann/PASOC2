@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 
 export function HeroSection() {
   const styles = {
@@ -51,7 +52,9 @@ export function HeroSection() {
           <h1 style={styles.heading}>Welcome to PASOC!</h1>
           <p style={styles.greeting}>It is our pleasure to receive you in our online Office May you find this visit interesting and informative.</p>
           <div style={styles.actions}>
-            <button style={styles.button}>Become a Member</button>
+            <Link href="/Pages/Membership" style={{ textDecoration: "none" }}>
+              <div style={styles.button}>Become a Member</div>
+            </Link>
             <button style={styles.button}>Guest Form</button>
           </div>
         </div>
