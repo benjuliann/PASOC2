@@ -1,4 +1,4 @@
-import { Inter, Instrument_Serif } from "next/font/google";
+import { Inter, Domine, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Header } from "./UI/Header";
 import { Footer } from "./UI/Footer";
@@ -9,10 +9,15 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// const domine = Domine({
+//   variable: "--font-domine",
+//   subsets: ["latin"],
+//   weight: ["600", "700"],
+// });
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400"],
 });
 
 export const metadata = {
@@ -22,11 +27,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${instrumentSerif.variable} antialiased`}>
-        <Header />
-        {children}
-        <Footer />
+    <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
+      <body>
+        <div className={`bg-white`}>
+          <Header />
+          {children}
+          <Footer />
+        </div>
       </body>
     </html>
   );
