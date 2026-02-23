@@ -76,9 +76,9 @@ export function Header() {
         {/* Right-side actions */}
         <div className="flex items-center gap-2 shrink-0">
 
-          {/* Search — desktop only, expands on click */}
+          {/* Search - desktop only, expands on click */}
           <div
-            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-zinc-600 bg-gray-200 cursor-pointer overflow-hidden transition-all duration-300"
+            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border-1 border-zinc-600 bg-gray-200 cursor-pointer overflow-hidden transition-all duration-300"
             style={{ width: searchOpen ? 280 : 44 }}
             onClick={() => setSearchOpen((o) => !o)}
           >
