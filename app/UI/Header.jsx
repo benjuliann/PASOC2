@@ -2,6 +2,8 @@
 import * as React from "react";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { Search, User } from "lucide-react";
 
 export function Header() {
   const [hoveredNav, setHoveredNav] = React.useState(null);
@@ -109,9 +111,11 @@ export function Header() {
           <div style={styles.brandRow}>
             <div style={{ width: "100%", maxWidth: 130 }}>
               <Link href="/" style={{ textDecoration: "none" }}>
-                <img
-                  src="https://api.builder.io/api/v1/image/assets/TEMP/59857bbe636f97ab4cebcfbc3ad030ee40910eb4?placeholderIfAbsent=true&apiKey=fbbee8c7a138402fba2a2964fb2f753d"
+                <Image
+                  src="/pasoc_logo.png"
                   alt="PASOC Logo"
+                  width={167}
+                  height={167}
                   style={styles.logo}
                 />
               </Link>
@@ -123,10 +127,10 @@ export function Header() {
 
           <div style={styles.actions}>
             <div style={styles.searchBox}>
-              <img
-                src="https://api.builder.io/api/v1/image/assets/TEMP/43c90e6719ee112affadf8787f9265d66ed1c0c1?placeholderIfAbsent=true&apiKey=fbbee8c7a138402fba2a2964fb2f753d"
-                alt="Search icon"
-                style={{ width: 24, height: 24 }}
+              <Search 
+                size={24} 
+                color="#71717a" 
+                strokeWidth={2}
               />
               <span>Search PASOC</span>
             </div>
@@ -137,9 +141,10 @@ export function Header() {
               onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
               onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
             >
-              <img
-                src="https://api.builder.io/api/v1/image/assets/TEMP/a97a9aea0d43bd1371ad3d9d7eba97da549becf9?placeholderIfAbsent=true&apiKey=fbbee8c7a138402fba2a2964fb2f753d"
-                alt="User profile"
+              <User 
+                size={40} 
+                color="#71717a" 
+                strokeWidth={2}
                 style={styles.profile}
               />
             </Link>
