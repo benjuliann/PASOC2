@@ -4,7 +4,7 @@ export default function CurrentSponsorCard({ sponsor }) {
 	return (
 		<div className="w-full max-w-4xl p-6 bg-white rounded-lg shadow-lg border border-gray-200 flex flex-row gap-8">
 			{/* Sponsor Image/Logo Placeholder */}
-			<div className="w-32 h-32 bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center shrink-0">
+			<div className="w-32 h-32 bg-gray-200 rounded-lg border-2 border-gray-300 flex flex-col items-center justify-center shrink-0">
 				<div className="text-gray-500">
 					<svg
 						className="w-8 h-8"
@@ -18,7 +18,7 @@ export default function CurrentSponsorCard({ sponsor }) {
 						/>
 					</svg>
 				</div>
-				<div className="text-lg text-gray-400 text-xs mt-1">
+				<div className="text-lg text-gray-400 mt-1">
 					Photo or Logo
 				</div>
 			</div>
