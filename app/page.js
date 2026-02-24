@@ -5,8 +5,10 @@ import { FloatingButton } from "./UI/FloatingButton.jsx";
 
 function App() {
 	return (
-		<div style={{ display: "flex", flexDirection: "column"}}>
-			<FloatingButton />
+		<div style={{ display: "flex", flexDirection: "column" }}>
+			<form action="/FAQs">
+				<FloatingButton />
+			</form>
 			<div className="flex flex-col">
 				<HeroSection />
 			</div>

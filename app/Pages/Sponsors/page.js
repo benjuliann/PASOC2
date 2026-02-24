@@ -1,5 +1,6 @@
 import React from "react";
-import SponsorCard from "./CurrentSponsorCard";
+import CurrentSponsorCard from "./CurrentSponsorCard";
+import PreviousSponsorCard from "./PreviousSponsorCard";
 import { FloatingButton } from "../../UI/FloatingButton";
 
 export default function Sponsors() {
@@ -48,10 +49,9 @@ export default function Sponsors() {
 				</h2>
 				<div className="flex flex-col gap-8 items-center">
 					{currentSponsors.map((sponsor) => (
-						<SponsorCard
+						<CurrentSponsorCard
 							key={sponsor.id}
 							sponsor={sponsor}
-							isLarge={true}
 						/>
 					))}
 				</div>
@@ -67,17 +67,18 @@ export default function Sponsors() {
 				</h2>
 				<div className="flex flex-wrap justify-center gap-6">
 					{previousSponsors.map((sponsor) => (
-						<SponsorCard
+						<PreviousSponsorCard
 							key={sponsor.id}
 							sponsor={sponsor}
-							isLarge={false}
 						/>
 					))}
 				</div>
 			</section>
 
 			{/* Floating Button */}
-			<FloatingButton />
+			<form action="/FAQs">
+				<FloatingButton />
+			</form>
 		</main>
 	);
 }
