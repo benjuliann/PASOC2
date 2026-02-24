@@ -171,3 +171,5 @@ function SocialBox({ children }) {
     </button>
   );
 }
+
+LoginPage.noLayout = true; // This tells the RootLayout to not render the Header and Footer for this page.
