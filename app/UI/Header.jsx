@@ -1,205 +1,152 @@
 "use client";
 import * as React from "react";
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, User } from "lucide-react";
+import { Search, User, Menu, X } from "lucide-react";
+
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "PASOC in Motion", href: "#" },
+  { label: "News", href: "#" },
+  { label: "Events", href: "/Pages/Events" },
+  { label: "About Us", href: "/Pages/AboutUs" },
+  { label: "Donate", href: "/Pages/Donate/" },
+];
 
 export function Header() {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const [hoveredNav, setHoveredNav] = React.useState(null);
+  const [visible, setVisible] = React.useState(true);
+  const lastScrollY = React.useRef(0);
 
-  const styles = {
-    header: {
-      display: "flex",
-      zIndex: 10,
-      flexDirection: "column",
-      alignItems: "center",
-      padding: "24px 24px 0",
-      backgroundColor: "#f5f5f4",
-      boxShadow: "0px 6px 10px rgba(0,0,0,0.25)",
-      borderBottom: "4px solid #556B2F",
-    },
-    container: {
-      width: "100%",
-      maxWidth: 1920,
-      margin: "0 auto",
-      display: "flex",
-      flexDirection: "column",
-    },
-    topRow: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: 16,
-      width: "100%",
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    brandRow: {
-      display: "flex",
-      gap: 16,
-      alignItems: "center",
-      flex: 1,
-      minWidth: 0,
-    },
-    logo: {
-      width: "100%",
-      maxWidth: 167,
-      height: "auto",
-      objectFit: "contain",
-    },
-    title: {
-      fontSize: "2rem",
-      margin: 0,
-      color: "#000",
-    },
-    actions: {
-      display: "flex",
-      gap: 14,
-      alignItems: "center",
-      color: "#71717a",
-    },
-    searchBox: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      padding: "8px 10px",
-      borderRadius: 12,
-      border: "2px solid #3f3f46",
-      background: "#e5e7eb",
-      width: 350,
-      cursor: "pointer",
-    },
-    profile: { 
-      width: 40, 
-      height: 40, 
-      objectFit: "contain", 
-      marginRight: 20,
-      cursor: "pointer",
-      transition: "transform 0.2s ease",
-    },
-    profileLink: {
-      display: "inline-block",
-      textDecoration: "none",
-    },
-    nav: {
-      display: "flex",
-      flexWrap: "wrap",
-      marginTop: 16,
-      width: "100%",
-      fontSize: 20,
-      fontWeight: 700,
-      color: "#556B2F",
-    },
-    navItem: (isHovered) => ({
-      whiteSpace: "nowrap",
-      flex: "1 1 11.58%",
-      padding: "10px 0",
-      textAlign: "center",
-      cursor: "pointer",
-      backgroundColor: isHovered ? "#556B2F" : "transparent",
-      color: isHovered ? "#FFFFFF" : "#556B2F",
-      transition: "all 0.2s ease",
-      textDecoration: "none",
-      display: "block",
-    }),
-  };
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      // Show when scrolling up or near top, hide when scrolling down
+      if (currentY < 10 || currentY < lastScrollY.current) {
+        setVisible(true);
+      } else if (currentY > lastScrollY.current + 5) {
+        setVisible(false);
+        setMenuOpen(false); // close mobile menu when hiding
+      }
+      lastScrollY.current = currentY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header style={styles.header}>
-      <div style={styles.container}>
-        <div style={styles.topRow}>
-          <div style={styles.brandRow}>
-            <div style={{ width: "100%", maxWidth: 130 }}>
-              <Link href="/" style={{ textDecoration: "none" }}>
-                <Image
-                  src="/pasoc_logo.png"
-                  alt="PASOC Logo"
-                  width={167}
-                  height={167}
-                  style={styles.logo}
-                />
-              </Link>
-            </div>
-            <div style={{ marginLeft: 12 }}>
-              <h1 style={styles.title}>Pangasinan Society of Calgary</h1>
-            </div>
-          </div>
+    <header
+      className={`
+        sticky top-0 z-50
+        bg-[#f5f5f4]
+        shadow-[0_4px_10px_rgba(0,0,0,0.2)]
+        border-b-4 border-[#556B2F]
+        transition-transform duration-300 ease-in-out
+        ${visible ? "translate-y-0" : "-translate-y-[110%]"}
+      `}
+    >
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
 
-          <div style={styles.actions}>
-            <div style={styles.searchBox}>
-              <Search 
-                size={24} 
-                color="#71717a" 
-                strokeWidth={2}
-              />
-              <span>Search PASOC</span>
-            </div>
-            <Link 
-              href="/Pages/Login"  // Consistent with your App.js route
-              style={styles.profileLink}
-              title="Login"
-              onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-            >
-              <User 
-                size={40} 
-                color="#71717a" 
-                strokeWidth={2}
-                style={styles.profile}
-              />
-            </Link>
-          </div>
-        </div>
+        {/* Brand: logo + title */}
+        <Link
+          href="/"
+          className="flex items-center gap-3 no-underline flex-1 min-w-0 justify-center md:justify-start"
+        >
+          <Image
+            src="/pasoc_logo.png"
+            alt="PASOC Logo"
+            width={100}
+            height={100}
+            className="object-contain shrink-0"
+          />
+          <span
+            className="text-black leading-snug break-words"
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "clamp(1rem, 2.5vw, 1.75rem)",
+            }}
+          >
+            Pangasinan Society of Calgary
+          </span>
+        </Link>
 
-        <nav style={styles.nav}>
-          <Link
-            href="/"
-            style={styles.navItem(hoveredNav === "home")}
-            onMouseEnter={() => setHoveredNav("home")}
-            onMouseLeave={() => setHoveredNav(null)}
-          >
-            Home
-          </Link>
-          <div 
-            style={styles.navItem(hoveredNav === "motion")}
-            onMouseEnter={() => setHoveredNav("motion")}
-            onMouseLeave={() => setHoveredNav(null)}
-          >
-            PASOC in Motion
-          </div>
+        {/* Right-side actions */}
+        <div className="flex items-center gap-2 shrink-0">
+
+          {/* Search - desktop only, expands on click */}
           <div
-            style={styles.navItem(hoveredNav === "news")}
-            onMouseEnter={() => setHoveredNav("news")}
-            onMouseLeave={() => setHoveredNav(null)}
+            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border-1 border-zinc-600 bg-gray-200 cursor-pointer overflow-hidden transition-all duration-300"
+            style={{ width: searchOpen ? 280 : 44 }}
+            onClick={() => setSearchOpen((o) => !o)}
           >
-            News
+            <Search size={22} className="text-zinc-500 shrink-0" strokeWidth={2} />
+            {searchOpen && (
+              <input
+                autoFocus
+                placeholder="Search PASOC…"
+                className="bg-transparent outline-none text-sm text-black w-full"
+              />
+            )}
           </div>
+
           <Link
-            href="/Pages/Events"
-            style={styles.navItem(hoveredNav === "events")}
-            onMouseEnter={() => setHoveredNav("events")}
-            onMouseLeave={() => setHoveredNav(null)}
+            href="/Pages/Login"
+            title="Login"
+            className="flex items-center p-1 rounded-lg text-zinc-500 no-underline transition-transform duration-200 hover:scale-110"
           >
-            Events
+            <User size={36} strokeWidth={2} />
           </Link>
-          <Link
-            href="/Pages/AboutUs"
-            style={styles.navItem(hoveredNav === "about")}
-            onMouseEnter={() => setHoveredNav("about")}
-            onMouseLeave={() => setHoveredNav(null)}
+
+          {/* Hamburger for mobile */}
+          <button
+            className="flex md:hidden items-center justify-center p-1 text-[#556B2F] bg-transparent border-none cursor-pointer"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Toggle menu"
           >
-            About Us
-          </Link>
-          <Link  
-            href="/Pages/Donate/"
-            style={styles.navItem(hoveredNav === "donate")}
-            onMouseEnter={() => setHoveredNav("donate")}
-            onMouseLeave={() => setHoveredNav(null)}
-          >
-            Donate
-          </Link>
+            {menuOpen ? <X size={32} /> : <Menu size={32} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop nav - constrained to max-w-7xl*/}
+      <div className="max-w-7xl mx-auto px-6 w-full">
+        <nav className="hidden md:flex w-full text-lg font-bold">
+          {navLinks.map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              className="flex-1 py-2.5 text-center whitespace-nowrap no-underline transition-all duration-200"
+              style={{
+                backgroundColor: hoveredNav === link.label ? "#556B2F" : "transparent",
+                color: hoveredNav === link.label ? "#ffffff" : "#556B2F",
+              }}
+              onMouseEnter={() => setHoveredNav(link.label)}
+              onMouseLeave={() => setHoveredNav(null)}
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <nav className="flex md:hidden flex-col border-t-2 border-[#556B2F] bg-[#f5f5f4]">
+          {navLinks.map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              onClick={() => setMenuOpen(false)}
+              className="px-6 py-3.5 no-underline font-bold text-[17px] text-[#556B2F] border-b border-stone-300 transition-colors duration-150 hover:bg-[#556B2F] hover:text-white"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }

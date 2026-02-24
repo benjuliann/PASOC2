@@ -7,7 +7,7 @@ export default function HomePage() {
       {/* HERO */}
       <HeroSection
 		title="Welcome to PASOC!"
-		description="It is our pleasure to receive you in our online Office May you find this visit interesting and informative."
+		description="It is our pleasure to receive you in our new online office. May you find this visit interesting and informative. Join us today below, or stayed tuned by signing as a Guest!"
 	  />
 
       {/* ABOUT */}
