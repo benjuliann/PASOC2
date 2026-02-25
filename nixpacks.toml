@@ -1,0 +1,15 @@
+[phases.setup]
+node_version = "20.12.0"
+
+[phases.install]
+# Install dependencies
+install = "npm ci"
+
+[phases.build]
+# Build the app
+build = "npm run build"
+
+[phases.start]
+# Start the app
+start = "npm start"
+port = 3000
