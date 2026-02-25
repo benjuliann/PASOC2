@@ -15,7 +15,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div className="flex flex-col gap-6">
             <h2 className="text-4xl font-bold text-neutral-900">
-              About PASOC
+              Who We Are
             </h2>
             <p className="text-neutral-700 leading-relaxed text-lg">
               Founded in 1988, PASOC fosters cultural pride, community service,
