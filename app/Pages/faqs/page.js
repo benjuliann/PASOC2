@@ -4,7 +4,11 @@ export default function FAQsPage() {
 	return (
 		<main>
 			<HeroSection
-				heading="Frequently Asked Questions"
+				heading={
+					<span style={{ display: "inline-block", marginTop: 50 }}>
+						Frequently Asked Questions
+					</span>
+				}
 				greeting=""
 				showButtons={false}
 			/>

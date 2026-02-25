@@ -1,4 +1,5 @@
 import * as React from "react";
+import Image from "next/image";
 
 export function HeroSection({
 	showButtons = true,
@@ -49,6 +50,7 @@ export function HeroSection({
 			padding: 8,
 			fontFamily: "'Instrument Serif', serif",
 			paddingLeft: 100,
+			whiteSpace: "nowrap",
 		},
 		greeting: {
 			fontSize: 18,
@@ -83,10 +85,12 @@ export function HeroSection({
 
 	return (
 		<section style={styles.section}>
-			<img
+			<Image
 				src="/banner.png"
 				alt="PASOC community gathering"
-				style={styles.bgImage}
+				fill
+				style={{ objectFit: "cover" }}
+				priority
 			/>
 			<div style={styles.gradientOverlay}></div>
 			<div style={styles.overlay}>
