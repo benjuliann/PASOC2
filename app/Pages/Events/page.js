@@ -92,7 +92,7 @@ export default function Calendar() {
                             day === today.getDate() &&
                             month === today.getMonth() &&
                             year === today.getFullYear()
-                                ? "bg-blue-300 text-white rounded-full w-8 h-8 flex items-center justify-center"
+                                ? "bg-blue-300 text-black rounded-full w-8 h-8 flex items-center justify-center"
                                 : ""
                             }`}
                         >
@@ -114,13 +114,13 @@ export default function Calendar() {
                 </h2>
                 <div>
                     <button
-                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 mx-2"
+                    className="px-3 py-1 bg-gray-800 rounded hover:bg-gray-800 mx-2"
                     onClick={prevMonth}
                     >
                     Prev
                     </button>
                     <button
-                        className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 mx-2"
+                        className="px-3 py-1 bg-gray-800 rounded hover:bg-gray-800 mx-2"
                         onClick={nextMonth}
                     >
                     Next
@@ -146,7 +146,7 @@ export default function Calendar() {
                     week.map((day, j) => (
                     <div
                         key={`${i}-${j}`}
-                        className="flex justify-center border bg-gray-50"
+                        className="flex justify-center border bg-gray-400"
                     >
                         {day && (
                         <span
