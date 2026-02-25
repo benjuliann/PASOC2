@@ -1,8 +1,10 @@
+import { FloatingButton } from "./UI/FloatingButton";
 import { HeroSection } from "./UI/HeroSection";
 
 export default function HomePage() {
   return (
     <main className="w-full">
+	  <FloatingButton />
 
       {/* HERO */}
       <HeroSection
