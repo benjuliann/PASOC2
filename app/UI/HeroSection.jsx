@@ -13,12 +13,10 @@ export function HeroSection({
 			width: "100%",
 			minHeight: 300,
 			overflow: "hidden",
-			maxWidth: 1720,
-			marginLeft: "auto",
-			marginRight: "auto",
 		},
 		bgImage: {
 			objectFit: "cover",
+			objectPosition: "center",
 			position: "absolute",
 			inset: 0,
 			width: "100%",
@@ -86,7 +84,7 @@ export function HeroSection({
 	return (
 		<section style={styles.section}>
 			<img
-				src="https://api.builder.io/api/v1/image/assets/TEMP/40671902fc11001c38c8e27b20ebb110846d19b4?placeholderIfAbsent=true&apiKey=fbbee8c7a138402fba2a2964fb2f753d"
+				src="/banner.png"
 				alt="PASOC community gathering"
 				style={styles.bgImage}
 			/>
