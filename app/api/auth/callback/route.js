@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { oauth2Client } from "@/lib/google";
 
 export async function GET(req) {
   const code = req.nextUrl.searchParams.get("code");
@@ -11,6 +10,7 @@ export async function GET(req) {
   const { tokens } = await oauth2Client.getToken(code);
   oauth2Client.setCredentials(tokens);
 
+  // Store securely (DB recommended) 
   const response = NextResponse.redirect("http://localhost:3000");
   response.cookies.set("google_tokens", JSON.stringify(tokens), {
     httpOnly: true,
