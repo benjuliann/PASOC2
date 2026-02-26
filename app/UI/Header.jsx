@@ -9,7 +9,7 @@ const navLinks = [
   { label: "PASOC in Motion", href: "#" },
   { label: "News", href: "#" },
   { label: "Events", href: "/Pages/Events" },
-  { label: "About Us", href: "/Pages/AboutUs" },
+  { label: "About", href: "/Pages/About" },
   { label: "Donate", href: "/Pages/Donate/" },
 ];
 
