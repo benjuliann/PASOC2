@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { HeroSection } from "./(Navigation)/(Members)/UI/HeroSection";
+import { HeroSection } from "./(Navigation)/UI/HeroSection";
 
 export default function HomePage() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function HomePage() {
 
       {/* HERO */}
       <HeroSection
-		title="Welcome to PASOC!"
+		title="Welcome back admin!"
 		description="It is our pleasure to receive you in our new online office. May you find this visit interesting and informative. Join us today below, or stayed tuned by signing as a Guest!"
 	  />
 

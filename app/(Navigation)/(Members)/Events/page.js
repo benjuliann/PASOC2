@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FloatingButton } from "../../UI/FloatingButton.jsx";
+import { FloatingButton } from "../UI/FloatingButton.jsx";
 
 export default function Calendar() {
   const today = new Date();

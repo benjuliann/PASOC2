@@ -6,11 +6,12 @@ import { Search, User, Menu, X } from "lucide-react";
 
 const navLinks = [
   { label: "Home", href: "/" },
+  // these two are placeholders; no dedicated pages exist yet
   { label: "PASOC in Motion", href: "#" },
   { label: "News", href: "#" },
-  { label: "Events", href: "/Pages/Events" },
-  { label: "About", href: "/Pages/About" },
-  { label: "Donate", href: "/Pages/Donate/" },
+  { label: "Events", href: "/Events" },
+  { label: "About", href: "/About" },
+  { label: "Donate", href: "/Donate" },
 ];
 
 export function Header() {
@@ -93,7 +94,7 @@ export function Header() {
           </div>
 
           <Link
-            href="/Pages/Login"
+            href="/Login"
             title="Login"
             className="flex items-center p-1 rounded-lg text-zinc-500 no-underline transition-transform duration-200 hover:scale-110"
           >
