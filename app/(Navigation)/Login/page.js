@@ -6,12 +6,7 @@ export default function RoleSelectorPage() {
 
       {/* Background */}
       <div className="absolute inset-0">
-        <img
-          src="/images/community-hero.jpg"
-          alt="Community building"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/70 via-emerald-800/60 to-emerald-700/50" />
+        <div className="absolute inset-0 bg-[#F4EFE7] " />
       </div>
 
       {/* Content */}
