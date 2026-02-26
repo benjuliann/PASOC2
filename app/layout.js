@@ -2,6 +2,7 @@ import { Inter, Domine, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Header } from "./UI/Header";
 import { Footer } from "./UI/Footer";
+import { AuthProvider } from "./_utils/auth-context";
 
 
 const inter = Inter({
@@ -31,9 +32,11 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
       <body>
         <div className={`bg-white`}>
-          {!children?.props?.noLayout && <Header />}
-          {children}
-          {!children?.props?.noLayout && <Footer />}
+          <AuthProvider>
+            {!children?.props?.noLayout && <Header />}
+            {children}
+            {!children?.props?.noLayout && <Footer />}
+          </AuthProvider>
         </div>
       </body>
     </html>
