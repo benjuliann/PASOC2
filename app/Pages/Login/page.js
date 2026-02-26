@@ -22,11 +22,6 @@ export default function LoginPage() {
       setError("Please enter a valid email address.");
       return;
     }
-    // Mock authentication (used to test since I cant connect to a real backend)
-    if (email !== "test@pasoc.com" || password !== "password123") {
-      setError("We could not find an account with that email. Try signing up!");
-      return;
-    }
     // If everything is fine, clear the error and proceed (e.g., redirect to dashboard)
     setError("");
     try {
