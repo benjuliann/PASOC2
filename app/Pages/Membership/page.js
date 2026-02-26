@@ -356,7 +356,7 @@ export default function MembershipPage() {
                       className="space-y-3 rounded-xl border border-black/10 bg-white p-4"
                     >
                       <div className="flex items-center justify-between">
-                        <span>Child #{i + 1}</span>
+                        <span className="text-black/80">Child #{i + 1}</span>
 
                         {form.dependants.length > 1 && (
                           <button
@@ -416,7 +416,7 @@ export default function MembershipPage() {
                   <button
                     type="button"
                     onClick={addDependant}
-                    className="w-full rounded-xl border border-[#556B2F]/40 bg-white px-4 py-3 text-sm text-[#556B2F] hover:bg-[#556B2F]/5 transition"
+                    className="w-full bg-[#7E9A45] text-white py-3 rounded-xl shadow-md hover:brightness-95 transition"
                   >
                     + Add another child
                   </button>
