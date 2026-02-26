@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 function Field({
   label,
@@ -8,7 +8,10 @@ function Field({
   value,
   onChange,
   className = "",
-  type = "text",}) {
+  type = "text",
+  required = false,
+  error = "",
+}) {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       <label className="text-xs uppercase tracking-wide text-black/80">
@@ -19,8 +22,12 @@ function Field({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="w-full rounded-xl border border-black/25 bg-white px-5 py-3 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/30"
+        required={required}
+        className={`w-full rounded-xl bg-white px-5 py-3 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/30 ${
+          error ? "border border-red-500" : "border border-black/25"
+        }`}
       />
+      {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>
   );
 }
@@ -39,6 +46,24 @@ function SectionTitle({ children, underlineWidth = "w-32", className = "" }) {
 }
 
 export default function MembershipPage() {
+  const REQUIRED = useMemo(
+    () =>
+      new Set([
+        "firstName",
+        "lastName",
+        "birthday",
+        "address",
+        "city",
+        "postalCode",
+        "email",
+        "phone",
+        "emailNotifications",
+        "agreedToPrivacy",
+        "hasChildren",
+      ]),
+    []
+  );
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -52,22 +77,102 @@ export default function MembershipPage() {
     currentOrgInvolvement: "",
     positionsHeld: "",
     addressPhilippines: "",
-    hasChildren: "", 
+    hasChildren: "",
     dependants: [{ firstName: "", lastName: "", birthday: "" }],
-    emailNotifications: "", 
+    emailNotifications: "",
     agreedToPrivacy: false,
   });
 
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  /* Validation */
+  const validateField = (key, value) => {
+    const v = typeof value === "string" ? value.trim() : value;
+
+    if (REQUIRED.has(key)) {
+      if (key === "agreedToPrivacy") {
+        if (!value) return "You must agree to continue.";
+      } else if (!v) {
+        return "Required";
+      }
+    }
+
+    if (key === "email" && v) {
+      if (!v.includes("@") || !v.includes(".")) return "Enter a valid email.";
+    }
+
+    return "";
+  };
+
+  const validateAll = (nextForm) => {
+    const nextErrors = {};
+
+    // validate required + email format
+    for (const key of REQUIRED) {
+      const msg = validateField(key, nextForm[key]);
+      if (msg) nextErrors[key] = msg;
+    }
+
+    // if children = yes, dependant fields required
+    if (nextForm.hasChildren === "yes") {
+      nextForm.dependants.forEach((d, i) => {
+        if (!String(d.firstName).trim()) nextErrors[`dep_${i}_firstName`] = "Required";
+        if (!String(d.lastName).trim()) nextErrors[`dep_${i}_lastName`] = "Required";
+        if (!String(d.birthday).trim()) nextErrors[`dep_${i}_birthday`] = "Required";
+      });
+    }
+
+    return nextErrors;
+  };
+
+  /* Field setters */
   const setField = (key) => (e) => {
     const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    setForm((prev) => ({ ...prev, [key]: value }));
+
+    setForm((prev) => {
+      const nextForm = { ...prev, [key]: value };
+
+      setTouched((t) => ({ ...t, [key]: true }));
+      setErrors((errs) => ({ ...errs, [key]: validateField(key, value) }));
+
+      // If they switch to "no", clear dependant errors/touched (clean UI)
+      if (key === "hasChildren" && value === "no") {
+        setErrors((errs) => {
+          const copy = { ...errs };
+          Object.keys(copy).forEach((k) => k.startsWith("dep_") && delete copy[k]);
+          return copy;
+        });
+        setTouched((t) => {
+          const copy = { ...t };
+          Object.keys(copy).forEach((k) => k.startsWith("dep_") && delete copy[k]);
+          return copy;
+        });
+      }
+
+      return nextForm;
+    });
   };
 
   const updateDependant = (index, field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      dependants: prev.dependants.map((d, i) => (i === index ? { ...d, [field]: value } : d)),
-    }));
+    setForm((prev) => {
+      const nextDependants = prev.dependants.map((d, i) =>
+        i === index ? { ...d, [field]: value } : d
+      );
+      const nextForm = { ...prev, dependants: nextDependants };
+
+      // live validation for dependant fields only when hasChildren=yes
+      if (nextForm.hasChildren === "yes") {
+        const errorKey = `dep_${index}_${field}`;
+        setTouched((t) => ({ ...t, [errorKey]: true }));
+        setErrors((errs) => ({
+          ...errs,
+          [errorKey]: String(value).trim() ? "" : "Required",
+        }));
+      }
+
+      return nextForm;
+    });
   };
 
   const addDependant = () => {
@@ -82,35 +187,89 @@ export default function MembershipPage() {
       ...prev,
       dependants: prev.dependants.filter((_, i) => i !== index),
     }));
+
+    //clear errors/touched for that removed dependant index
+    setErrors((errs) => {
+      const copy = { ...errs };
+      Object.keys(copy).forEach((k) => k.startsWith(`dep_${index}_`) && delete copy[k]);
+      return copy;
+    });
+    setTouched((t) => {
+      const copy = { ...t };
+      Object.keys(copy).forEach((k) => k.startsWith(`dep_${index}_`) && delete copy[k]);
+      return copy;
+    });
   };
 
+  /* Field configs */
   const nameFields = [
-    { key: "firstName", label: "First Name", placeholder: "First Name" },
-    { key: "lastName", label: "Last Name", placeholder: "Last Name" },
-    { key: "preferredName", label: "Preferred Name (Optional)", placeholder: "If different from first name" },
+    { key: "firstName", label: "First Name"},
+    { key: "lastName", label: "Last Name"},
+    { key: "preferredName", label: "Preferred Name", placeholder: "If different from first name" },
     { key: "birthday", label: "Birthday", placeholder: "MM/DD/YYYY" },
   ];
 
-  const cityFields = [
-    { key: "city", label: "City", placeholder: "City" },
-    { key: "postalCode", label: "Postal Code", placeholder: "Postal Code (eg. A1A 1A1)" },
+  const addressFields = [
+    { key: "address", label: "Address", className: "sm:col-span-2" },
+    { key: "city", label: "City"},
+    { key: "postalCode", label: "Postal Code", placeholder: "eg. A1A 1A1" },
   ];
 
   const contactFields = [
-    { key: "email", label: "Email Address", placeholder: "Email Address" },
-    { key: "phone", label: "Phone Number", placeholder: "Phone Number" },
+    { key: "email", label: "Email Address"},
+    { key: "phone", label: "Phone Number", placeholder: "XXX-XXX-XXXX" },
   ];
 
   const additionalFields = [
     {
       key: "currentOrgInvolvement",
-      label: "Current Involvement in Organizations (optional)",
-      placeholder: "Current Involvement in Organizations",
+      label: "Current Involvement in Organization",
       className: "sm:col-span-2",
     },
-    { key: "positionsHeld", label: "Position(s) Held (optional)", placeholder: "Position(s) Held" },
-    { key: "addressPhilippines", label: "Address in the Philippines (optional)", placeholder: "Address (if applicable)" },
+    { key: "positionsHeld", label: "Position(s) Held)"},
+    { key: "addressPhilippines", label: "Address in the Philippines", placeholder: "if applicable" },
   ];
+
+  const renderFields = (fields) =>
+    fields.map((f) => (
+      <Field
+        key={f.key}
+        label={f.label}
+        placeholder={f.placeholder}
+        value={form[f.key]}
+        onChange={setField(f.key)}
+        required={REQUIRED.has(f.key)}
+        className={f.className || ""}
+        type={f.type || "text"}
+        error={touched[f.key] ? errors[f.key] : ""}
+      />
+    ));
+
+  /* Submit */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // touch required fields so errors show
+    const touchThese = {};
+    for (const key of REQUIRED) touchThese[key] = true;
+
+    if (form.hasChildren === "yes") {
+      form.dependants.forEach((_, i) => {
+        touchThese[`dep_${i}_firstName`] = true;
+        touchThese[`dep_${i}_lastName`] = true;
+        touchThese[`dep_${i}_birthday`] = true;
+      });
+    }
+
+    setTouched((t) => ({ ...t, ...touchThese }));
+
+    const nextErrors = validateAll(form);
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) return;
+
+    alert("✅ Looks good! Continue to payment.");
+  };
 
   return (
     <main className="min-h-dvh bg-[#F4EFE7] relative overflow-y-auto md:overflow-hidden">
@@ -141,88 +300,26 @@ export default function MembershipPage() {
             Youth (under 18): $2.50 <br />
           </p>
 
-          <form className="mt-8 space-y-4">
+          <form className="mt-8 space-y-4" onSubmit={handleSubmit} noValidate>
             <SectionTitle className="mt-4">Member Information</SectionTitle>
 
-            {/* Names + Birthday */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field 
-                label="First Name"
-                value={form.firstName}
-                onChange={setField("firstName")}
-                required
-              />
-
-              <Field
-                label="Last Name"
-                value={form.lastName}
-                onChange={setField("lastName")}
-                required
-              />
-
-              <Field
-                label="Preferred Name"
-                value={form.preferredName}
-                onChange={setField("preferredName")}
-                placeholder="if applicable"
-              />
-
-              <Field
-                label="Birthday"
-                value={form.birthday}
-                onChange={setField("birthday")}
-                required
-              />
-
+              {renderFields(nameFields)}
             </div>
 
             <Divider />
 
-            {/* Address */}
-            <Field
-              label="Address"
-              value={form.address}
-              onChange={setField("address")}
-              required
-            />
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field
-                label="City"
-                value={form.city}
-                onChange={setField("city")}
-                required
-              />
-
-              <Field
-                label="Postal Code"
-                value={form.postalCode}
-                onChange={setField("postalCode")}
-                placeholder="eg. A1A 1A1"
-                required
-              />
+              {renderFields(addressFields)}
             </div>
 
             <Divider />
 
-            {/* Contact Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field
-                label="Email Address"
-                value={form.email}
-                onChange={setField("email")}
-                required
-              />
-
-              <Field
-                label="Phone Number"
-                value={form.phone}
-                onChange={setField("phone")}
-                required
-              />
+              {renderFields(contactFields)}
             </div>
 
-            {/* Dependants form*/}
+            {/* Dependants */}
             <div className="space-y-2 rounded-xl border border-black/10 bg-white/50 p-4">
               <p className="text-xs uppercase text-black/80">
                 Do you have children to add to the file?
@@ -231,7 +328,7 @@ export default function MembershipPage() {
               <div className="flex gap-6 text-sm">
                 {[
                   { value: "yes", label: "Yes" },
-                  { value: "no", label: "No" }
+                  { value: "no", label: "No" },
                 ].map((opt) => (
                   <label key={opt.value} className="flex items-center gap-2 text-black/80">
                     <input
@@ -240,18 +337,27 @@ export default function MembershipPage() {
                       value={opt.value}
                       checked={form.hasChildren === opt.value}
                       onChange={setField("hasChildren")}
+                      required
                     />
                     {opt.label}
                   </label>
                 ))}
               </div>
 
+              {touched.hasChildren && errors.hasChildren ? (
+                <p className="text-xs text-red-600">{errors.hasChildren}</p>
+              ) : null}
+
               {form.hasChildren === "yes" && (
                 <div className="mt-2 space-y-4">
                   {form.dependants.map((child, i) => (
-                    <div key={i} className="space-y-3 rounded-xl border border-black/10 bg-white p-4">
+                    <div
+                      key={i}
+                      className="space-y-3 rounded-xl border border-black/10 bg-white p-4"
+                    >
                       <div className="flex items-center justify-between">
-                          Child #{i + 1}
+                        <span>Child #{i + 1}</span>
+
                         {form.dependants.length > 1 && (
                           <button
                             type="button"
@@ -264,25 +370,44 @@ export default function MembershipPage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input
+                        <Field
+                          label="First Name"
                           placeholder="First Name"
                           value={child.firstName}
                           onChange={(e) => updateDependant(i, "firstName", e.target.value)}
-                          className="w-full rounded-xl border border-black/25 bg-white px-5 py-3 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/30"
+                          required
+                          error={
+                            touched[`dep_${i}_firstName`]
+                              ? errors[`dep_${i}_firstName`]
+                              : ""
+                          }
                         />
 
-                        <input
+                        <Field
+                          label="Last Name"
                           placeholder="Last Name"
                           value={child.lastName}
                           onChange={(e) => updateDependant(i, "lastName", e.target.value)}
-                          className="w-full rounded-xl border border-black/25 bg-white px-5 py-3 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/30"
+                          required
+                          error={
+                            touched[`dep_${i}_lastName`]
+                              ? errors[`dep_${i}_lastName`]
+                              : ""
+                          }
                         />
 
-                        <input
-                          placeholder="Birthday (MM/DD/YYYY)" 
+                        <Field
+                          label="Birthday"
+                          placeholder="MM/DD/YYYY"
                           value={child.birthday}
                           onChange={(e) => updateDependant(i, "birthday", e.target.value)}
-                          className="w-full rounded-xl border border-black/25 bg-white px-5 py-3 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/30 sm:col-span-2"
+                          required
+                          className="sm:col-span-2"
+                          error={
+                            touched[`dep_${i}_birthday`]
+                              ? errors[`dep_${i}_birthday`]
+                              : ""
+                          }
                         />
                       </div>
                     </div>
@@ -291,7 +416,8 @@ export default function MembershipPage() {
                   <button
                     type="button"
                     onClick={addDependant}
-                    className="w-full rounded-xl border border-[#556B2F]/40 bg-white px-4 py-3 text-sm text-[#556B2F] hover:bg-[#556B2F]/5 transition">
+                    className="w-full rounded-xl border border-[#556B2F]/40 bg-white px-4 py-3 text-sm text-[#556B2F] hover:bg-[#556B2F]/5 transition"
+                  >
                     + Add another child
                   </button>
                 </div>
@@ -300,100 +426,97 @@ export default function MembershipPage() {
 
             <Divider />
 
-            <SectionTitle underlineWidth="w-60">Additional Information (Optional) </SectionTitle>
+            <SectionTitle underlineWidth="w-60">
+              Additional Information (Optional)
+            </SectionTitle>
 
-            {/* This section is for any additional info we want to collect that doesn't fit into the above categories. */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field
-                label="Current Involvement"
-                value={form.currentOrgInvolvement}
-                onChange={setField("currentOrgInvolvement")}
-                className="sm:col-span-2"
-              />
-              <Field
-                label="Positions Held"
-                value={form.positionsHeld}
-                onChange={setField("positionsHeld")}
-              />
-              <Field
-                label="Philippines Address"
-                value={form.addressPhilippines}
-                onChange={setField("addressPhilippines")}
-              />
+              {renderFields(additionalFields)}
             </div>
-            
+
             <Divider />
-            
-            {/* Informed Consent & Privacy Notice */}
+
             <SectionTitle underlineWidth="w-32">Informed Consent</SectionTitle>
 
             <div className="text-xs sm:text-base text-black/80 leading-relaxed space-y-4">
               <p>
-                By submitting this membership form, you consent to the collection, use, and storage of your personal information by Pangasinan Society of Calgary (PASOC) for the purpose of managing your membership and providing related services.
+                By submitting this membership form, you consent to the collection, use,
+                and storage of your personal information by Pangasinan Society of Calgary
+                (PASOC) for the purpose of managing your membership and providing related
+                services.
               </p>
 
               <p>
-                We are committed to protecting your privacy and handling your personal information in accordance with the Privacy Act and all applicable privacy regulations. Your information will be stored securely and will only be accessed by authorized personnel. It will not be shared with third parties without your consent, except as required by law.
+                We are committed to protecting your privacy and handling your personal
+                information in accordance with the Privacy Act and all applicable privacy
+                regulations. Your information will be stored securely and will only be
+                accessed by authorized personnel. It will not be shared with third parties
+                without your consent, except as required by law.
               </p>
 
               <p>
-              You have the right to access, update, or request correction of your personal information at any time by contacting us at{" "}
+                You have the right to access, update, or request correction of your
+                personal information at any time by contacting us at{" "}
                 <span className="font-medium">[contact email or phone number]</span>.
               </p>
 
               <p>
-                By signing or submitting this form, you acknowledge that you have read and understood this notice and consent to the collection, use, and storage of your personal information as described above.
+                By signing or submitting this form, you acknowledge that you have read and
+                understood this notice and consent to the collection, use, and storage of
+                your personal information as described above.
               </p>
             </div>
 
-              {/* I Agree checkbox */}
-              <label className="flex items-center gap-3 text-sm sm:text-base text-black/80 pt-2">
-                <input
-                  type="checkbox"
-                  checked={form.agreedToPrivacy}
-                  onChange={setField("agreedToPrivacy")}
-                  required
-                  className="h-5 w-5 accent-[#7E9A45]"
-                />
-                I agree to the Privacy Notice and consent to the use of my personal information.
-              </label>
+            <label className="flex items-center gap-3 text-sm sm:text-base text-black/80 pt-2">
+              <input
+                type="checkbox"
+                checked={form.agreedToPrivacy}
+                onChange={setField("agreedToPrivacy")}
+                required
+                className="h-5 w-5 accent-[#7E9A45]"
+              />
+              I agree to the Privacy Notice and consent to the use of my personal information.
+            </label>
 
-              <div className="mx-auto h-px w-full bg-black/40" />
+            {touched.agreedToPrivacy && errors.agreedToPrivacy ? (
+              <p className="text-xs text-red-600">{errors.agreedToPrivacy}</p>
+            ) : null}
 
-              {/* Email notifications */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-6 py-2">
-                <p className="text-center text-xs sm:text-base text-black/80">
-                  Would you like to receive email notifications?
-                </p>
+            <div className="mx-auto h-px w-full bg-black/40" />
 
-                <div className="flex justify-center gap-10 text-sm">
-                  <label className="flex flex-col items-center gap-2 text-black/70">
+            {/* Email notifications */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-6 py-2">
+              <p className="text-center text-xs sm:text-base text-black/80">
+                Would you like to receive email notifications?
+              </p>
+
+              <div className="flex justify-center gap-10 text-sm">
+                {[
+                  { value: "yes", label: "Yes" },
+                  { value: "no", label: "No" },
+                ].map((opt) => (
+                  <label
+                    key={opt.value}
+                    className="flex flex-col items-center gap-2 text-black/70"
+                  >
                     <input
                       type="radio"
                       name="emailNotifications"
-                      value="yes"
-                      checked={form.emailNotifications === "yes"}
+                      value={opt.value}
+                      checked={form.emailNotifications === opt.value}
                       onChange={setField("emailNotifications")}
                       required
                       className="h-5 w-5 accent-[#7E9A45]"
                     />
-                    Yes
+                    {opt.label}
                   </label>
-
-                  <label className="flex flex-col items-center gap-2 text-black/70">
-                    <input
-                      type="radio"
-                      name="emailNotifications"
-                      value="no"
-                      checked={form.emailNotifications === "no"}
-                      onChange={setField("emailNotifications")}
-                      required
-                      className="h-5 w-5 accent-[#7E9A45]"
-                    />
-                    No
-                  </label>
-                </div>
+                ))}
               </div>
+
+              {touched.emailNotifications && errors.emailNotifications ? (
+                <p className="text-xs text-red-600 text-center">{errors.emailNotifications}</p>
+              ) : null}
+            </div>
 
             <div className="mx-auto h-px w-full bg-black/40 my-6" />
 
