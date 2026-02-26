@@ -1,6 +1,11 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { HeroSection } from "./UI/HeroSection";
 
 export default function HomePage() {
+  const router = useRouter();
+
   return (
     <main className="w-full">
 
@@ -11,11 +16,11 @@ export default function HomePage() {
 	  />
 
       {/* ABOUT */}
-      <section className="bg-neutral-100 py-24 px-6">
+      <section className="bg-neutral-100 py-24 px-6" onClick={() => router.push('/Pages/About')}>
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div className="flex flex-col gap-6">
             <h2 className="text-4xl font-bold text-neutral-900">
-              Who We Are
+              About Us
             </h2>
             <p className="text-neutral-700 leading-relaxed text-lg">
               Founded in 1988, PASOC fosters cultural pride, community service,
