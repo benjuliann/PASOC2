@@ -31,9 +31,9 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
       <body>
         <div className={`bg-white`}>
-          {!children?.props?.noLayout && <Header />}
+          <Header />
           {children}
-          {!children?.props?.noLayout && <Footer />}
+          <Footer />
         </div>
       </body>
     </html>

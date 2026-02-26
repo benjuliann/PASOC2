@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-dvh bg-[#F4EFE7] relative overflow-y-auto md:overflow-hidden">
-      
+
       {/* Back Arrow */}
       <Link href="/" className="absolute left-6 top-6">
         <svg
@@ -51,7 +51,7 @@ export default function LoginPage() {
 
       <div className="min-h-dvh px-4 flex justify-center items-center">
         <div className="w-full max-w-[560px] flex flex-col items-center scale-90">
-          
+
           {/* PASOC Logo */}
           <Link href="/" style={{ textDecoration: "none" }}>
             <img
@@ -71,8 +71,8 @@ export default function LoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit}
-          className="w-full flex flex-col items-center"
-          noValidate>
+            className="w-full flex flex-col items-center"
+            noValidate>
             <div className="w-full max-w-[460px] space-y-6">
 
               <input
@@ -82,10 +82,10 @@ export default function LoginPage() {
                 onChange={(e) => {
                   setEmail(e.target.value);
                   setError(""); // Clear error when user starts typing
-                }} 
+                }}
                 className={`w-full rounded-xl border bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2
                     ${error ? "border-red-400 focus:ring-red-200" : "border-black/25 focus:ring-[#556B2F]/50"}
-                    `}              
+                    `}
               />
 
               <input
