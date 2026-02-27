@@ -63,12 +63,42 @@ export default function MembershipForm() {
       }
     }
 
-    if (key === "email" && v) {
-      if (!v.includes("@") || !v.includes(".")) return "Enter a valid email.";
+    // Name validation (letters, spaces, hyphen, apostrophe only)
+    if (
+      (key === "firstName" || key === "lastName" || key === "preferredName") &&
+      v
+    ) {
+      const nameRegex = /^[A-Za-z\s'-]+$/;
+      if (!nameRegex.test(v)) {
+        return "Name can only contain letters.";
+      }
     }
 
-    return "";
-  };
+    // Email validation
+    if (key === "email" && v) {
+      if (!v.includes("@") || !v.includes(".")) {
+        return "Enter a valid email.";
+      }
+    }
+
+    // Phone validation (10 digits)
+    if (key === "phone" && v) {
+      const digits = v.replace(/\D/g, "");
+      if (digits.length !== 10) {
+        return "Enter a valid 10 digit phone number.";
+      }
+    }
+
+    // Canadian postal code validation (ex: T2X 1V4)
+    if (key === "postalCode" && v) {
+      const postalRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
+      if (!postalRegex.test(v)) {
+        return "Enter a valid postal code (ex: T2X 1V4).";
+      }
+    }
+
+  return "";
+};
 
   const validateAll = (nextForm) => {
     const nextErrors = {};
@@ -91,9 +121,79 @@ export default function MembershipForm() {
 
   const [showErrorModal, setShowErrorModal] = useState(false);
 
+  // input normalization / sanitization helpers 
+const stripControlChars = (s) => s.replace(/[\u0000-\u001F\u007F]/g, "");
+
+// removes obvious script-y characters; keeps normal punctuation
+const stripDangerous = (s) => s.replace(/[<>]/g, "");
+
+const normalizeWhitespace = (s) => s.replace(/\s+/g, " ").trim();
+
+const digitsOnly = (s) => s.replace(/\D/g, "");
+
+const normalizeEmail = (s) => normalizeWhitespace(s).toLowerCase();
+
+const normalizePostalCodeCA = (s) => {
+  // "t2x1v4" -> "T2X 1V4"
+  const v = normalizeWhitespace(s).toUpperCase().replace(/\s/g, "");
+  if (v.length === 6) return `${v.slice(0, 3)} ${v.slice(3)}`;
+  return v;
+};
+
+const normalizePhone = (s) => {
+  // "403.123.4567" -> "403-123-4567" (if 10 digits)
+  const d = digitsOnly(s);
+  if (d.length === 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+  return d; // keep digits only if incomplete
+};
+
+const sanitizeText = (s) =>
+  normalizeWhitespace(stripDangerous(stripControlChars(String(s ?? ""))));
+
+const toTitleCase = (s) =>
+  s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+
+const formatPhone = (value) => {
+  const digits = String(value).replace(/\D/g, "").slice(0, 10);
+
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
+// Map per-field rules
+const sanitizeByKey = (key, raw) => {
+  const base = sanitizeText(raw);
+
+  switch (key) {
+    case "email":
+      return normalizeEmail(base);
+    case "phone":
+      return formatPhone(raw);
+    case "postalCode":
+      return normalizePostalCodeCA(base);
+    case "firstName":
+    case "lastName":
+    case "preferredName":
+      return toTitleCase(base);
+    case "city":
+    case "address":
+    case "currentOrgInvolvement":
+    case "positionsHeld":
+    case "addressPhilippines":
+      return base;
+    case "birthday":
+      return base;
+    default:
+      return raw; 
+  }
+};
   // Field setters
   const setField = (key) => (e) => {
-    const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    const isCheckbox = e.target.type === "checkbox";
+    const rawValue = isCheckbox ? e.target.checked : e.target.value;
+
+    const value = isCheckbox ? rawValue : sanitizeByKey(key, rawValue);
 
     setForm((prev) => {
       const nextForm = { ...prev, [key]: value };
@@ -118,25 +218,27 @@ export default function MembershipForm() {
     });
   };
 
-  const updateDependant = (index, field, value) => {
-    setForm((prev) => {
-      const nextDependants = prev.dependants.map((d, i) =>
-        i === index ? { ...d, [field]: value } : d
-      );
-      const nextForm = { ...prev, dependants: nextDependants };
+  const updateDependant = (index, field, rawValue) => {
+  const value = sanitizeByKey(field === "birthday" ? "birthday" : field, rawValue);
 
-      if (nextForm.hasChildren === "yes") {
-        const errorKey = `dep_${index}_${field}`;
-        setTouched((t) => ({ ...t, [errorKey]: true }));
-        setErrors((errs) => ({
-          ...errs,
-          [errorKey]: String(value).trim() ? "" : "Required",
-        }));
-      }
+  setForm((prev) => {
+    const nextDependants = prev.dependants.map((d, i) =>
+      i === index ? { ...d, [field]: value } : d
+    );
+    const nextForm = { ...prev, dependants: nextDependants };
 
-      return nextForm;
-    });
-  };
+    if (nextForm.hasChildren === "yes") {
+      const errorKey = `dep_${index}_${field}`;
+      setTouched((t) => ({ ...t, [errorKey]: true }));
+      setErrors((errs) => ({
+        ...errs,
+        [errorKey]: String(value).trim() ? "" : "Required",
+      }));
+    }
+
+    return nextForm;
+  });
+};
 
   const addDependant = () => {
     setForm((prev) => ({
