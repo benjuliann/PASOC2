@@ -3,6 +3,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, User, Menu, X } from "lucide-react";
+import { useUserAuth } from '../../../_utils/auth-context';
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -20,6 +21,7 @@ export function Header() {
   const [hoveredNav, setHoveredNav] = React.useState(null);
   const [visible, setVisible] = React.useState(true);
   const lastScrollY = React.useRef(0);
+  const { user } = useUserAuth();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -93,13 +95,21 @@ export function Header() {
             )}
           </div>
 
-          <Link
-            href="/Login"
-            title="Login"
-            className="flex items-center p-1 rounded-lg text-zinc-500 no-underline transition-transform duration-200 hover:scale-110"
-          >
-            <User size={36} strokeWidth={2} />
-          </Link>
+          {
+            user ? (
+              <Link href="/Profile" className="p-2 rounded-full bg-gray-200 text-zinc-600 hover:bg-gray-300 transition">
+                <User size={20} /> 
+              </Link>
+            ) : (
+              <Link
+                href="/Login"
+                title="Login"
+                className="flex items-center p-1 rounded-lg text-zinc-500 no-underline transition-transform duration-200 hover:scale-110"
+              >
+                <p className="hidden sm:inline text-sm font-medium">Login</p>
+              </Link>
+            )
+          }
 
           {/* Hamburger for mobile */}
           <button
