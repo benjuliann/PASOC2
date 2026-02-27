@@ -1,5 +1,5 @@
 import { HeroSection } from "../../UI/HeroSection.jsx";
-import FaqsCard from "./faqsCard.jsx";
+import FaqsContent from "./faqsContent.jsx";
 import { query } from "../../../lib/db.js";
 
 const fallbackFaqs = [
@@ -72,23 +72,7 @@ export default async function FAQsPage() {
 				showButtons={false}
 			/>
 			<section className="mx-auto mt-10 w-full max-w-4xl px-6 pb-16">
-				<div className="mb-4 flex justify-end">
-					<button
-						type="button"
-						className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-black shadow-sm transition hover:bg-gray-100"
-					>
-						+ Add FAQ
-					</button>
-				</div>
-				<div className="space-y-4">
-					{faqs.map((faq, index) => (
-						<FaqsCard
-							key={`${faq.question}-${index}`}
-							question={faq.question}
-							answers={faq.answers}
-						/>
-					))}
-				</div>
+				<FaqsContent faqs={faqs} />
 			</section>
 		</main>
 	);
