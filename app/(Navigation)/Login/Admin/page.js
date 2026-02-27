@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { useUserAuth } from '../../_utils/auth-context';
+import { useUserAuth } from '../../../_utils/auth-context';
 
 export default function LoginPage() {
   const [error, setError] = useState(null);
