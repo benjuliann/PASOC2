@@ -1,5 +1,6 @@
 import { Inter, Domine, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "./_utils/auth-context";
 import ClientLayoutGuard from "./ClientLayoutGuard";
 
 
@@ -30,7 +31,11 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
       <body>
         <div className={`bg-white`}>
-          <ClientLayoutGuard>{children}</ClientLayoutGuard>
+          <AuthProvider>
+            <ClientLayoutGuard>
+              {children}  
+            </ClientLayoutGuard>
+          </AuthProvider>
         </div>
       </body>
     </html>

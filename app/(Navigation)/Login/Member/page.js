@@ -1,13 +1,17 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { useUserAuth } from '../../../_utils/auth-context';
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [error, setError] = useState(null);
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const router = useRouter();
+  const { user, emailSignIn, googleSignIn, facebookSignIn } = useUserAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Basic validation
@@ -20,14 +24,32 @@ export default function LoginPage() {
       setError("Please enter a valid email address.");
       return;
     }
-    // Mock authentication (used to test since I cant connect to a real backend)
-    if (email !== "test@pasoc.com" || password !== "password123") {
-      setError("We could not find an account with that email. Try signing up!");
-      return;
-    }
     // If everything is fine, clear the error and proceed (e.g., redirect to dashboard)
     setError("");
-    alert("Login successful!");
+    try {
+      await emailSignIn(email, password);
+      router.push('/');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await googleSignIn();
+      router.push('/');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    try {
+      await facebookSignIn();
+      router.push('/');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -142,22 +164,18 @@ export default function LoginPage() {
               <span className="text-xs text-black/60">or log in with</span>
               <div className="flex-1 h-px bg-black/20" />
             </div>
-
-            {/* Social Buttons */}
-            <div className="mt-6 flex gap-6">
-              <SocialBox>
-                <img src="/facebook.svg" className="h-6 w-6" alt="Facebook" />
-              </SocialBox>
-
-              <SocialBox>
-                <img src="/google.svg" className="h-6 w-6" alt="Google" />
-              </SocialBox>
-
-              <SocialBox>
-                <img src="/apple.svg" className="h-6 w-6" alt="Apple" />
-              </SocialBox>
-            </div>
           </form>
+
+          {/* Social Buttons */}
+          <div className="mt-6 flex gap-6">
+            <button onClick={handleFacebookSignIn} className="h-14 w-20 rounded-xl border border-[#556B2F]/70 bg-white shadow-sm hover:bg-white/70 transition flex items-center justify-center text-lg font-semibold">
+              <img src="/facebook.svg" className="h-6 w-6" alt="Facebook" />
+            </button>
+
+            <button onClick={handleGoogleSignIn} className="h-14 w-20 rounded-xl border border-[#556B2F]/70 bg-white shadow-sm hover:bg-white/70 transition flex items-center justify-center text-lg font-semibold">
+              <img src="/google.svg" className="h-6 w-6" alt="Google" />
+            </button>
+          </div>
         </div>
       </div>
     </main>
