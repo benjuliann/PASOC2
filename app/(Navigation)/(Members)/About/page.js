@@ -1,4 +1,4 @@
-import { HeroSection } from "@/app/UI/HeroSection";
+import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 
 export default function AboutUs() {
     /*
