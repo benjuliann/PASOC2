@@ -20,8 +20,10 @@ export default function Profile() {
                 description="View and manage your profile information, including your name, email, and membership details. Update your preferences and stay connected with the PASOC community."
             />
             {
+                // If user is logged in, show their profile information and options to edit or delete their account. Otherwise, prompt them to log in.
                 user ? (
                     <>
+                        {/* Profile Information Section */}
                         <section className="flex flex-col md:flex-row gap-8 px-6 py-12 max-w-8xl mx-auto">
                             <div className="mx-auto w-1/2 bg-neutral-200 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
                                 <h2 className="text-xl font-semibold text-center underline text-black">Profile Information</h2>
@@ -33,6 +35,7 @@ export default function Profile() {
                                 </p>
                             </div>
                         </section>
+                        {/* Edit Profile Information Section */}
                         <section>
                             <div className="w-1/2 mx-auto">
                                 <h2 className="text-xl font-semibold text-center underline text-black">Edit Profile Information</h2>
@@ -109,6 +112,7 @@ export default function Profile() {
                         </section>
                     </>
                 ) : (
+                    // If user is not logged in, show a message prompting them to log in to view their profile information
                     <section className="flex flex-col items-center gap-6 px-6 py-12 max-w-8xl mx-auto">
                         <h2 className="text-xl font-semibold text-center text-black">Please log in to view your profile information.</h2>
                     </section>
