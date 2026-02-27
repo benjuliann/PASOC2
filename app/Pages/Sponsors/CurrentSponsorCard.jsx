@@ -18,19 +18,17 @@ export default function CurrentSponsorCard({ sponsor }) {
 						/>
 					</svg>
 				</div>
-				<div className="text-lg text-gray-400 mt-1">
-					Photo or Logo
-				</div>
+				<div className="text-lg text-gray-400 mt-1">Photo or Logo</div>
 			</div>
 
 			{/* Sponsor Information */}
 			<div className="flex-1">
-				<h3 className="font-bold text-gray-800 text-xl mb-2">
+				<h3 className="font-bold text-green-700 text-xl mb-2">
 					{sponsor.name}
 				</h3>
 
 				<p className="text-sm text-gray-600 italic mb-3">
-					Event Sponsored
+					{sponsor.eventSponsored || "Event Sponsored"}
 				</p>
 
 				<div className="bg-yellow-200 rounded-md p-3">

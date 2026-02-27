@@ -22,7 +22,7 @@ export default function PreviousSponsorCard({ sponsor }) {
 
 			{/* Sponsor Information */}
 			<div className="text-center">
-				<h3 className="font-bold text-gray-800 text-sm mb-1">
+				<h3 className="font-bold text-green-700 text-sm mb-1">
 					{sponsor.name}
 				</h3>
 			</div>
