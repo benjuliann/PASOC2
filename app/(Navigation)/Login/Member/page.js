@@ -2,11 +2,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useUserAuth } from '../../../_utils/auth-context';
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [error, setError] = useState(null);
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const router = useRouter();
   const { user, emailSignIn, googleSignIn, facebookSignIn } = useUserAuth();
 
   const handleSubmit = async (e) => {
@@ -26,6 +28,7 @@ export default function LoginPage() {
     setError("");
     try {
       await emailSignIn(email, password);
+      router.push('/');
     } catch (err) {
       setError(err.message);
     }
@@ -34,6 +37,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     try {
       await googleSignIn();
+      router.push('/');
     } catch (err) {
       setError(err.message);
     }
@@ -42,6 +46,7 @@ export default function LoginPage() {
   const handleFacebookSignIn = async () => {
     try {
       await facebookSignIn();
+      router.push('/');
     } catch (err) {
       setError(err.message);
     }
