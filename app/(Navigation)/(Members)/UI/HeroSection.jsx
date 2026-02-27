@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import Link from "next/link";
 
 export function HeroSection({ title, description }) {
   const [showButtons, setShowButtons] = React.useState(false);
@@ -16,7 +17,7 @@ export function HeroSection({ title, description }) {
       <img
         src="https://api.builder.io/api/v1/image/assets/TEMP/40671902fc11001c38c8e27b20ebb110846d19b4?placeholderIfAbsent=true&apiKey=fbbee8c7a138402fba2a2964fb2f753d"
         alt="PASOC community gathering"
-        className="object-cover absolute inset-0 w-full h-full"
+        className="object-cover absolute inset-0 w-full h-full pointer-events-none"
       />
 
       <div className="absolute inset-0 bg-[linear-gradient(to_right,_rgba(132,164,77,1)_0%,_rgba(132,164,77,1)_10%,_rgba(132,164,77,0)_100%)] z-0" />
@@ -27,9 +28,12 @@ export function HeroSection({ title, description }) {
 
         {showButtons && (
           <div className="flex flex-wrap gap-4 mt-7 text-[20px] font-semibold text-black">
-            <button className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white">
-              Become a Member
-            </button>
+              <Link
+                href="/Login/Membership"
+                className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white"
+              >
+                Become a Member
+              </Link>
             <button className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white">
               Guest Form
             </button>
