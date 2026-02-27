@@ -51,7 +51,7 @@ export default function MembershipForm() {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
-  /* Validation */
+  // Validation 
   const validateField = (key, value) => {
     const v = typeof value === "string" ? value.trim() : value;
 
@@ -89,7 +89,9 @@ export default function MembershipForm() {
     return nextErrors;
   };
 
-  /* Field setters */
+  const [showErrorModal, setShowErrorModal] = useState(false);
+
+  // Field setters
   const setField = (key) => (e) => {
     const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
 
@@ -161,7 +163,7 @@ export default function MembershipForm() {
     });
   };
 
-  /* Submit */
+  // Submit
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -181,7 +183,10 @@ export default function MembershipForm() {
     const nextErrors = validateAll(form);
     setErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.keys(nextErrors).length > 0) {
+      setShowErrorModal(true);
+      return; 
+    }
 
     alert("✅ Looks good! Continue to payment.");
   };
@@ -202,6 +207,31 @@ export default function MembershipForm() {
           <path d="M15 18l-6-6 6-6" />
         </svg>
       </Link>
+
+      {showErrorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg border border-black/10">
+            <h2 className="font-serif text-2xl text-[#556B2F]">
+              Form is incomplete!
+            </h2>
+
+            <p className="mt-2 text-sm text-black/70">
+              Some required fields are missing or invalid.
+              <br /> Go back and complete the fields marked in red.
+            </p>
+
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowErrorModal(false)}
+                className="rounded-xl bg-[#7E9A45] px-4 py-2 text-white hover:brightness-95"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="min-h-dvh px-4 flex justify-center items-start md:items-center py-10">
         <div className="w-full max-w-[640px] bg-white/40 rounded-2xl p-6 sm:p-8 shadow-sm border border-black/10">

@@ -33,6 +33,7 @@ export default function MemberInfoSection({ form, errors, touched, REQUIRED, set
         className={f.className || ""}
         type={f.type || "text"}
         error={touched[f.key] ? errors[f.key] : ""}
+        errorKey={f.key}
       />
     ));
 
