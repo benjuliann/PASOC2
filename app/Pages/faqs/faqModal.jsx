@@ -1,6 +1,44 @@
 "use client";
 
-export default function FaqModal({ isOpen, onClose }) {
+import { useEffect, useState } from "react";
+
+export default function FaqModal({
+	isOpen,
+	onClose,
+	onSave,
+	initialFaq = null,
+	mode = "add",
+}) {
+	const [question, setQuestion] = useState("");
+	const [answer, setAnswer] = useState("");
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		if (mode === "edit" && initialFaq) {
+			setQuestion(initialFaq.question ?? "");
+			const answersText = Array.isArray(initialFaq.answers)
+				? initialFaq.answers.join("\n")
+				: (initialFaq.answers ?? "");
+			setAnswer(answersText);
+			return;
+		}
+
+		setQuestion("");
+		setAnswer("");
+	}, [isOpen, initialFaq, mode]);
+
+	function handleSubmit(event) {
+		event.preventDefault();
+
+		onSave?.({
+			question: question.trim(),
+			answer: answer.trim(),
+		});
+	}
+
 	if (!isOpen) {
 		return null;
 	}
@@ -17,12 +55,12 @@ export default function FaqModal({ isOpen, onClose }) {
 				<button
 					type="button"
 					onClick={onClose}
-					aria-label="Close add FAQ modal"
+					aria-label={`Close ${mode} FAQ modal`}
 					className="absolute right-4 top-4 rounded-md px-2 py-1 text-lg text-black transition hover:bg-gray-100"
 				>
 					✕
 				</button>
-				<form className="space-y-4 pt-8">
+				<form onSubmit={handleSubmit} className="space-y-4 pt-8">
 					<div>
 						<label
 							htmlFor="faq-question"
@@ -34,7 +72,12 @@ export default function FaqModal({ isOpen, onClose }) {
 							id="faq-question"
 							type="text"
 							name="question"
+							value={question}
+							onChange={(event) =>
+								setQuestion(event.target.value)
+							}
 							className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:outline-none"
+							required
 						/>
 					</div>
 					<div>
@@ -44,19 +87,22 @@ export default function FaqModal({ isOpen, onClose }) {
 						>
 							Answer
 						</label>
-						<input
+						<textarea
 							id="faq-answer"
-							type="text"
 							name="answer"
+							rows={4}
+							value={answer}
+							onChange={(event) => setAnswer(event.target.value)}
 							className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:outline-none"
+							required
 						/>
 					</div>
 					<div className="flex justify-end">
 						<button
-							type="button"
+							type="submit"
 							className="rounded-lg bg-[#556B2F] hover:bg-green-800 px-4 py-2 text-sm font-semibold text-white"
 						>
-							Add
+							{mode === "edit" ? "Save" : "Add"}
 						</button>
 					</div>
 				</form>
