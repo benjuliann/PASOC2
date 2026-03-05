@@ -16,9 +16,9 @@ export default function HomePage() {
 	  />
 
       {/* ABOUT */}
-      <section className="bg-neutral-100 py-24 px-6" onClick={() => router.push('/Pages/About')}>
+      <section className="bg-neutral-100 py-24 px-6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6" onClick={() => router.push('/About')}>
             <h2 className="text-4xl font-bold text-neutral-900">
               About Us
             </h2>
