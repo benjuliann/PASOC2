@@ -25,16 +25,20 @@ export default function Sponsors() {
 		},
 	];
 
+	// State: list shown in the "Current Sponsors" section.
 	const [currentSponsors, setCurrentSponsors] = useState(
 		initialCurrentSponsors,
 	);
+	// State: controls whether the add-sponsor modal is visible.
 	const [isAddSponsorModalOpen, setIsAddSponsorModalOpen] = useState(false);
+	// State: stores the values typed into the modal form fields.
 	const [newSponsor, setNewSponsor] = useState({
 		name: "",
 		eventSponsored: "",
 		description: "",
 	});
 
+	// input handler: updates a form field by its "name" attribute.
 	const handleSponsorFieldChange = (event) => {
 		const { name, value } = event.target;
 		setNewSponsor((previous) => ({
@@ -43,6 +47,7 @@ export default function Sponsors() {
 		}));
 	};
 
+	// Closes modal and clears form so next open starts fresh.
 	const closeAddSponsorModal = () => {
 		setIsAddSponsorModalOpen(false);
 		setNewSponsor({
@@ -52,13 +57,16 @@ export default function Sponsors() {
 		});
 	};
 
+	// Handles form submit: validates, creates a new sponsor object, and appends it to the list.
 	const handleAddSponsor = (event) => {
 		event.preventDefault();
 
+		// Basic guard: sponsor name is required.
 		if (!newSponsor.name.trim()) {
 			return;
 		}
 
+		// Add the new sponsor to existing sponsors in state.
 		setCurrentSponsors((previous) => [
 			...previous,
 			{
@@ -70,6 +78,7 @@ export default function Sponsors() {
 			},
 		]);
 
+		// Close and reset modal after successful add.
 		closeAddSponsorModal();
 	};
 
@@ -99,6 +108,7 @@ export default function Sponsors() {
 					<h2 className="text-2xl font-semibold underline text-gray-800">
 						Current Sponsors
 					</h2>
+					{/* Opens modal to add a new current sponsor */}
 					<button
 						type="button"
 						aria-label="Add current sponsor"
@@ -109,6 +119,7 @@ export default function Sponsors() {
 					</button>
 				</div>
 				<div className="flex flex-col gap-8 items-center">
+					{/* Render one card per current sponsor in state */}
 					{currentSponsors.map((sponsor) => (
 						<CurrentSponsorCard
 							key={sponsor.id}
@@ -127,6 +138,7 @@ export default function Sponsors() {
 					Previous Sponsors
 				</h2>
 				<div className="flex flex-wrap justify-center gap-6">
+					{/* Render static previous sponsors list */}
 					{previousSponsors.map((sponsor) => (
 						<PreviousSponsorCard
 							key={sponsor.id}
@@ -141,6 +153,7 @@ export default function Sponsors() {
 				<FloatingButton />
 			</form>
 
+			{/* Modal only renders when isAddSponsorModalOpen is true */}
 			{isAddSponsorModalOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
 					<div className="w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
@@ -162,6 +175,7 @@ export default function Sponsors() {
 							onSubmit={handleAddSponsor}
 							className="flex flex-col gap-6"
 						>
+							{/* Placeholder logo/photo area (not wired to uploads yet) */}
 							<div className="mx-auto flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-gray-200">
 								<div className="text-gray-500">
 									<svg
