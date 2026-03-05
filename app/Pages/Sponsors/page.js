@@ -71,6 +71,12 @@ export default function Sponsors() {
 		);
 	};
 
+	const handleDeletePreviousSponsor = (sponsorId) => {
+		setPreviousSponsors((previous) =>
+			previous.filter((sponsor) => sponsor.id !== sponsorId),
+		);
+	};
+
 	const handleMoveToPrevious = (sponsorId) => {
 		setCurrentSponsors((previousCurrent) => {
 			const sponsorToMove = previousCurrent.find(
@@ -209,6 +215,7 @@ export default function Sponsors() {
 						<PreviousSponsorCard
 							key={sponsor.id}
 							sponsor={sponsor}
+							onDelete={handleDeletePreviousSponsor}
 						/>
 					))}
 				</div>
