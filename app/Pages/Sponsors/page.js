@@ -31,12 +31,19 @@ export default function Sponsors() {
 	);
 	// State: controls whether the add-sponsor modal is visible.
 	const [isAddSponsorModalOpen, setIsAddSponsorModalOpen] = useState(false);
+	const [editingSponsorId, setEditingSponsorId] = useState(null);
 	// State: stores the values typed into the modal form fields.
 	const [newSponsor, setNewSponsor] = useState({
 		name: "",
 		eventSponsored: "",
 		description: "",
 	});
+	// State: list shown in the "Previous Sponsors" section.
+	const [previousSponsors, setPreviousSponsors] = useState([
+		{ id: 3, name: "Name" },
+		{ id: 4, name: "Name" },
+		{ id: 5, name: "Name" },
+	]);
 
 	// input handler: updates a form field by its "name" attribute.
 	const handleSponsorFieldChange = (event) => {
@@ -50,11 +57,57 @@ export default function Sponsors() {
 	// Closes modal and clears form so next open starts fresh.
 	const closeAddSponsorModal = () => {
 		setIsAddSponsorModalOpen(false);
+		setEditingSponsorId(null);
 		setNewSponsor({
 			name: "",
 			eventSponsored: "",
 			description: "",
 		});
+	};
+
+	const handleDeleteCurrentSponsor = (sponsorId) => {
+		setCurrentSponsors((previous) =>
+			previous.filter((sponsor) => sponsor.id !== sponsorId),
+		);
+	};
+
+	const handleMoveToPrevious = (sponsorId) => {
+		setCurrentSponsors((previousCurrent) => {
+			const sponsorToMove = previousCurrent.find(
+				(sponsor) => sponsor.id === sponsorId,
+			);
+
+			if (!sponsorToMove) {
+				return previousCurrent;
+			}
+
+			setPreviousSponsors((previousList) => [
+				...previousList,
+				{ id: Date.now(), name: sponsorToMove.name },
+			]);
+
+			return previousCurrent.filter(
+				(sponsor) => sponsor.id !== sponsorId,
+			);
+		});
+	};
+
+	const handleEditCurrentSponsor = (sponsorId) => {
+		const sponsorToEdit = currentSponsors.find(
+			(sponsor) => sponsor.id === sponsorId,
+		);
+
+		if (!sponsorToEdit) {
+			return;
+		}
+
+		setEditingSponsorId(sponsorId);
+		setNewSponsor({
+			name: sponsorToEdit.name,
+			eventSponsored: sponsorToEdit.eventSponsored || "",
+			description: sponsorToEdit.description || "",
+		});
+		setIsAddSponsorModalOpen(true);
 	};
 
 	// Handles form submit: validates, creates a new sponsor object, and appends it to the list.
@@ -66,28 +119,38 @@ export default function Sponsors() {
 			return;
 		}
 
-		// Add the new sponsor to existing sponsors in state.
-		setCurrentSponsors((previous) => [
-			...previous,
-			{
-				id: Date.now(),
-				name: newSponsor.name.trim(),
-				eventSponsored:
-					newSponsor.eventSponsored.trim() || "Event Sponsored",
-				description: newSponsor.description.trim(),
-			},
-		]);
+		if (editingSponsorId) {
+			setCurrentSponsors((previous) =>
+				previous.map((sponsor) =>
+					sponsor.id === editingSponsorId
+						? {
+								...sponsor,
+								name: newSponsor.name.trim(),
+								eventSponsored:
+									newSponsor.eventSponsored.trim() ||
+									"Event Sponsored",
+								description: newSponsor.description.trim(),
+							}
+						: sponsor,
+				),
+			);
+		} else {
+			// Add the new sponsor to existing sponsors in state.
+			setCurrentSponsors((previous) => [
+				...previous,
+				{
+					id: Date.now(),
+					name: newSponsor.name.trim(),
+					eventSponsored:
+						newSponsor.eventSponsored.trim() || "Event Sponsored",
+					description: newSponsor.description.trim(),
+				},
+			]);
+		}
 
 		// Close and reset modal after successful add.
 		closeAddSponsorModal();
 	};
-
-	// Mock data for previous sponsors
-	const previousSponsors = [
-		{ id: 3, name: "Name" },
-		{ id: 4, name: "Name" },
-		{ id: 5, name: "Name" },
-	];
 
 	return (
 		<main className="min-h-screen p-6 md:p-8">
@@ -124,6 +187,9 @@ export default function Sponsors() {
 						<CurrentSponsorCard
 							key={sponsor.id}
 							sponsor={sponsor}
+							onDelete={handleDeleteCurrentSponsor}
+							onEdit={handleEditCurrentSponsor}
+							onMoveToPrevious={handleMoveToPrevious}
 						/>
 					))}
 				</div>
@@ -159,7 +225,9 @@ export default function Sponsors() {
 					<div className="w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
 						<div className="relative mb-4">
 							<h3 className="text-center text-xl font-bold text-gray-800">
-								Current Sponsor
+								{editingSponsorId
+									? "Edit Sponsor"
+									: "Current Sponsor"}
 							</h3>
 							<button
 								type="button"
@@ -253,7 +321,9 @@ export default function Sponsors() {
 										type="submit"
 										className="rounded-md bg-[#556B2F] px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
 									>
-										Add Sponsor
+										{editingSponsorId
+											? "Save Changes"
+											: "Add Sponsor"}
 									</button>
 								</div>
 							</div>
