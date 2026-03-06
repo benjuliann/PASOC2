@@ -5,14 +5,12 @@ import Image from "next/image";
 import { Search, User, Menu, X } from "lucide-react";
 
 const navLinks = [
-  { label: "Dashboard", href: "/Admin/Dashboard" },
-  { label: "Donations", href: "/Admin/DonationManager" },
-  { label: "Events", href: "/Admin/EventManager" },
-  { label: "Members", href: "/Admin/MemberManager" },
-  { label: "Galleries", href: "/Admin/GalleryManager" },
-  { label: "Sponsors", href: "/Admin/SponsorManager" },
-  { label: "Reports", href: "/Admin/Reports" },
-  { label: "Edit Pages", href: "#" }
+  { label: "Home", href: "/" },
+  { label: "PASOC in Motion", href: "#" },
+  { label: "News", href: "#" },
+  { label: "Events", href: "/Pages/Events" },
+  { label: "About", href: "/Pages/About" },
+  { label: "Donate", href: "/Pages/Donate/" },
 ];
 
 export function Header() {
@@ -43,7 +41,7 @@ export function Header() {
     <header
       className={`
         sticky top-0 z-50
-        bg-[#556B2F]
+        bg-[#f5f5f4]
         shadow-[0_4px_10px_rgba(0,0,0,0.2)]
         border-b-4 border-[#556B2F]
         transition-transform duration-300 ease-in-out
@@ -65,13 +63,13 @@ export function Header() {
             className="object-contain shrink-0"
           />
           <span
-            className="text-white leading-snug break-words"
+            className="text-black leading-snug break-words"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "clamp(1rem, 2.5vw, 1.75rem)",
             }}
           >
-            PASOC Admins
+            Pangasinan Society of Calgary
           </span>
         </Link>
 
@@ -95,7 +93,7 @@ export function Header() {
           </div>
 
           <Link
-            href="/Login"
+            href="/Pages/Login"
             title="Login"
             className="flex items-center p-1 rounded-lg text-zinc-500 no-underline transition-transform duration-200 hover:scale-110"
           >
@@ -122,8 +120,8 @@ export function Header() {
               href={link.href}
               className="flex-1 py-2.5 text-center whitespace-nowrap no-underline transition-all duration-200"
               style={{
-                backgroundColor: hoveredNav === link.label ? "#ffffff" : "transparent",
-                color: hoveredNav === link.label ? "#556B2F" : "#ffffff",
+                backgroundColor: hoveredNav === link.label ? "#556B2F" : "transparent",
+                color: hoveredNav === link.label ? "#ffffff" : "#556B2F",
               }}
               onMouseEnter={() => setHoveredNav(link.label)}
               onMouseLeave={() => setHoveredNav(null)}
