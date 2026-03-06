@@ -3,36 +3,45 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Divider } from "../Membership/components/FormUI";
+import BackButton from "../../(Members)/UI/BackButton";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const [errors, setErrors] = useState({});
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const newErrors = {};
+
+    if (!email) {
+      newErrors.email = "Email is required.";
+    } else if (!email.includes("@")) {
+      newErrors.email = "Please enter a valid email address.";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required.";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      console.log("Form valid, submit login");
+    }
   };
 
   return (
     <main className="min-h-dvh bg-[#F4EFE7] relative overflow-y-auto md:overflow-hidden">
       {/* Back Arrow */}
-      <Link href="/" className="absolute left-6 top-6">
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#556B2F"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </Link>
+      <BackButton />
 
       <div className="min-h-dvh px-4 flex justify-center items-center">
         <div className="w-full max-w-[560px] flex flex-col items-center scale-90">
+
           {/* PASOC Logo */}
           <Link href="/" style={{ textDecoration: "none" }}>
             <img
@@ -44,11 +53,9 @@ export default function AdminLoginPage() {
 
           {/* Title */}
           <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-2">
-              <h1 className="font-serif text-4xl text-[#556B2F] tracking-wide">
-                ADMIN LOGIN
-              </h1>
-            </div>
+            <h1 className="font-serif text-4xl text-[#556B2F] tracking-wide">
+              ADMIN LOGIN
+            </h1>
 
             <Divider />
 
@@ -64,22 +71,58 @@ export default function AdminLoginPage() {
             noValidate
           >
             <div className="w-full max-w-[460px] space-y-5">
-              <input
-                type="email"
-                placeholder="Admin Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-black/25 bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
-              />
 
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Admin Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-black/25 bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
-              />
+              {/* Email */}
+              <div>
+                <input
+                  type="email"
+                  placeholder="Admin Email Address"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrors({ ...errors, email: "" });
+                  }}
+                  className={`w-full rounded-xl border bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2
+                  ${
+                    errors.email
+                      ? "border-red-400 focus:ring-red-200"
+                      : "border-black/25 focus:ring-[#556B2F]/50"
+                  }`}
+                />
 
+                {errors.email && (
+                  <p className="text-red-600 text-xs mt-2 text-center">
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Admin Password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrors({ ...errors, password: "" });
+                  }}
+                  className={`w-full rounded-xl border bg-white px-5 py-3 text-center text-sm text-neutral-800 outline-none focus:ring-2
+                  ${
+                    errors.password
+                      ? "border-red-400 focus:ring-red-200"
+                      : "border-black/25 focus:ring-[#556B2F]/50"
+                  }`}
+                />
+
+                {errors.password && (
+                  <p className="text-red-600 text-xs mt-2 text-center">
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Options */}
               <div className="flex items-center justify-between text-xs text-black/70">
                 <label className="flex items-center gap-2">
                   <input
@@ -97,6 +140,7 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               className="mt-7 w-full max-w-[300px] bg-[#556B2F] text-white py-3 rounded-xl shadow-md hover:brightness-95 transition"

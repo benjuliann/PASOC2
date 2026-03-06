@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useUserAuth } from '../../../_utils/auth-context';
 import { useRouter } from "next/navigation";
+import BackButton from "../../(Members)/UI/BackButton.jsx";
 
 export default function LoginPage() {
   const [error, setError] = useState(null);
@@ -56,20 +57,7 @@ export default function LoginPage() {
     <main className="min-h-dvh bg-[#F4EFE7] relative overflow-y-auto md:overflow-hidden">
       
       {/* Back Arrow */}
-      <Link href="/" className="absolute left-6 top-6">
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#556B2F"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </Link>
+      <BackButton href="/" />
 
       <div className="min-h-dvh px-4 flex justify-center items-center">
         <div className="w-full max-w-[560px] flex flex-col items-center scale-90">
