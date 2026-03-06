@@ -59,23 +59,23 @@ export default function Calendar() {
       return m + 1;
     });
   };
-
+ 
   return (
-    <div className="min-h-screen flex flex-row gap-10 py-10 mx-5">
+    <div className="min-h-screen flex flex-col md:flex-row gap-10 py-10 mx-5 text-gray-800">
         <FloatingButton />
-        <div>
+        <div className="w-full md:w-auto max-w-md">
             <div className="flex justify-between items-center mb-4">
                 <p>{monthNames[month]} {year}</p>
-                <button className="w-min px-5 border rounded-2xl" onClick={currentMonth}>Today</button>
+                <button className="w-min px-5 bg-blue-500 text-white rounded-2xl hover:bg-blue-600" onClick={currentMonth}>Today</button>
             </div>
 
-            <div className="w-75">
-                <div className="grid grid-cols-7 gap-2 text-center font-semibold mb-2 border">
-                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div>
-                    <div>Thu</div><div>Fri</div><div>Sat</div>
+            <div className="w-full">
+                <div className="grid grid-cols-7 gap-2 text-center font-semibold mb-2 ">
+                    <div>S</div><div>M</div><div>T</div><div>W</div>
+                    <div>T</div><div>F</div><div>S</div>
                 </div>
                 <div
-                className="grid grid-cols-7 h-70 border"
+                className="grid grid-cols-7 h-50 gap-2"
                 style={{
                     gridTemplateRows: `repeat(${weeks.length}, 1fr)`
                 }}
@@ -92,8 +92,8 @@ export default function Calendar() {
                             day === today.getDate() &&
                             month === today.getMonth() &&
                             year === today.getFullYear()
-                                ? "bg-blue-300 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                                : ""
+                                ? "bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center"
+                                : "w-8 h-8 flex items-center justify-center"
                             }`}
                         >
                             {day}
@@ -105,7 +105,7 @@ export default function Calendar() {
                 </div>
             </div>
         </div>
-        <div className="p-6 w-4/5 h-4/5 shadow-lg rounded-lg">
+        <div className="p-6 w-full md:w-4/5 h-auto shadow-lg rounded-lg text-grey-500 ">
 
             {/* HEADER */}
             <div className="flex justify-between items-center mb-4">
@@ -146,7 +146,7 @@ export default function Calendar() {
                     week.map((day, j) => (
                     <div
                         key={`${i}-${j}`}
-                        className="flex justify-center border bg-gray-50"
+                        className="flex justify-center border border-gray-300 bg-gray-50"
                     >
                         {day && (
                         <span
@@ -154,7 +154,7 @@ export default function Calendar() {
                             day === today.getDate() &&
                             month === today.getMonth() &&
                             year === today.getFullYear()
-                                ? "bg-blue-500 text-yellow-200 font-bold rounded-4xl h-5 w-5 flex items-center justify-center"
+                                ? "bg-blue-500 text-white font-bold rounded-4xl h-8 w-8 flex items-center justify-center"
                                 : ""
                             }`}
                         >
