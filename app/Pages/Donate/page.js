@@ -11,10 +11,60 @@ const PAYMENT_METHODS = [
   { id: "interac", label: "Interac", logo: "/interac.svg" },
 ];
 
+// --- Validation helpers ---
+const nameOnly = (val) => val.replace(/[^a-zA-Z\s'-]/g, "");
+const digitsOnly = (val) => val.replace(/[^0-9]/g, "");
+const alphanumericSpace = (val) => val.replace(/[^a-zA-Z0-9\s]/g, "");
+const lettersAndSpaces = (val) => val.replace(/[^a-zA-Z\s]/g, "");
+const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
+const formatCardNumber = (val) => {
+  const nums = digitsOnly(val).slice(0, 16);
+  return nums.replace(/(.{4})/g, "$1 ").trim();
+};
+const formatExpiry = (val) => {
+  const nums = digitsOnly(val).slice(0, 4);
+  if (nums.length > 2) return nums.slice(0, 2) + "/" + nums.slice(2);
+  return nums;
+};
+const formatPhone = (val) => {
+  const nums = digitsOnly(val).slice(0, 10);
+  if (nums.length > 6) return nums.slice(0, 3) + "-" + nums.slice(3, 6) + "-" + nums.slice(6);
+  if (nums.length > 3) return nums.slice(0, 3) + "-" + nums.slice(3);
+  return nums;
+};
+
 export default function Donate() {
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [customAmount, setCustomAmount] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("paypal");
+
+  // Donor info
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+
+  // Card details
+  const [cardName, setCardName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+
+  // PayPal / Interac
+  const [paymentEmail, setPaymentEmail] = useState("");
+
+  // Billing address
+  const [billingFirst, setBillingFirst] = useState("");
+  const [billingLast, setBillingLast] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [province, setProvince] = useState("");
+  const [country, setCountry] = useState("");
+  const [cellNumber, setCellNumber] = useState("");
+
+  // Errors
+  const [errors, setErrors] = useState({});
 
   const total = selectedAmount || parseFloat(customAmount) || 0;
 
@@ -24,17 +74,62 @@ export default function Donate() {
     setCustomAmount(amt === selectedAmount ? "" : String(amt));
   };
   const handleCustomAmount = (val) => {
-    setCustomAmount(val);
-    setSelectedAmount(null);
+    // Allow only valid positive decimal numbers
+    if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+      setCustomAmount(val);
+      setSelectedAmount(null);
+    }
   };
+
+  const validate = () => {
+    const errs = {};
+    if (total <= 0) errs.amount = "Please enter a donation amount.";
+    if (!firstName.trim()) errs.firstName = "First name is required.";
+    if (!lastName.trim()) errs.lastName = "Last name is required.";
+    if (!email.trim()) errs.email = "Email is required.";
+    else if (!isValidEmail(email)) errs.email = "Please enter a valid email.";
+
+    if (selectedPayment === "paypal") {
+      if (!paymentEmail.trim()) errs.paymentEmail = "PayPal email is required.";
+      else if (!isValidEmail(paymentEmail)) errs.paymentEmail = "Please enter a valid PayPal email.";
+    } else if (selectedPayment === "interac") {
+      if (!paymentEmail.trim()) errs.paymentEmail = "Email or phone is required.";
+      else if (!isValidEmail(paymentEmail) && !/^\d{10}$/.test(digitsOnly(paymentEmail))) {
+        errs.paymentEmail = "Please enter a valid email or 10-digit phone number.";
+      }
+    } else {
+      if (!cardName.trim()) errs.cardName = "Name on card is required.";
+      if (digitsOnly(cardNumber).length < 13) errs.cardNumber = "Please enter a valid card number.";
+      if (!/^\d{2}\/\d{2}$/.test(expiry)) errs.expiry = "Expiry must be MM/YY.";
+      else {
+        const month = parseInt(expiry.slice(0, 2), 10);
+        if (month < 1 || month > 12) errs.expiry = "Invalid month.";
+      }
+      if (cvv.length < 3) errs.cvv = "CVV must be 3 or 4 digits.";
+    }
+
+    if (!billingFirst.trim()) errs.billingFirst = "First name is required.";
+    if (!billingLast.trim()) errs.billingLast = "Last name is required.";
+    if (!street.trim()) errs.street = "Street address is required.";
+    if (!city.trim()) errs.city = "City is required.";
+    if (!postalCode.trim()) errs.postalCode = "Postal code is required.";
+    if (!province.trim()) errs.province = "Province is required.";
+    if (!country.trim()) errs.country = "Country is required.";
+    if (cellNumber && digitsOnly(cellNumber).length < 10) errs.cellNumber = "Please enter a valid 10-digit phone number.";
+
+    return errs;
+  };
+
   const handleDonate = (e) => {
     e.preventDefault();
-    if (total <= 0) {
-      alert("Please enter a donation amount.");
-      return;
-    }
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
     alert(`Thank you for your generous donation of $${total.toFixed(2)} to PASOC!`);
   };
+
+  const errMsg = (field) =>
+    errors[field] ? <p className="text-red-500 text-xs mt-1">{errors[field]}</p> : null;
 
   // Render
   return (
@@ -64,7 +159,8 @@ export default function Donate() {
           <div className="flex items-center border border-gray-300 rounded-lg bg-white overflow-hidden">
             <span className="px-3 text-neutral-700 text-sm font-semibold border-r border-gray-300 py-2.5">$</span>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               min="0"
               placeholder="0"
               value={customAmount}
@@ -73,6 +169,7 @@ export default function Donate() {
             />
             <span className="px-3 text-neutral-700 text-sm border-l border-gray-300 py-2.5">.00</span>
           </div>
+          {errMsg("amount")}
         </div>
         {/* Donor Info */}
         <div className="mb-6">
@@ -80,13 +177,20 @@ export default function Donate() {
           <div className="mb-3">
             <label className="block text-xs text-neutral-700 mb-1">Name</label>
             <div className="grid grid-cols-2 gap-2">
-              <input type="text" placeholder="First" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
-              <input type="text" placeholder="Last" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
+              <div>
+                <input type="text" placeholder="First" value={firstName} onChange={(e) => setFirstName(nameOnly(e.target.value))} className={`border ${errors.firstName ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
+                {errMsg("firstName")}
+              </div>
+              <div>
+                <input type="text" placeholder="Last" value={lastName} onChange={(e) => setLastName(nameOnly(e.target.value))} className={`border ${errors.lastName ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
+                {errMsg("lastName")}
+              </div>
             </div>
           </div>
           <div>
             <label className="block text-xs text-neutral-700 mb-1">Email</label>
-            <input type="email" placeholder="yourname@email.com" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
+            <input type="email" placeholder="yourname@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className={`w-full border ${errors.email ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all`} />
+            {errMsg("email")}
           </div>
         </div>
         {/* Payment Method */}
@@ -119,29 +223,35 @@ export default function Donate() {
             <input
               type={selectedPayment === "paypal" ? "email" : "text"}
               placeholder={selectedPayment === "paypal" ? "PayPal Email" : "Email or Phone Number"}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all"
-              required
+              value={paymentEmail}
+              onChange={(e) => setPaymentEmail(e.target.value)}
+              className={`w-full border ${errors.paymentEmail ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all`}
             />
+            {errMsg("paymentEmail")}
           </div>
         ) : (
           <div className="mb-6">
             <h2 className="text-sm font-semibold text-neutral-900 mb-3">Card Details</h2>
             <div className="mb-3">
               <label className="block text-xs text-neutral-700 mb-1">Name on Card</label>
-              <input type="text" placeholder="Name" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all" />
+              <input type="text" placeholder="Name" value={cardName} onChange={(e) => setCardName(nameOnly(e.target.value))} className={`w-full border ${errors.cardName ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all`} />
+              {errMsg("cardName")}
             </div>
             <div className="mb-3">
               <label className="block text-xs text-neutral-700 mb-1">Card Number</label>
-              <input type="text" placeholder="xxxx xxxx xxxx xxxx" maxLength={19} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all" />
+              <input type="text" inputMode="numeric" placeholder="xxxx xxxx xxxx xxxx" maxLength={19} value={cardNumber} onChange={(e) => setCardNumber(formatCardNumber(e.target.value))} className={`w-full border ${errors.cardNumber ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all`} />
+              {errMsg("cardNumber")}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-neutral-700 mb-1">Expiry Date</label>
-                <input type="text" placeholder="MM/YY" maxLength={5} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all" />
+                <input type="text" inputMode="numeric" placeholder="MM/YY" maxLength={5} value={expiry} onChange={(e) => setExpiry(formatExpiry(e.target.value))} className={`w-full border ${errors.expiry ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all`} />
+                {errMsg("expiry")}
               </div>
               <div>
                 <label className="block text-xs text-neutral-700 mb-1">CVV</label>
-                <input type="text" placeholder="xxx" maxLength={4} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all" />
+                <input type="text" inputMode="numeric" placeholder="xxx" maxLength={4} value={cvv} onChange={(e) => setCvv(digitsOnly(e.target.value).slice(0, 4))} className={`w-full border ${errors.cvv ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white placeholder-neutral-400 transition-all`} />
+                {errMsg("cvv")}
               </div>
             </div>
           </div>
@@ -152,25 +262,45 @@ export default function Donate() {
           <div className="mb-3">
             <label className="block text-xs text-neutral-700 mb-1">Name</label>
             <div className="grid grid-cols-2 gap-2">
-              <input type="text" placeholder="First" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
-              <input type="text" placeholder="Last" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
+              <div>
+                <input type="text" placeholder="First" value={billingFirst} onChange={(e) => setBillingFirst(nameOnly(e.target.value))} className={`border ${errors.billingFirst ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
+                {errMsg("billingFirst")}
+              </div>
+              <div>
+                <input type="text" placeholder="Last" value={billingLast} onChange={(e) => setBillingLast(nameOnly(e.target.value))} className={`border ${errors.billingLast ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
+                {errMsg("billingLast")}
+              </div>
             </div>
           </div>
           <div className="mb-3">
             <label className="block text-xs text-neutral-700 mb-1">Address</label>
-            <input type="text" placeholder="Street" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all mb-2" />
+            <input type="text" placeholder="Street" value={street} onChange={(e) => setStreet(e.target.value)} className={`w-full border ${errors.street ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all mb-2`} />
+            {errMsg("street")}
             <div className="grid grid-cols-2 gap-2 mb-2">
-              <input type="text" placeholder="City" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
-              <input type="text" placeholder="Postal Code" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
+              <div>
+                <input type="text" placeholder="City" value={city} onChange={(e) => setCity(lettersAndSpaces(e.target.value))} className={`border ${errors.city ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
+                {errMsg("city")}
+              </div>
+              <div>
+                <input type="text" placeholder="Postal Code" value={postalCode} onChange={(e) => setPostalCode(alphanumericSpace(e.target.value).toUpperCase().slice(0, 7))} className={`border ${errors.postalCode ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
+                {errMsg("postalCode")}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <input type="text" placeholder="Province" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
-              <input type="text" placeholder="Country" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
+              <div>
+                <input type="text" placeholder="Province" value={province} onChange={(e) => setProvince(lettersAndSpaces(e.target.value))} className={`border ${errors.province ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
+                {errMsg("province")}
+              </div>
+              <div>
+                <input type="text" placeholder="Country" value={country} onChange={(e) => setCountry(lettersAndSpaces(e.target.value))} className={`border ${errors.country ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
+                {errMsg("country")}
+              </div>
             </div>
           </div>
           <div>
             <label className="block text-xs text-neutral-700 mb-1">Cell Number</label>
-            <input type="tel" placeholder="xxx-xxx-xxxx" className="w-64 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
+            <input type="tel" inputMode="numeric" placeholder="xxx-xxx-xxxx" value={cellNumber} onChange={(e) => setCellNumber(formatPhone(e.target.value))} className={`w-64 border ${errors.cellNumber ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all`} />
+            {errMsg("cellNumber")}
           </div>
         </div>
         {/* Total & Submit */}
