@@ -1,24 +1,27 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 
-export default function News() {
+export default function Motion() {
+    const router = useRouter();
+
     return (
         <main>
             {/* HERO */}
             <HeroSection
-                title="News & Updates"
-                description="Stay tuned for the latest news and updates from PASOC!"
+                title="PASOC in Motion"
+                description="Here are some Pangasinanese projects that we’ve been up to. Wanna help fund our projects?"
             />
-            {/* NEWS */}
+            {/* MOTION */}
             <section className="bg-neutral-100 py-24 px-6">
                 <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
                 <div className="flex flex-col gap-6" onClick={() => router.push('/About')}>
                     <h2 className="text-4xl font-bold text-neutral-900">
-                    News Article
+                    Event Recap
                     </h2>
                     <p className="text-neutral-700 leading-relaxed text-lg">
-                    Article. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel sapien augue. Donec in nunc sed enim efficitur efficitur. Donec eget ligula a enim efficitur efficitur.
+                    Event description. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel sapien augue. Donec in nunc sed enim efficitur efficitur. Donec eget ligula a enim efficitur efficitur.
                     </p>
                 </div>
 
