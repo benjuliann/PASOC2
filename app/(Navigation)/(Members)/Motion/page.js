@@ -2,10 +2,7 @@
 
 import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 
-export default function Profile() {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
-
+export default function Motion() {
     return (
         <main>
             {/* HERO */}
