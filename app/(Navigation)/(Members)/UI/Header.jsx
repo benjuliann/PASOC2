@@ -9,7 +9,7 @@ const navLinks = [
   { label: "Home", href: "/" },
   // these two are placeholders; no dedicated pages exist yet
   { label: "PASOC in Motion", href: "#" },
-  { label: "News", href: "#" },
+  { label: "News", href: "/News" },
   { label: "Events", href: "/Events" },
   { label: "About", href: "/About" },
   { label: "Donate", href: "/Donate" },
