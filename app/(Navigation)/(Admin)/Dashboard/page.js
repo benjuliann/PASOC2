@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 
 import { Landmark, CalendarDays, Users, Image, Handshake, FolderCog } from "lucide-react";
 
@@ -26,10 +27,10 @@ function StatCard({ label, value }) {
       boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
       display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
     }}>
-      <span style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, color: "#1a1a1a" }}>
+      <span style={{ fontFamily: "Instrument Serif, serif", fontSize: 16, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, color: "#1a1a1a" }}>
         {label}
       </span>
-      <span style={{ fontFamily: "Georgia, serif", fontSize: 30, fontWeight: 700, color: "#1a1a1a", marginTop: 4 }}>
+      <span style={{ fontFamily: "Instrument Serif, serif", fontSize: 30, fontWeight: 700, color: "#1a1a1a", marginTop: 4 }}>
         {value}
       </span>
     </div>

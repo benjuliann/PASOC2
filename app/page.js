@@ -84,8 +84,8 @@ export default function HomePage() {
       </section>
 
       {/* EVENTS */}
-      <section className="bg-white py-24 px-6 text-neutral-900">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
+      <section className="bg-white py-24 px-6 text-neutral-900" >
+        <div className="max-w-6xl mx-auto flex flex-col gap-12" onClick={() => router.push('/Events')}>
           <h2 className="text-3xl font-bold text-neutral-900">
             Upcoming Events
           </h2>

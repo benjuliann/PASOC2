@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 
 export default function Motion() {
+    const router = useRouter();
 
     return (
         <main>
