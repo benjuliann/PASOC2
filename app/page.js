@@ -3,12 +3,12 @@
 import { useRouter } from "next/navigation";
 import { HeroSection } from "./(Navigation)/(Members)/UI/HeroSection";
 
+
 export default function HomePage() {
   const router = useRouter();
 
   return (
     <main className="w-full">
-
       {/* HERO */}
       <HeroSection
 		title="Welcome to PASOC!"
