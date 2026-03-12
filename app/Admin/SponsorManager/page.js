@@ -5,8 +5,8 @@ import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import { Header } from "../../(Navigation)/(Admin)/UI/Header";
 import { Footer } from "../../(Navigation)/(Admin)/UI/Footer";
-import CurrentSponsorCard from "./CurrentSponsorCard";
-import PreviousSponsorCard from "./PreviousSponsorCard";
+import CurrentSponsorCard from "../../(Navigation)/(Admin)/UI/CurrentSponsorCard";
+import PreviousSponsorCard from "../../(Navigation)/(Admin)/UI/PreviousSponsorCard";
 
 export default function SponsorManagerPage() {
 	const initialCurrentSponsors = [
