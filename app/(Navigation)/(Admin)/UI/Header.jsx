@@ -65,7 +65,7 @@ export function Header() {
             className="object-contain shrink-0"
           />
           <span
-            className="text-white leading-snug break-words"
+            className="text-white leading-snug wrap-break-word"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "clamp(1rem, 2.5vw, 1.75rem)",
@@ -80,7 +80,7 @@ export function Header() {
 
           {/* Search - desktop only, expands on click */}
           <div
-            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border-1 border-zinc-600 bg-gray-200 cursor-pointer overflow-hidden transition-all duration-300"
+            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border border-zinc-600 bg-gray-200 cursor-pointer overflow-hidden transition-all duration-300"
             style={{ width: searchOpen ? 280 : 44 }}
             onClick={() => setSearchOpen((o) => !o)}
           >
