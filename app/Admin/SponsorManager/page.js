@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { Plus, X } from "lucide-react";
+import Image from "next/image";
 import { Header } from "../../(Navigation)/(Admin)/UI/Header";
 import { Footer } from "../../(Navigation)/(Admin)/UI/Footer";
-import CurrentSponsorCard from "./CurrentSponsorCard"
+import CurrentSponsorCard from "./CurrentSponsorCard";
 import PreviousSponsorCard from "./PreviousSponsorCard";
 
 export default function SponsorManagerPage() {
@@ -131,7 +132,7 @@ export default function SponsorManagerPage() {
 									newSponsor.eventSponsored.trim() ||
 									"Event Sponsored",
 								description: newSponsor.description.trim(),
-						  }
+							}
 						: sponsor,
 				),
 			);
@@ -239,22 +240,13 @@ export default function SponsorManagerPage() {
 								className="flex flex-col gap-6"
 							>
 								<div className="mx-auto flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-gray-200">
-									<div className="text-gray-500">
-										<svg
-											className="h-8 w-8"
-											fill="currentColor"
-											viewBox="0 0 20 20"
-										>
-											<path
-												fillRule="evenodd"
-												d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-												clipRule="evenodd"
-											/>
-										</svg>
-									</div>
-									<div className="mt-1 text-center text-sm text-gray-500">
-										Photo or Logo
-									</div>
+									<Image
+										src="/pasoc_logo.png"
+										alt="PASOC logo placeholder"
+										width={96}
+										height={96}
+										className="object-contain"
+									/>
 								</div>
 
 								<div className="space-y-4">
