@@ -41,20 +41,28 @@ export default function LoginPage() {
   };
 
   const handleGoogleSignIn = async () => {
+    setError("");
+    setLoading(true);
     try {
       await googleSignIn();
       router.push('/');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleFacebookSignIn = async () => {
+    setError("");
+    setLoading(true);
     try {
       await facebookSignIn();
       router.push('/');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
