@@ -6,23 +6,51 @@ import { useRouter } from "next/navigation";
 import BackButton from "../../(Members)/UI/BackButton.jsx";
 
 export default function LoginPage() {
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const router = useRouter();
   const { emailSignIn, googleSignIn, facebookSignIn } = useUserAuth();
-  const [loading, setLoading] = useState(false); //prevent multiple clicks on login button while processing
+  const [loading, setLoading] = useState(false); // Prevent multiple clicks on login button while processing
+
+  // User friendly error messages converted from firebase error codes
+  const getFirebaseErrorMessage = (code) => {
+    switch (code) {
+      case "auth/invalid-email":
+        return "Please enter a valid email address.";
+
+      case "auth/user-not-found":; 
+      case "auth/wrong-password":
+      case "auth/invalid-credential":
+        return "Incorrect email or password. Please try again.";
+
+      case "auth/too-many-requests":
+        return "Too many failed login attempts. Please try again later.";
+
+      case "auth/network-request-failed":
+        return "Network error. Please check your connection and try again.";
+
+      case "auth/popup-closed-by-user":
+        return "Login popup closed before completing. Please try again.";
+        
+      default:
+        return "An unexpected error occurred. Please try again.";
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevents resubmission if already processing
+    if (loading) return;
+
     // Basic validation
-    if (!email || !password) {
+    if (!email.trim() || !password.trim()) {
       setError("Please enter both email and password.");
       return;
     }
     // Simple email format check
-    if (!email.includes("@")) {
+    if (!email.includes("@") || !email.includes(".")) {
       setError("Please enter a valid email address.");
       return;
     }
@@ -34,7 +62,7 @@ export default function LoginPage() {
       await emailSignIn(email, password);
       router.push('/');
     } catch (err) {
-      setError(err.message);
+      setError(getFirebaseErrorMessage(err.code));
     } finally {
       setLoading(false);
     }
@@ -47,7 +75,7 @@ export default function LoginPage() {
       await googleSignIn();
       router.push('/');
     } catch (err) {
-      setError(err.message);
+      setError(getFirebaseErrorMessage(err.code));
     } finally {
       setLoading(false);
     }
@@ -60,7 +88,7 @@ export default function LoginPage() {
       await facebookSignIn();
       router.push('/');
     } catch (err) {
-      setError(err.message);
+      setError(getFirebaseErrorMessage(err.code));
     } finally {
       setLoading(false);
     }
