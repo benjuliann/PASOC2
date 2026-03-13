@@ -10,7 +10,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const router = useRouter();
-  const { user, emailSignIn, googleSignIn, facebookSignIn } = useUserAuth();
+  const { emailSignIn, googleSignIn, facebookSignIn } = useUserAuth();
+  const [loading, setLoading] = useState(false); //prevent multiple clicks on login button while processing
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,11 +28,15 @@ export default function LoginPage() {
     }
     // If everything is fine, clear the error and proceed (e.g., redirect to dashboard)
     setError("");
+    setLoading(true);
+
     try {
       await emailSignIn(email, password);
       router.push('/');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,9 +138,10 @@ export default function LoginPage() {
             {/* Button */}
             <button
               type="submit"
-              className="mt-7 w-full max-w-[300px] bg-[#7E9A45] text-white py-3 rounded-xl shadow-md hover:brightness-95 transition"
+              disabled={loading}
+              className="mt-7 w-full max-w-[300px] bg-[#7E9A45] text-white py-3 rounded-xl shadow-md hover:brightness-95 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Log In
+              {loading ? "Logging in..." : "Log In"}
             </button>
 
             {/* Sign up */}
