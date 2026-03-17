@@ -7,7 +7,7 @@ export async function GET() {
     const connection = await pool.getConnection();
     connection.release();
 
-    const [rows] = await pool.query("SELECT * FROM GuestUsers ORDER BY id DESC");
+    const [rows] = await pool.query("SELECT * FROM GuestUsers ORDER BY created_at DESC");
 
     return NextResponse.json({
       success: true,
