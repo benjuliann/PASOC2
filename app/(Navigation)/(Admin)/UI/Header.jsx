@@ -5,14 +5,13 @@ import Image from "next/image";
 import { Search, User, Menu, X } from "lucide-react";
 
 const navLinks = [
-  // these are placeholders; no dedicated pages exist yet
-  { label: "Dashboard", href: "#" },
-  { label: "Donations", href: "#" },
-  { label: "Events", href: "#" },
-  { label: "Members", href: "#" },
-  { label: "Galleries", href: "#" },
-  { label: "Sponsors", href: "#" },
-  { label: "Reports", href: "#" },
+  { label: "Dashboard", href: "/Admin/Dashboard" },
+  { label: "Donations", href: "/Admin/DonationManager" },
+  { label: "Events", href: "/Admin/EventManager" },
+  { label: "Members", href: "/Admin/MemberManager" },
+  { label: "Galleries", href: "/Admin/GalleryManager" },
+  { label: "Sponsors", href: "/Admin/SponsorManager" },
+  { label: "Reports", href: "/Admin/Reports" },
   { label: "Edit Pages", href: "#" }
 ];
 

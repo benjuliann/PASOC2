@@ -30,7 +30,7 @@ export default function Profile() {
                                 <p className="text-lg text-black">
                                     Name: {user?.displayName || "John Doe"} <br />
                                     Email: {user?.email || "john.doe@example.com"} <br />
-                                    Membership Status: Active <br />
+                                    Status: Guest <br />
                                     Join Date: January 1, 2020
                                 </p>
                             </div>

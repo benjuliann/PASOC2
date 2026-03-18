@@ -1,13 +1,37 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { HeroSection } from "./(Navigation)/(Members)/UI/HeroSection";
+import { ReadMore } from "./(Navigation)/(Members)/UI/ReadMoreNews";
+import { FloatingButton } from "./(Navigation)/(Members)/UI/FloatingButton";
+
 
 export default function HomePage() {
   const router = useRouter();
+  const [extend, setExtend] = useState(false);
+  const [selectedNews, setSelectedNews] = useState(null);
+  {/* Sample news data; in a real app, this would likely come from the facebook api or the database */}
+  const news = [
+    {
+      title: "2026 Scholarship Awardees",
+      description: "Congratulations to this year’s recipients recognized for academic excellence, leadership, and community involvement.",
+    },
+    {
+      title: "Summer Picnic — Stampede Weekend",
+      description: "Join us for a fun-filled day of food, games, and community bonding at our annual summer picnic during Stampede weekend.",
+    },
+    {
+      title: "Annual Camping Weekend",
+      description: "Reconnect with nature and fellow members at our annual camping weekend, featuring outdoor activities and campfire stories.",
+    },
+  ];
+
+
 
   return (
     <main className="w-full">
+      <FloatingButton />
 
       {/* HERO */}
       <HeroSection
@@ -38,31 +62,42 @@ export default function HomePage() {
       {/* NEWS */}
       <section className="bg-white py-24 px-6 text-neutral-900">
         <div className="max-w-6xl mx-auto flex flex-col gap-12">
-          <h2 className="text-3xl font-bold text-neutral-900">
-            Latest News
-          </h2>
+          <h2 className="text-3xl font-bold">Latest News</h2>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((item) => (
+            {news.map((item, index) => (
               <div
-                key={item}
+                key={index}
                 className="bg-neutral-100 p-8 rounded-2xl transition-all duration-200 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)]"
               >
                 <h3 className="text-xl font-semibold text-primary-600 mb-4">
-                  2026 Scholarship Awardees
+                  {item.title}
                 </h3>
-                <p className="text-neutral-700 text-base leading-relaxed mb-6">
-                  Congratulations to this year’s recipients recognized for
-                  academic excellence, leadership, and community involvement.
+
+                <p className="text-neutral-700 leading-relaxed mb-6">
+                  {item.description}
                 </p>
-                <span className="text-primary-600 font-semibold text-sm hover:underline cursor-pointer">
+
+                <button
+                  className="text-primary-600 font-semibold text-sm hover:underline"
+                  onClick={() => setSelectedNews(item) && setExtend(true)}
+                >
                   Read more →
-                </span>
+                </button>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* MODEL */}
+      {selectedNews && (
+        <ReadMore
+          Title={selectedNews.title}
+          Description={selectedNews.description}
+          onCancel={() => setSelectedNews(null) && setExtend(false)}
+        />
+      )}
 
       {/* SCHOLARSHIP FEATURE */}
       <section className="bg-primary-50 py-32 px-6 text-neutral-900">
@@ -84,8 +119,8 @@ export default function HomePage() {
       </section>
 
       {/* EVENTS */}
-      <section className="bg-white py-24 px-6 text-neutral-900">
-        <div className="max-w-6xl mx-auto flex flex-col gap-12">
+      <section className="bg-white py-24 px-6 text-neutral-900" >
+        <div className="max-w-6xl mx-auto flex flex-col gap-12" onClick={() => router.push('/Events')}>
           <h2 className="text-3xl font-bold text-neutral-900">
             Upcoming Events
           </h2>
@@ -124,7 +159,10 @@ export default function HomePage() {
             community engagement, and lifelong friendships.
           </p>
 
-          <button className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200">
+          <button 
+            onClick={() => router.push("/Login/Membership")}
+            className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200"
+          >
             Become a Member
           </button>
         </div>
