@@ -2,38 +2,55 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useUserAuth } from "../../../_utils/auth-context";
+import { useRouter } from "next/navigation";
+
 import { Divider } from "../Membership/components/FormUI";
 import LoginPageTemp from "../components/LoginPageTemp";
 import InputFields from "../components/InputFields";
 import PasswordField from "../components/PasswordField";
 import LoginSubmitButton from "../components/LoginSubmitButton";
 
+import {
+  getFirebaseErrorMessage,
+  validateLoginForm,
+} from "../../../_utils/loginHelpers";
+
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false); 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const { emailSignIn } = useUserAuth();
+  const router = useRouter();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newErrors = {};
+    if (loading) return;
 
-    if (!email) {
-      newErrors.email = "Email is required.";
-    } else if (!email.includes("@") || (!email.includes("."))) {
-      newErrors.email = "Please enter a valid email address.";
-    }
-
-    if (!password) {
-      newErrors.password = "Password is required.";
-    }
-
+    // Field-level validation from utils
+    const newErrors = validateLoginForm(email, password);
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      console.log("Form valid, submit login");
+    if (Object.keys(newErrors).length > 0) return;
+
+    setLoading(true);
+
+    try {
+      await emailSignIn(email, password);
+
+      // 🔐 Later you can add role check here (admin only)
+      router.push("/Admin/Dashboard");
+    } catch (err) {
+      // Firebase error handling
+      setErrors({
+        general: getFirebaseErrorMessage(err.code),
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,7 +82,7 @@ export default function AdminLoginPage() {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              setErrors({ ...errors, email: "" });
+              setErrors({ ...errors, email: "", general: "" });
             }}
             error={errors.email}
           />
@@ -73,21 +90,30 @@ export default function AdminLoginPage() {
           <PasswordField
             placeholder="Admin Password"
             value={password}
+            type={showPassword ? "text" : "password"} // 👈 toggle
+            onToggle={() => setShowPassword(!showPassword)} // 👈 toggle button
             onChange={(e) => {
               setPassword(e.target.value);
-              setErrors({ ...errors, password: "" });
+              setErrors({ ...errors, password: "", general: "" });
             }}
             error={errors.password}
           />
 
+          {/* General error (Firebase, etc) */}
+          {errors.general && (
+            <div className="rounded-lg bg-red-100 border border-red-300 text-red-700 text-sm px-4 py-2 text-center">
+              {errors.general}
+            </div>
+          )}
+
           <div className="flex items-center justify-end text-xs text-black/70">
-            <a href="#" className="hover:underline">
+            <Link href="#" className="hover:underline">
               Forgot Password?
-            </a>
+            </Link>
           </div>
         </div>
 
-        <LoginSubmitButton>
+        <LoginSubmitButton loading={loading}>
           Access Admin Portal
         </LoginSubmitButton>
       </form>

@@ -1,47 +1,21 @@
 "use client";
-import Link from "next/link";
 import { useState } from "react";
 import { useUserAuth } from '../../../_utils/auth-context';
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import LoginPageTemp from "../components/LoginPageTemp";
 import InputFields from "../components/InputFields";
 import PasswordField from "../components/PasswordField";
 import LoginSubmitButton from "../components/LoginSubmitButton";
 import SocialLoginButtons from "../components/SocialLoginButtons";
+import { getFirebaseErrorMessage, validateLoginForm } from "../../../_utils/loginHelpers";
 
 export default function LoginPage() {
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const router = useRouter();
   const { emailSignIn, googleSignIn, facebookSignIn } = useUserAuth();
   const [loading, setLoading] = useState(false); // Prevent multiple clicks on login button while processing
-
-  // User friendly error messages converted from firebase error codes
-  const getFirebaseErrorMessage = (code) => {
-    switch (code) {
-      case "auth/invalid-email":
-        return "Please enter a valid email address.";
-
-      case "auth/user-not-found":; 
-      case "auth/wrong-password":
-      case "auth/invalid-credential":
-        return "Incorrect email or password. Please try again.";
-
-      case "auth/too-many-requests":
-        return "Too many failed login attempts. Please try again later.";
-
-      case "auth/network-request-failed":
-        return "Network error. Please check your connection and try again.";
-
-      case "auth/popup-closed-by-user":
-        return "Login popup closed before completing. Please try again.";
-        
-      default:
-        return "An unexpected error occurred. Please try again.";
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,16 +23,13 @@ export default function LoginPage() {
     // Prevents resubmission if already processing
     if (loading) return;
 
-    // Basic validation
-    if (!email.trim() || !password.trim()) {
-      setError("Please enter both email and password.");
+    // Run shared validation from utils
+    const validationError = validateLoginForm(email, password);
+    if (validationError) {
+      setError(validationError);
       return;
     }
-    // Simple email format check
-    if (!email.includes("@") || !email.includes(".")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
+
     // If everything is fine, clear the error and proceed (e.g., redirect to dashboard)
     setError("");
     setLoading(true);
@@ -164,7 +135,7 @@ export default function LoginPage() {
 
         {/* Sign up */}
         <a
-          href="#"
+          href="/Login/Membership"
           className="mt-4 text-sm text-blue-700 font-semibold hover:underline"
         >
           Sign Up
