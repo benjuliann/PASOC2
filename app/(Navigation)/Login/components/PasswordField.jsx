@@ -8,19 +8,19 @@ export default function PasswordField({
   value,
   onChange,
   error = "",
+  children,
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div>
       <div className="relative">
-
         <input
           type={showPassword ? "text" : "password"}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className={`w-full rounded-xl border bg-white px-5 py-3 pr-12 text-left text-sm text-neutral-800 outline-none focus:ring-2 pr-14
+          className={`w-full rounded-xl border bg-white px-5 py-3 pr-14 text-left text-sm text-neutral-800 outline-none focus:ring-2
           ${
             error
               ? "border-red-400 focus:ring-red-200"
@@ -28,7 +28,6 @@ export default function PasswordField({
           }`}
         />
 
-        {/* Eye button */}
         <button
           type="button"
           aria-label="Show password"
@@ -41,14 +40,9 @@ export default function PasswordField({
         >
           <Eye size={18} />
         </button>
-
       </div>
 
-      {error && (
-        <p className="text-red-600 text-xs mt-2 text-center">
-          {error}
-        </p>
-      )}
+      {children}
     </div>
   );
 }
