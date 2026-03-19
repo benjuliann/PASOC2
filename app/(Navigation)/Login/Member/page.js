@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useUserAuth } from '../../../_utils/auth-context';
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import LoginPageTemp from "../components/LoginPageTemp";
 import InputFields from "../components/InputFields";
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const { emailSignIn, googleSignIn, facebookSignIn } = useUserAuth();
   const [loading, setLoading] = useState(false); // Prevent multiple clicks on login button while processing
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
