@@ -2,20 +2,32 @@ import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 
 async function getOfficers() {
     try {
-        const res = await fetch("http://localhost:3000/api/Database/About", {
-            cache: "no-store" // prevents stale data
-        });
+
+        const baseURL =
+            process.env.NEXT_PUBLIC_BASE_URL ||
+            "http://localhost:3000";
+
+        const res = await fetch(
+            `${baseURL}/api/Database/About`,
+            {
+                cache:"no-store"
+            }
+        );
 
         if (!res.ok) {
             throw new Error("Failed to fetch officers");
         }
 
         const data = await res.json();
+
         return data.data || [];
 
     } catch (error) {
+
         console.error("Officer fetch error:", error);
+
         return [];
+
     }
 }
 
@@ -118,9 +130,7 @@ export default async function AboutUs() {
                     </ul>
 
                 </div>
-
             </section>
-
         </main>
     );
 }
