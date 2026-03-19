@@ -21,6 +21,8 @@ export default function MembershipForm() {
         "city",
         "postalCode",
         "email",
+        "password",
+        "confirmPassword",
         "phone",
         "emailNotifications",
         "agreedToPrivacy",
@@ -38,6 +40,8 @@ export default function MembershipForm() {
     city: "",
     postalCode: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     phone: "",
     currentOrgInvolvement: "",
     positionsHeld: "",
@@ -52,7 +56,7 @@ export default function MembershipForm() {
   const [touched, setTouched] = useState({});
 
   // Validation 
-  const validateField = (key, value) => {
+  const validateField = (key, value, currentForm = form) => {
     const v = typeof value === "string" ? value.trim() : value;
 
     if (REQUIRED.has(key)) {
@@ -81,6 +85,21 @@ export default function MembershipForm() {
       }
     }
 
+    // Password validation (min 8 chars, at least one uppercase letter, one lowercase letter, one number, and one special char)
+    if (key === "password" && v) {
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(v)) {
+        return "Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.";
+      }
+    }
+
+    // Confirm Password validation
+    if (key === "confirmPassword" && v) {
+      if (v !== currentForm.password) {
+        return "Passwords do not match.";
+      }
+    }
+
     // Phone validation (10 digits)
     if (key === "phone" && v) {
       const digits = v.replace(/\D/g, "");
@@ -99,6 +118,20 @@ export default function MembershipForm() {
 
   return "";
 };
+
+  const getPasswordChecks = (password) => {
+    const value = String(password || "");
+
+    return {
+      minLength: value.length >= 8,
+      hasUpper: /[A-Z]/.test(value),
+      hasLower: /[a-z]/.test(value),
+      hasNumber: /\d/.test(value),
+      hasSpecial: /[@$!%*?&]/.test(value),
+    };
+  };
+
+  const passwordChecks = getPasswordChecks(form.password);
 
   const validateAll = (nextForm) => {
     const nextErrors = {};
@@ -199,24 +232,44 @@ const sanitizeByKey = (key, raw) => {
       const nextForm = { ...prev, [key]: value };
 
       setTouched((t) => ({ ...t, [key]: true }));
-      setErrors((errs) => ({ ...errs, [key]: validateField(key, value) }));
+      
+      setErrors((errs) => {
+        const updatedErrors = {
+          ...errs,
+          [key]: validateField(key, value, nextForm),
+        };
 
-      if (key === "hasChildren" && value === "no") {
-        setErrors((errs) => {
-          const copy = { ...errs };
-          Object.keys(copy).forEach((k) => k.startsWith("dep_") && delete copy[k]);
-          return copy;
-        });
-        setTouched((t) => {
-          const copy = { ...t };
-          Object.keys(copy).forEach((k) => k.startsWith("dep_") && delete copy[k]);
-          return copy;
-        });
-      }
+        if (key === "password") {
+          updatedErrors.confirmPassword = validateField(
+            "confirmPassword",
+            nextForm.confirmPassword,
+            nextForm
+          );
+        }
 
-      return nextForm;
-    });
-  };
+        if (key === "confirmPassword") {
+          updatedErrors.password = validateField("password", nextForm.password, nextForm);
+        }
+
+        return updatedErrors;
+      });
+        if (key === "hasChildren" && value === "no") {
+      setErrors((errs) => {
+        const copy = { ...errs };
+        Object.keys(copy).forEach((k) => k.startsWith("dep_") && delete copy[k]);
+        return copy;
+      });
+
+      setTouched((t) => {
+        const copy = { ...t };
+        Object.keys(copy).forEach((k) => k.startsWith("dep_") && delete copy[k]);
+        return copy;
+      });
+    }
+
+    return nextForm;
+  });
+};
 
   const updateDependant = (index, field, rawValue) => {
   const value = sanitizeByKey(field === "birthday" ? "birthday" : field, rawValue);
@@ -356,6 +409,7 @@ const sanitizeByKey = (key, raw) => {
               touched={touched}
               REQUIRED={REQUIRED}
               setField={setField}
+              passwordChecks={passwordChecks}
             />
 
             {/* Dependants */}
