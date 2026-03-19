@@ -34,9 +34,12 @@ export function HeroSection({ title, description }) {
               >
                 Become a Member
               </Link>
-            <button className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white">
-              Guest Form
-            </button>
+              <Link
+                href="/Guest"
+                className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white"
+              >
+                Guest Form
+              </Link>
           </div>
         )}
       </div>
