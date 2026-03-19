@@ -116,3 +116,52 @@ export async function POST(request) {
     );
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const memberID = searchParams.get("memberID");
+    if (!memberID) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing required query parameter: memberID",
+        },
+        { status: 400 }
+      );
+    }
+
+    const [result] = await pool.query(
+      "DELETE FROM MemberInfo WHERE memberID = ?",
+      [memberID]
+    );
+    if (result.affectedRows === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No member found with the provided memberID",
+        },
+        { status: 404 }
+      );
+    } else {
+      return NextResponse.json({
+        success: true,
+        message: "Member deleted",
+      });
+    }
+  } catch (err) {
+    console.error("[DELETE /api/Database/MemberInfo]", err);
+    return NextResponse.json(
+      {
+        success: false,
+        error: err.message,
+        code: err.code || null,
+        hint:
+          err.code === "ER_NO_SUCH_TABLE"
+            ? "Table does not exist."
+            : "Check server logs.",
+      },
+      { status: 500 }
+    );
+  }
+}
