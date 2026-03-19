@@ -60,7 +60,6 @@ export default function MemberInfoSection({ form, errors, touched, REQUIRED, set
             value={form.password}
             onChange={setField("password")}
             error={touched.password ? errors.password : ""}
-            showError={false}
           >
             <div className="mt-2 space-y-1 text-xs">
               <p className={passwordChecks.minLength ? "text-green-600" : "text-black/60"}>
