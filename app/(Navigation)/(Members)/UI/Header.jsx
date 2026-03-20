@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, User, Menu, X } from "lucide-react";
+import { User, Menu, X } from "lucide-react";
 import { useUserAuth } from '../../../_utils/auth-context';
 
 const navLinks = [
@@ -17,7 +17,6 @@ const navLinks = [
 
 export function Header() {
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const [searchOpen, setSearchOpen] = React.useState(false);
   const [hoveredNav, setHoveredNav] = React.useState(null);
   const [visible, setVisible] = React.useState(true);
   const lastScrollY = React.useRef(0);
@@ -79,25 +78,9 @@ export function Header() {
         {/* Right-side actions */}
         <div className="flex items-center gap-2 shrink-0">
 
-          {/* Search - desktop only, expands on click */}
-          <div
-            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl border-1 border-zinc-600 bg-gray-200 cursor-pointer overflow-hidden transition-all duration-300"
-            style={{ width: searchOpen ? 280 : 44 }}
-            onClick={() => setSearchOpen((o) => !o)}
-          >
-            <Search size={22} className="text-zinc-500 shrink-0" strokeWidth={2} />
-            {searchOpen && (
-              <input
-                autoFocus
-                placeholder="Search PASOC…"
-                className="bg-transparent outline-none text-sm text-black w-full"
-              />
-            )}
-          </div>
-
           {
             user ? (
-              <Link href="/Profile" className="p-2 rounded-full bg-gray-200 text-zinc-600 hover:bg-gray-300 transition">
+              <Link href={`/Profile`} className="p-2 rounded-full bg-gray-200 text-zinc-600 hover:bg-gray-300 transition">
                 <User size={20} /> 
               </Link>
             ) : (

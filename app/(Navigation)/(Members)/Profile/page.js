@@ -1,7 +1,7 @@
 "use client";
 
 import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
-import { useUserAuth } from '../../../_utils/auth-context';
+import { useUserAuth } from "../../../_utils/auth-context";
 import { DeletionConfirmation } from "../UI/DeletionConfirmation";
 import { useState, useEffect } from "react";
 import { Link } from "lucide-react";

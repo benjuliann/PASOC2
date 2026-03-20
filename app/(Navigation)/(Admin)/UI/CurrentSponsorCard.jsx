@@ -27,13 +27,9 @@ export default function CurrentSponsorCard({
 						{sponsor.name}
 					</h3>
 
-					<p className="text-sm text-gray-600 italic mb-3">
-						{sponsor.eventSponsored || "Event Sponsored"}
-					</p>
-
 					<div className="bg-yellow-200 rounded-md p-3">
 						<h4 className="font-semibold text-gray-800 mb-2">
-							About Sponsor
+							Description:
 						</h4>
 						<p className="text-sm text-gray-700">
 							{sponsor.description ||
@@ -46,6 +42,13 @@ export default function CurrentSponsorCard({
 			<div className="mt-4 flex flex-wrap justify-end gap-2">
 				<button
 					type="button"
+					onClick={() => onEdit(sponsor.id)}
+					className="rounded-md bg-[#556B2F] px-3 py-1 text-sm font-semibold text-white hover:bg-[#6b8e23]"
+				>
+					Edit
+				</button>
+				<button
+					type="button"
 					onClick={() => onDelete(sponsor.id)}
 					className="rounded-md bg-red-700 px-3 py-1 text-sm font-semibold text-white hover:bg-red-800"
 				>
@@ -53,17 +56,10 @@ export default function CurrentSponsorCard({
 				</button>
 				<button
 					type="button"
-					onClick={() => onEdit(sponsor.id)}
-					className="rounded-md bg-[#556B2F] px-3 py-1 text-sm font-semibold text-white hover:bg-green-800"
-				>
-					Edit
-				</button>
-				<button
-					type="button"
 					onClick={() => onMoveToPrevious(sponsor.id)}
 					className="rounded-md bg-gray-700 px-3 py-1 text-sm font-semibold text-white hover:bg-gray-800"
 				>
-					Move to previous
+					Move to Previous
 				</button>
 			</div>
 		</div>
