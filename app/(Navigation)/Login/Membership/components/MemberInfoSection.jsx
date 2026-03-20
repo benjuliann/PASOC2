@@ -8,7 +8,7 @@ export default function MemberInfoSection({ form, errors, touched, REQUIRED, set
     { key: "firstName", label: "First Name" },
     { key: "lastName", label: "Last Name" },
     { key: "preferredName", label: "Preferred Name", placeholder: "If different from first name" },
-    { key: "birthday", label: "Birthday", placeholder: "MM/DD/YYYY" },
+    { key: "birthday", label: "Birthday", type: "date", placeholder: "YYYY-MM-DD" },
   ];
 
   const addressFields = [
