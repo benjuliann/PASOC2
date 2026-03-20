@@ -36,7 +36,7 @@ export default function MemberManagerPage() {
             <h2 className="text-3xl font-serif text-[#556B2F] text-center mx-4">MEMBERSHIP MANAGER</h2>
             <hr className="flex-1 border-[#556B2F] border-t-2" />
           </div>
-          <div className="flex justify-center gap-12 mt-24">
+          <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 mt-12 md:mt-24 w-full items-center">
             {memberTiles.map(tile => (
               <MemberTile key={tile.label} {...tile} />
             ))}
