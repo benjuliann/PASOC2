@@ -27,10 +27,6 @@ export default function CurrentSponsorCard({
 						{sponsor.name}
 					</h3>
 
-					<p className="text-sm text-gray-600 italic mb-3">
-						{sponsor.eventSponsored || "Event Sponsored"}
-					</p>
-
 					<div className="bg-yellow-200 rounded-md p-3">
 						<h4 className="font-semibold text-gray-800 mb-2">
 							About Sponsor
@@ -54,7 +50,7 @@ export default function CurrentSponsorCard({
 				<button
 					type="button"
 					onClick={() => onEdit(sponsor.id)}
-					className="rounded-md bg-[#556B2F] px-3 py-1 text-sm font-semibold text-white hover:bg-green-800"
+					className="rounded-md bg-[#556B2F] px-3 py-1 text-sm font-semibold text-white hover:bg-[#6b8e23]"
 				>
 					Edit
 				</button>

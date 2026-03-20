@@ -13,14 +13,12 @@ export default function SponsorManagerPage() {
 		{
 			id: 1,
 			name: "Sponsor Name",
-			eventSponsored: "Event Sponsored",
 			description:
 				"Information about this sponsor and their contribution to our events. This section provides details about their partnership with us.",
 		},
 		{
 			id: 2,
 			name: "Sponsor Name",
-			eventSponsored: "Event Sponsored",
 			description:
 				"Information about this sponsor and their contribution to our events. This section provides details about their partnership with us.",
 		},
@@ -41,7 +39,6 @@ export default function SponsorManagerPage() {
 
 	const [newSponsor, setNewSponsor] = useState({
 		name: "",
-		eventSponsored: "",
 		description: "",
 	});
 
@@ -58,7 +55,6 @@ export default function SponsorManagerPage() {
 		setEditingSponsorId(null);
 		setNewSponsor({
 			name: "",
-			eventSponsored: "",
 			description: "",
 		});
 	};
@@ -108,7 +104,6 @@ export default function SponsorManagerPage() {
 		setEditingSponsorId(sponsorId);
 		setNewSponsor({
 			name: sponsorToEdit.name,
-			eventSponsored: sponsorToEdit.eventSponsored || "",
 			description: sponsorToEdit.description || "",
 		});
 		setIsAddSponsorModalOpen(true);
@@ -128,9 +123,6 @@ export default function SponsorManagerPage() {
 						? {
 								...sponsor,
 								name: newSponsor.name.trim(),
-								eventSponsored:
-									newSponsor.eventSponsored.trim() ||
-									"Event Sponsored",
 								description: newSponsor.description.trim(),
 							}
 						: sponsor,
@@ -142,8 +134,6 @@ export default function SponsorManagerPage() {
 				{
 					id: Date.now(),
 					name: newSponsor.name.trim(),
-					eventSponsored:
-						newSponsor.eventSponsored.trim() || "Event Sponsored",
 					description: newSponsor.description.trim(),
 				},
 			]);
@@ -270,23 +260,6 @@ export default function SponsorManagerPage() {
 
 									<div>
 										<label
-											htmlFor="eventSponsored"
-											className="mb-1 block text-sm font-semibold text-gray-700"
-										>
-											Event Sponsored
-										</label>
-										<input
-											id="eventSponsored"
-											name="eventSponsored"
-											type="text"
-											value={newSponsor.eventSponsored}
-											onChange={handleSponsorFieldChange}
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-green-400"
-										/>
-									</div>
-
-									<div>
-										<label
 											htmlFor="description"
 											className="mb-1 block text-sm font-semibold text-gray-700"
 										>
@@ -305,7 +278,7 @@ export default function SponsorManagerPage() {
 									<div className="flex justify-end">
 										<button
 											type="submit"
-											className="rounded-md bg-[#556B2F] px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
+											className="rounded-md bg-[#556B2F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#6b8e23]"
 										>
 											{editingSponsorId
 												? "Save Changes"
