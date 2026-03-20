@@ -1,3 +1,4 @@
+
 "use client";
 import React from "react";
 import Link from "next/link";
@@ -36,7 +37,7 @@ export default function MemberManagerPage() {
             <h2 className="text-3xl font-serif text-[#556B2F] text-center mx-4">MEMBERSHIP MANAGER</h2>
             <hr className="flex-1 border-[#556B2F] border-t-2" />
           </div>
-          <div className="flex justify-center gap-12 mt-24">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-16 md:mt-24">
             {memberTiles.map(tile => (
               <MemberTile key={tile.label} {...tile} />
             ))}
