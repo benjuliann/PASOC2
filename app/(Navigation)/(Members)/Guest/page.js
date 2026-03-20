@@ -44,25 +44,12 @@ export default function GuestPage() {
           </h1>
           <p className="text-[#d4e4a8] text-sm leading-relaxed mb-8">
             Become a guest member and stay connected with the Pangasinan community in Calgary. 
-            Be the first to hear about cultural events, gatherings, and announcements.
+            Hear about our cultural events, gatherings, and announcements.
           </p>
-
-          <div className="space-y-4">
-            {[
-              { icon: "📬", text: "Event announcements & updates" },
-              { icon: "🤝", text: "Connect with the community" },
-              { icon: "🎉", text: "Invites to cultural celebrations" },
-            ].map(({ icon, text }) => (
-              <div key={text} className="flex items-center gap-3 text-sm text-[#d4e4a8]">
-                <span className="text-lg">{icon}</span>
-                <span>{text}</span>
-              </div>
-            ))}
-          </div>
 
           <div className="mt-12 pt-8 border-t border-[#6b8a3a]">
             <p className="text-xs text-[#9ab865] leading-relaxed">
-              Your information is kept private and will only be used to send you relevant PASOC communications.
+              Your information is kept private and will only be used to send you relevant PASOC announcements.
             </p>
           </div>
         </div>
@@ -90,7 +77,6 @@ export default function GuestPage() {
               </label>
               <input
                 type="text"
-                placeholder="Juan dela Cruz"
                 value={form.name}
                 onChange={handleChange("name")}
                 required
@@ -104,7 +90,6 @@ export default function GuestPage() {
               </label>
               <input
                 type="email"
-                placeholder="you@email.com"
                 value={form.email}
                 onChange={handleChange("email")}
                 required
