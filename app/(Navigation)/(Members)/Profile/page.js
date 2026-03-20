@@ -70,7 +70,7 @@ export default function Profile() {
               </h2>
               <p className="text-lg text-black">
                 Name: {member?.name || "Loading..."} <br />
-                Email: {member?.email || user.email || "Loading..."} <br />
+                Email: {member?.email || "Loading..."} <br />
                 Date of Birth: {member?.dateOfBirth || "Loading..."} <br />
                 Address: {member?.address || "Loading..."} <br />
                 Postal Code: {member?.postalCode || "Loading..."} <br />
