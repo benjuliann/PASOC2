@@ -3,8 +3,33 @@
 import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 import { useUserAuth } from '../../../_utils/auth-context';
 import { DeletionConfirmation } from "../UI/DeletionConfirmation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "lucide-react";
+
+async function getMemberInfo(userID) {
+  try {
+    const baseURL =
+      process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+    const res = await fetch(
+      `${baseURL}/api/Database/MemberInfo?uid=${userID}`,
+      {
+        cache: "no-store",
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch member info");
+    }
+
+    const data = await res.json();
+
+    return data.data?.[0] || null;
+  } catch (error) {
+    console.error("Member info fetch error:", error);
+    return null;
+  }
+}
 
 export default function Profile() {
   const { user, firebaseSignOut } = useUserAuth();
