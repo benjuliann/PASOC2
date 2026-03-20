@@ -69,27 +69,6 @@ export default function RoleSelectorPage() {
               </div>
             </Link>
 
-            <Link
-              href="/login/sponsor"
-              className="block p-5 rounded-2xl border border-gray-200 
-                         hover:border-amber-600 hover:bg-amber-50
-                         transition duration-200 group"
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="font-semibold text-lg text-gray-900">
-                    Sponsor Portal
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    View partnership opportunities and reports
-                  </p>
-                </div>
-                <span className="text-amber-600 group-hover:translate-x-1 transition">
-                  →
-                </span>
-              </div>
-            </Link>
-
           </div>
 
           {/* Footer Help */}
