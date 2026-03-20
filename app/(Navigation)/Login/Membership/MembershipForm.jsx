@@ -197,7 +197,6 @@ export default function MembershipForm() {
     });
   };
 
-  // ← UPDATED handleSubmit with Stripe
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -234,12 +233,25 @@ export default function MembershipForm() {
           amount: membershipTotal,
           type: "membership",
           metadata: {
+            type: "membership",
             first_name: form.firstName,
             last_name: form.lastName,
             email: form.email,
             phone: form.phone,
+            date_of_birth: form.birthday,
+            address: `${form.address}, ${form.city}`,
+            postal_code: form.postalCode,
             dependants: String(form.hasChildren === "yes" ? form.dependants.length : 0),
             description: pricingDescription,
+            // Dependant details
+            ...Object.fromEntries(
+              form.hasChildren === "yes"
+                ? form.dependants.flatMap((dep, i) => [
+                    [`dep_${i}_name`, `${dep.firstName} ${dep.lastName}`.trim()],
+                    [`dep_${i}_dob`, dep.birthday],
+                ])
+              : []
+            ),
           },
         }),
       });

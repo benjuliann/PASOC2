@@ -9,7 +9,7 @@ export default async function Success({ searchParams }) {
       <p className="text-neutral-600 text-sm">
         {type === "donation"
           ? "Your generous support means a lot to the Pangasinan community in Calgary."
-          : "Welcome to PASOC! You'll receive a confirmation email shortly."}
+          : "Welcome to PASOC! We look forward to having you as part of our community."}
       </p>
     </main>
   );
