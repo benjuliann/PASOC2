@@ -64,7 +64,7 @@ export function Header() {
             className="object-contain shrink-0"
           />
           <span
-            className="text-white leading-snug break-words"
+            className="text-white leading-snug wrap-break-word"
             style={{
               fontFamily: "var(--font-serif)",
               fontSize: "clamp(1rem, 2.5vw, 1.75rem)",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo,useState } from "react";
+import { useMemo, useState } from "react";
 import { Divider, SectionTitle } from "./components/FormUI";
 import MemberInfoSection from "./components/MemberInfoSection";
 import AdditionalInfoSection from "./components/AdditionalInfoSection";
@@ -9,297 +9,129 @@ import ConsentSection from "./components/ConsentSection";
 import EmailNotificationsSection from "./components/EmailNotificationsSection";
 import DependantsSection from "./components/DependantsSection";
 
+import { REQUIRED_FIELDS, initialMembershipForm} from "../../../_utils/membershipFormConfig";
+
+import { sanitizeByKey } from "../../../_utils/membershipFormSanitizers";
+
+import { getPasswordChecks, validateField, validateAll} from "../../../_utils/membershipFormValidators";
 
 export default function MembershipForm() {
-  const REQUIRED = useMemo(
-    () =>
-      new Set([
-        "firstName",
-        "lastName",
-        "birthday",
-        "address",
-        "city",
-        "postalCode",
-        "email",
-        "password",
-        "confirmPassword",
-        "phone",
-        "emailNotifications",
-        "agreedToPrivacy",
-        "hasChildren",
-      ]),
-    []
-  );
+  // Convert required fields array into a Set
+  const REQUIRED = useMemo(() => new Set(REQUIRED_FIELDS), []);
 
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    preferredName: "",
-    birthday: "",
-    address: "",
-    city: "",
-    postalCode: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-    currentOrgInvolvement: "",
-    positionsHeld: "",
-    addressPhilippines: "",
-    hasChildren: "",
-    dependants: [{ firstName: "", lastName: "", birthday: "" }],
-    emailNotifications: "",
-    agreedToPrivacy: false,
-  });
+  // Main form state
+  const [form, setForm] = useState(initialMembershipForm);
 
+  // Error state
   const [errors, setErrors] = useState({});
+
+  // Tracks whether user interacted with a field
   const [touched, setTouched] = useState({});
 
-  // Validation 
-  const validateField = (key, value, currentForm = form) => {
-    const v = typeof value === "string" ? value.trim() : value;
-
-    if (REQUIRED.has(key)) {
-      if (key === "agreedToPrivacy") {
-        if (!value) return "You must agree to continue.";
-      } else if (!v) {
-        return "Required";
-      }
-    }
-
-    // Name validation (letters, spaces, hyphen, apostrophe only)
-    if (
-      (key === "firstName" || key === "lastName" || key === "preferredName") &&
-      v
-    ) {
-      const nameRegex = /^[A-Za-z\s'-]+$/;
-      if (!nameRegex.test(v)) {
-        return "Name can only contain letters.";
-      }
-    }
-
-    // Email validation
-    if (key === "email" && v) {
-      if (!v.includes("@") || !v.includes(".")) {
-        return "Enter a valid email.";
-      }
-    }
-
-    // Password validation (min 8 chars, at least one uppercase letter, one lowercase letter, one number, and one special char)
-    if (key === "password" && v) {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(v)) {
-        return "Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.";
-      }
-    }
-
-    // Confirm Password validation
-    if (key === "confirmPassword" && v) {
-      if (v !== currentForm.password) {
-        return "Passwords do not match.";
-      }
-    }
-
-    // Phone validation (10 digits)
-    if (key === "phone" && v) {
-      const digits = v.replace(/\D/g, "");
-      if (digits.length !== 10) {
-        return "Enter a valid 10 digit phone number.";
-      }
-    }
-
-    // Canadian postal code validation (ex: T2X 1V4)
-    if (key === "postalCode" && v) {
-      const postalRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
-      if (!postalRegex.test(v)) {
-        return "Enter a valid postal code (ex: T2X 1V4).";
-      }
-    }
-
-  return "";
-};
-
-  const getPasswordChecks = (password) => {
-    const value = String(password || "");
-
-    return {
-      minLength: value.length >= 8,
-      hasUpper: /[A-Z]/.test(value),
-      hasLower: /[a-z]/.test(value),
-      hasNumber: /\d/.test(value),
-      hasSpecial: /[@$!%*?&]/.test(value),
-    };
-  };
-
-  const passwordChecks = getPasswordChecks(form.password);
-
-  const validateAll = (nextForm) => {
-    const nextErrors = {};
-
-    for (const key of REQUIRED) {
-      const msg = validateField(key, nextForm[key]);
-      if (msg) nextErrors[key] = msg;
-    }
-
-    if (nextForm.hasChildren === "yes") {
-      nextForm.dependants.forEach((d, i) => {
-        if (!String(d.firstName).trim()) nextErrors[`dep_${i}_firstName`] = "Required";
-        if (!String(d.lastName).trim()) nextErrors[`dep_${i}_lastName`] = "Required";
-        if (!String(d.birthday).trim()) nextErrors[`dep_${i}_birthday`] = "Required";
-      });
-    }
-
-    return nextErrors;
-  };
-
+  // Controls incomplete form modal
   const [showErrorModal, setShowErrorModal] = useState(false);
 
-  // input normalization / sanitization helpers 
-const stripControlChars = (s) => s.replace(/[\u0000-\u001F\u007F]/g, "");
+  // Used for password checklist display
+  const passwordChecks = getPasswordChecks(form.password);
 
-// removes obvious script-y characters; keeps normal punctuation
-const stripDangerous = (s) => s.replace(/[<>]/g, "");
-
-const normalizeWhitespace = (s) => s.replace(/\s+/g, " ").trim();
-
-const digitsOnly = (s) => s.replace(/\D/g, "");
-
-const normalizeEmail = (s) => normalizeWhitespace(s).toLowerCase();
-
-const normalizePostalCodeCA = (s) => {
-  // "t2x1v4" -> "T2X 1V4"
-  const v = normalizeWhitespace(s).toUpperCase().replace(/\s/g, "");
-  if (v.length === 6) return `${v.slice(0, 3)} ${v.slice(3)}`;
-  return v;
-};
-
-const normalizePhone = (s) => {
-  // "403.123.4567" -> "403-123-4567" (if 10 digits)
-  const d = digitsOnly(s);
-  if (d.length === 10) return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
-  return d; // keep digits only if incomplete
-};
-
-const sanitizeText = (s) =>
-  normalizeWhitespace(stripDangerous(stripControlChars(String(s ?? ""))));
-
-const toTitleCase = (s) =>
-  s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-
-const formatPhone = (value) => {
-  const digits = String(value).replace(/\D/g, "").slice(0, 10);
-
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-};
-
-// Map per-field rules
-const sanitizeByKey = (key, raw) => {
-  const base = sanitizeText(raw);
-
-  switch (key) {
-    case "email":
-      return normalizeEmail(base);
-    case "phone":
-      return formatPhone(raw);
-    case "postalCode":
-      return normalizePostalCodeCA(base);
-    case "firstName":
-    case "lastName":
-    case "preferredName":
-      return toTitleCase(base);
-    case "city":
-    case "address":
-    case "currentOrgInvolvement":
-    case "positionsHeld":
-    case "addressPhilippines":
-      return base;
-    case "birthday":
-      return base;
-    default:
-      return raw; 
-  }
-};
-  // Field setters
+  // Handles normal field changes
   const setField = (key) => (e) => {
     const isCheckbox = e.target.type === "checkbox";
     const rawValue = isCheckbox ? e.target.checked : e.target.value;
-
     const value = isCheckbox ? rawValue : sanitizeByKey(key, rawValue);
 
     setForm((prev) => {
       const nextForm = { ...prev, [key]: value };
 
       setTouched((t) => ({ ...t, [key]: true }));
-      
+
       setErrors((errs) => {
         const updatedErrors = {
           ...errs,
-          [key]: validateField(key, value, nextForm),
+          [key]: validateField(key, value, nextForm, REQUIRED),
         };
 
         if (key === "password") {
           updatedErrors.confirmPassword = validateField(
             "confirmPassword",
             nextForm.confirmPassword,
-            nextForm
+            nextForm,
+            REQUIRED
           );
         }
 
         if (key === "confirmPassword") {
-          updatedErrors.password = validateField("password", nextForm.password, nextForm);
+          updatedErrors.password = validateField(
+            "password",
+            nextForm.password,
+            nextForm,
+            REQUIRED
+          );
         }
 
         return updatedErrors;
       });
-        if (key === "hasChildren" && value === "no") {
-      setErrors((errs) => {
-        const copy = { ...errs };
-        Object.keys(copy).forEach((k) => k.startsWith("dep_") && delete copy[k]);
-        return copy;
-      });
 
-      setTouched((t) => {
-        const copy = { ...t };
-        Object.keys(copy).forEach((k) => k.startsWith("dep_") && delete copy[k]);
-        return copy;
-      });
-    }
+      if (key === "hasChildren" && value === "no") {
+        setErrors((errs) => {
+          const copy = { ...errs };
+          Object.keys(copy).forEach((k) => {
+            if (k.startsWith("dep_")) delete copy[k];
+          });
+          return copy;
+        });
 
-    return nextForm;
-  });
-};
+        setTouched((t) => {
+          const copy = { ...t };
+          Object.keys(copy).forEach((k) => {
+            if (k.startsWith("dep_")) delete copy[k];
+          });
+          return copy;
+        });
+      }
 
+      return nextForm;
+    });
+  };
+
+  // Handles dependant field changes
   const updateDependant = (index, field, rawValue) => {
-  const value = sanitizeByKey(field === "birthday" ? "birthday" : field, rawValue);
+    const value = sanitizeByKey(field === "birthday" ? "birthday" : field, rawValue);
 
-  setForm((prev) => {
-    const nextDependants = prev.dependants.map((d, i) =>
-      i === index ? { ...d, [field]: value } : d
-    );
-    const nextForm = { ...prev, dependants: nextDependants };
+    setForm((prev) => {
+      const nextDependants = prev.dependants.map((dependant, i) =>
+        i === index ? { ...dependant, [field]: value } : dependant
+      );
 
-    if (nextForm.hasChildren === "yes") {
-      const errorKey = `dep_${index}_${field}`;
-      setTouched((t) => ({ ...t, [errorKey]: true }));
-      setErrors((errs) => ({
-        ...errs,
-        [errorKey]: String(value).trim() ? "" : "Required",
-      }));
-    }
+      const nextForm = { ...prev, dependants: nextDependants };
 
-    return nextForm;
-  });
-};
+      if (nextForm.hasChildren === "yes") {
+        const errorKey = `dep_${index}_${field}`;
 
+        setTouched((t) => ({ ...t, [errorKey]: true }));
+
+        setErrors((errs) => ({
+          ...errs,
+          [errorKey]: String(value).trim() ? "" : "Required",
+        }));
+      }
+
+      return nextForm;
+    });
+  };
+
+  // Add a new dependant row
   const addDependant = () => {
     setForm((prev) => ({
       ...prev,
-      dependants: [...prev.dependants, { firstName: "", lastName: "", birthday: "" }],
+      dependants: [
+        ...prev.dependants,
+        { firstName: "", lastName: "", birthday: "" },
+      ],
     }));
   };
 
+  // Remove a dependant row
   const removeDependant = (index) => {
     setForm((prev) => ({
       ...prev,
@@ -308,22 +140,30 @@ const sanitizeByKey = (key, raw) => {
 
     setErrors((errs) => {
       const copy = { ...errs };
-      Object.keys(copy).forEach((k) => k.startsWith(`dep_${index}_`) && delete copy[k]);
+      Object.keys(copy).forEach((k) => {
+        if (k.startsWith(`dep_${index}_`)) delete copy[k];
+      });
       return copy;
     });
+
     setTouched((t) => {
       const copy = { ...t };
-      Object.keys(copy).forEach((k) => k.startsWith(`dep_${index}_`) && delete copy[k]);
+      Object.keys(copy).forEach((k) => {
+        if (k.startsWith(`dep_${index}_`)) delete copy[k];
+      });
       return copy;
     });
   };
 
-  // Submit
+  // Runs when user clicks submit
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const touchThese = {};
-    for (const key of REQUIRED) touchThese[key] = true;
+
+    for (const key of REQUIRED) {
+      touchThese[key] = true;
+    }
 
     if (form.hasChildren === "yes") {
       form.dependants.forEach((_, i) => {
@@ -335,12 +175,12 @@ const sanitizeByKey = (key, raw) => {
 
     setTouched((t) => ({ ...t, ...touchThese }));
 
-    const nextErrors = validateAll(form);
+    const nextErrors = validateAll(form, REQUIRED);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
       setShowErrorModal(true);
-      return; 
+      return;
     }
 
     alert("✅ Looks good! Continue to payment.");
@@ -412,7 +252,6 @@ const sanitizeByKey = (key, raw) => {
               passwordChecks={passwordChecks}
             />
 
-            {/* Dependants */}
             <DependantsSection
               form={form}
               errors={errors}
