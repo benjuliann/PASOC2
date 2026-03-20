@@ -3,7 +3,6 @@ import { useUserAuth } from "@/app/_utils/auth-context";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-// Function to call API for deleting member
 async function deleteMember(memberID) {
   try {
     const res = await fetch(`/api/Database/MemberInfo?memberID=${memberID}`, {

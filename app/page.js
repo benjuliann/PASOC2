@@ -55,7 +55,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="w-full h-[420px] rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]" />
+          <div className="w-full h-105 rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]" />
         </div>
       </section>
 
