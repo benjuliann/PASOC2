@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const { emailSignIn } = useUserAuth();
+  const { emailSignIn, resetPassword } = useUserAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -54,6 +54,36 @@ export default function AdminLoginPage() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        general: "Please enter your email first.",
+      }));
+      return;
+    }
+
+    try {
+      await resetPassword(email);
+      setErrors((prev) => ({
+        ...prev,
+        general: "Password reset email sent.",
+      }));
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        setErrors((prev) => ({
+          ...prev,
+          general: "No account found with that email.",
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: "Something went wrong.",
+        }));
+      }
+    }
+  };
+
   return (
     <LoginPageTemp backHref="/">
       {/* Title */}
@@ -80,21 +110,29 @@ export default function AdminLoginPage() {
             type="email"
             placeholder="Admin Email Address"
             value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setErrors({ ...errors, email: "", general: "" });
-            }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrors((prev) => ({
+                  ...prev,
+                  email: "",
+                  general: "",
+                }));
+              }}
             error={errors.email}
           />
 
           <PasswordField
             placeholder="Admin Password"
             value={password}
-            type={showPassword ? "text" : "password"} // 👈 toggle
-            onToggle={() => setShowPassword(!showPassword)} // 👈 toggle button
+            type={showPassword ? "text" : "password"}
+            onToggle={() => setShowPassword(!showPassword)}
             onChange={(e) => {
               setPassword(e.target.value);
-              setErrors({ ...errors, password: "", general: "" });
+              setErrors((prev) => ({
+                ...prev,
+                password: "",
+                general: "",
+              }));
             }}
             error={errors.password}
           />
@@ -107,9 +145,13 @@ export default function AdminLoginPage() {
           )}
 
           <div className="flex items-center justify-end text-xs text-black/70">
-            <Link href="#" className="hover:underline">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="hover:underline"
+            >
               Forgot Password?
-            </Link>
+            </button>
           </div>
         </div>
 

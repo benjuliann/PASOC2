@@ -9,7 +9,7 @@ export default function AdditionalInfoSection({ form, errors, touched, REQUIRED,
       label: "Current Involvement in Organization",
       className: "sm:col-span-2",
     },
-    { key: "positionsHeld", label: "Position(s) Held)" },
+    { key: "positionsHeld", label: "Position(s) Held" },
     {
       key: "addressPhilippines",
       label: "Address in the Philippines",
