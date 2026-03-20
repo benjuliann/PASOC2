@@ -80,7 +80,7 @@ export function Header() {
 
           {
             user ? (
-              <Link href="/Profile" className="p-2 rounded-full bg-gray-200 text-zinc-600 hover:bg-gray-300 transition">
+              <Link href={`/Profile`} className="p-2 rounded-full bg-gray-200 text-zinc-600 hover:bg-gray-300 transition">
                 <User size={20} /> 
               </Link>
             ) : (
