@@ -4,6 +4,7 @@ import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 import { useUserAuth } from "../../../_utils/auth-context";
 import { DeletionConfirmation } from "../UI/DeletionConfirmation";
 import { useState, useEffect } from "react";
+import { Link } from "lucide-react";
 
 async function getMemberInfo(userID) {
   try {
@@ -34,6 +35,64 @@ export default function Profile() {
   const { user, firebaseSignOut } = useUserAuth();
   const [member, setMember] = useState(null);
   const [deletionClicked, setDeletionClicked] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    address: "",
+    postalCode: "",
+    primaryPhone: ""
+  });
+
+  function handleChange(e){
+    const { name, value } = e.target;
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
+  async function handleSubmit(e){
+    e.preventDefault();
+
+    if(!member?.memberID) return;
+
+    setSaving(true);
+
+    try{
+
+      const res = await fetch("/api/Database/MemberInfo",{
+        method:"PATCH",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+          memberID: member.memberID,
+          ...formData
+        })
+      });
+
+      const result = await res.json();
+
+      if(!res.ok){
+        throw new Error(result.error || "Update failed");
+      }
+
+      // Refresh profile info
+      const updated = await getMemberInfo(user.uid);
+      setMember(updated);
+
+      alert("Profile updated");
+
+    }catch(error){
+      console.error(error);
+      alert("Failed to update profile");
+    }
+
+    setSaving(false);
+  }
+
+
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function fetchMember() {
@@ -48,8 +107,20 @@ export default function Profile() {
 
     fetchMember();
   }, [user]);
-  
 
+  useEffect(() => {
+    if (member) {
+      setFormData({
+        name: member.name || "",
+        address: member.address || "",
+        postalCode: member.postalCode || "",
+        primaryPhone: member.primaryPhone || ""
+      });
+    }
+  }, [member]);
+
+  const inputStyle = "w-full rounded-lg border bg-white px-4 py-2 text-sm text-black outline-none focus:ring-2 focus:ring-[#556B2F]/50";
+  
   const isMobile =
     typeof window !== "undefined" && window.innerWidth < 768;
   const profileImageSize = isMobile ? 100 : 150;
@@ -70,7 +141,7 @@ export default function Profile() {
               </h2>
               <p className="text-lg text-black">
                 Name: {member?.name || "Loading..."} <br />
-                Email: {member?.email || user.email || "Loading..."} <br />
+                Email: {member?.email || "Loading..."} <br />
                 Date of Birth: {member?.dateOfBirth || "Loading..."} <br />
                 Address: {member?.address || "Loading..."} <br />
                 Postal Code: {member?.postalCode || "Loading..."} <br />
@@ -84,56 +155,49 @@ export default function Profile() {
               <h2 className="text-xl font-semibold text-center underline text-black">
                 Edit Profile Information
               </h2>
-              <form className="flex flex-col gap-4 mt-6">
-                <section className="w-full flex flex-row items-center gap-4">
-                  <input
-                    type="text"
-                    placeholder="First Name"
-                    className="w-full rounded-lg border bg-white px-4 py-2 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Last Name"
-                    className="w-full rounded-lg border bg-white px-4 py-2 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
-                  />
-                </section>
-
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6">
                 <input
+                  name="name"
                   type="text"
-                  placeholder="Preferred Name"
-                  className="w-full rounded-lg border bg-white px-4 py-2 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={inputStyle}
                 />
 
                 <input
-                  type="date"
-                  placeholder="Birthday"
-                  className="w-full rounded-lg border bg-white px-4 py-2 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
-                />
-
-                <input
+                  name="address"
                   type="text"
                   placeholder="Address"
-                  className="w-full rounded-lg border bg-white px-4 py-2 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className={inputStyle}
                 />
 
-                <section className="w-full flex flex-row items-center gap-4">
-                  <input
-                    type="text"
-                    placeholder="City"
-                    className="w-full rounded-lg border bg-white px-4 py-2 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Postal Code"
-                    className="w-full rounded-lg border bg-white px-4 py-2 text-sm text-neutral-800 outline-none focus:ring-2 focus:ring-[#556B2F]/50"
-                  />
-                </section>
+                <input
+                  name="postalCode"
+                  type="text"
+                  placeholder="Postal Code"
+                  value={formData.postalCode}
+                  onChange={handleChange}
+                  className={inputStyle}
+                />
+
+                <input
+                  name="primaryPhone"
+                  type="text"
+                  placeholder="Primary Phone"
+                  value={formData.primaryPhone}
+                  onChange={handleChange}
+                  className={inputStyle}
+                />
 
                 <button
                   type="submit"
-                  className="w-full bg-[#7E9A45] text-white py-3 rounded-lg shadow-md hover:brightness-95 transition"
+                  disabled={saving}
+                  className="w-full bg-[#7E9A45] text-white py-3 rounded-lg shadow-md"
                 >
-                  Save Changes
+                  {saving ? "Saving..." : "Save Changes"}
                 </button>
               </form>
             </div>
