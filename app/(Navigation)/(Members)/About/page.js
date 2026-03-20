@@ -76,7 +76,7 @@ export default async function AboutUs() {
                             key={officer.officerId}
                             className="text-lg text-black flex items-center gap-4 justify-center"
                         >
-                            <div className="w-[100px] h-[100px] rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]" />
+                            <div className="w-25 h-25 rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]" />
 
                             <div>
                                 {officer.name}
