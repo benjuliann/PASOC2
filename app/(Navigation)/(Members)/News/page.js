@@ -22,7 +22,11 @@ export default function News() {
                     </p>
                 </div>
 
-                <div className="w-full h-[420px] rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]" />
+                                <img
+                                    src="/cp_P1010110.jpg"
+                                    alt="PASOC News"
+                                    className="w-full h-[420px] object-cover rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+                                />
                 </div>
             </section>
         </main>
