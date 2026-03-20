@@ -3,6 +3,24 @@ import { useUserAuth } from "@/app/_utils/auth-context";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+async function deleteMember(memberID) {
+  try {
+    const res = await fetch(`/api/Database/MemberInfo?memberID=${memberID}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Delete failed");
+    }
+
+    console.log("Deleted:", data);
+  } catch (error) {
+    console.error("Error deleting member:", error);
+  }
+}
+
 export function DeletionConfirmation({ onCancel }) {
     const { user, firebaseSignOut } = useUserAuth();
     const [emailInput, setEmailInput] = useState("");
@@ -11,8 +29,7 @@ export function DeletionConfirmation({ onCancel }) {
 
     const handleDelete = () => {
         if (emailInput.toLowerCase() === user?.email.toLowerCase()) {
-            // Account deletion will go here. For now, we just sign out and show an alert.
-            alert("Account deleted successfully.");
+            deleteMember(user.uid);
             firebaseSignOut();
             router("/");
         } else {
