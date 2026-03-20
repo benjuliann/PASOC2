@@ -47,7 +47,7 @@ export default function DonationManagerPage() {
             <hr className="flex-1 border-[#556B2F] border-t-2" />
           </div>
           <DonationStatCard />
-          <div className="flex justify-center gap-12 mt-16">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-16 md:mt-24">
             {donationTiles.map(tile => (
               <DonationTile key={tile.label} {...tile} />
             ))}

@@ -38,7 +38,7 @@ export default function ReportsPage() {
             <hr className="flex-1 border-[#556B2F] border-t-2" />
           </div>
           <p className="text-center text-lg text-[#556B2F] mb-12">Select which type of report you would like to generate</p>
-          <div className="flex justify-center gap-12 mt-24">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-4 md:gap-8 mt-8 sm:mt-16 md:mt-24 lg:flex lg:justify-center lg:gap-12 lg:mt-24">
             {reportTiles.map(tile => (
               <ReportTile key={tile.label} {...tile} />
             ))}
