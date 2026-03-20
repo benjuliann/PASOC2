@@ -1,46 +1,35 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
-import { Header } from "../../(Navigation)/(Admin)/UI/Header";
-import { Footer } from "../../(Navigation)/(Admin)/UI/Footer";
-import CurrentSponsorCard from "../../(Navigation)/(Admin)/UI/CurrentSponsorCard";
-import PreviousSponsorCard from "../../(Navigation)/(Admin)/UI/PreviousSponsorCard";
+import CurrentSponsorCard from "../UI/CurrentSponsorCard";
+import PreviousSponsorCard from "../UI/PreviousSponsorCard";
 
 export default function SponsorManagerPage() {
-	const initialCurrentSponsors = [
-		{
-			id: 1,
-			name: "Sponsor Name",
-			description:
-				"Information about this sponsor and their contribution to our events. This section provides details about their partnership with us.",
-		},
-		{
-			id: 2,
-			name: "Sponsor Name",
-			description:
-				"Information about this sponsor and their contribution to our events. This section provides details about their partnership with us.",
-		},
-	];
-
-	const [currentSponsors, setCurrentSponsors] = useState(
-		initialCurrentSponsors,
-	);
-
-	const [previousSponsors, setPreviousSponsors] = useState([
-		{ id: 3, name: "Name" },
-		{ id: 4, name: "Name" },
-		{ id: 5, name: "Name" },
-	]);
-
+	const [currentSponsors, setCurrentSponsors] = useState([]);
+	const [previousSponsors, setPreviousSponsors] = useState([]);
 	const [isAddSponsorModalOpen, setIsAddSponsorModalOpen] = useState(false);
 	const [editingSponsorId, setEditingSponsorId] = useState(null);
+
+	const [confirmModal, setConfirmModal] = useState({
+		isOpen: false,
+		action: null, // "delete" | "move"
+		sponsorId: null,
+	});
 
 	const [newSponsor, setNewSponsor] = useState({
 		name: "",
 		description: "",
 	});
+
+	const selectedSponsorName =
+		currentSponsors.find((sponsor) => sponsor.id === confirmModal.sponsorId)
+			?.name ||
+		previousSponsors.find(
+			(sponsor) => sponsor.id === confirmModal.sponsorId,
+		)?.name ||
+		"this sponsor";
 
 	const handleSponsorFieldChange = (event) => {
 		const { name, value } = event.target;
@@ -59,37 +48,59 @@ export default function SponsorManagerPage() {
 		});
 	};
 
-	const handleDeleteCurrentSponsor = (sponsorId) => {
-		setCurrentSponsors((previous) =>
-			previous.filter((sponsor) => sponsor.id !== sponsorId),
-		);
+	const openConfirmModal = (action, sponsorId) => {
+		setConfirmModal({ isOpen: true, action, sponsorId });
 	};
 
-	const handleDeletePreviousSponsor = (sponsorId) => {
-		setPreviousSponsors((previous) =>
-			previous.filter((sponsor) => sponsor.id !== sponsorId),
-		);
+	const closeConfirmModal = () => {
+		setConfirmModal({ isOpen: false, action: null, sponsorId: null });
 	};
 
-	const handleMoveToPrevious = (sponsorId) => {
-		setCurrentSponsors((previousCurrent) => {
-			const sponsorToMove = previousCurrent.find(
-				(sponsor) => sponsor.id === sponsorId,
-			);
+	const executeConfirmedAction = async () => {
+		const { action, sponsorId } = confirmModal;
+		if (!action || !sponsorId) return;
 
-			if (!sponsorToMove) {
-				return previousCurrent;
+		try {
+			let response;
+
+			if (action === "delete") {
+				response = await fetch(`/api/Database/sponsors/${sponsorId}`, {
+					method: "DELETE",
+				});
+			} else if (action === "move") {
+				response = await fetch(`/api/Database/sponsors/${sponsorId}`, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ status: "previous" }),
+				});
 			}
 
-			setPreviousSponsors((previousList) => [
-				...previousList,
-				{ id: Date.now(), name: sponsorToMove.name },
-			]);
+			if (!response?.ok) {
+				console.error(
+					`${action} failed:`,
+					response?.status,
+					await response?.text(),
+				);
+				return;
+			}
 
-			return previousCurrent.filter(
-				(sponsor) => sponsor.id !== sponsorId,
-			);
-		});
+			closeConfirmModal();
+			loadSponsors();
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const handleDeleteCurrentSponsor = async (sponsorId) => {
+		openConfirmModal("delete", sponsorId);
+	};
+
+	const handleDeletePreviousSponsor = async (sponsorId) => {
+		openConfirmModal("delete", sponsorId);
+	};
+
+	const handleMoveToPrevious = async (sponsorId) => {
+		openConfirmModal("move", sponsorId);
 	};
 
 	const handleEditCurrentSponsor = (sponsorId) => {
@@ -109,43 +120,74 @@ export default function SponsorManagerPage() {
 		setIsAddSponsorModalOpen(true);
 	};
 
-	const handleAddSponsor = (event) => {
+	const handleAddSponsor = async (event) => {
 		event.preventDefault();
+		if (!newSponsor.name.trim()) return;
 
-		if (!newSponsor.name.trim()) {
+		const isEdit = Boolean(editingSponsorId);
+		const url = isEdit
+			? `/api/Database/sponsors/${editingSponsorId}`
+			: "/api/Database/sponsors";
+
+		const response = await fetch(url, {
+			method: isEdit ? "PUT" : "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name: newSponsor.name.trim(),
+				description: newSponsor.description.trim(),
+				status: "current",
+			}),
+		});
+
+		if (!response.ok) {
+			console.error(
+				"Save failed:",
+				response.status,
+				await response.text(),
+			);
 			return;
 		}
 
-		if (editingSponsorId) {
-			setCurrentSponsors((previous) =>
-				previous.map((sponsor) =>
-					sponsor.id === editingSponsorId
-						? {
-								...sponsor,
-								name: newSponsor.name.trim(),
-								description: newSponsor.description.trim(),
-							}
-						: sponsor,
-				),
-			);
-		} else {
-			setCurrentSponsors((previous) => [
-				...previous,
-				{
-					id: Date.now(),
-					name: newSponsor.name.trim(),
-					description: newSponsor.description.trim(),
-				},
-			]);
-		}
-
 		closeAddSponsorModal();
+		loadSponsors();
 	};
+
+	const loadSponsors = async () => {
+		try {
+			const res = await fetch("/api/Database/sponsors", {
+				cache: "no-store",
+			});
+			if (!res.ok) {
+				console.error("Load failed:", await res.text());
+				return;
+			}
+
+			const raw = await res.json();
+
+			const allSponsors = raw.map((s) => ({
+				id: s.id ?? s.sponsorId,
+				name: s.name ?? s.sponsorName ?? "",
+				description: s.description ?? s.sponsorDescription ?? "",
+				status: s.status ?? s.sponsorStatus ?? "current",
+			}));
+
+			setCurrentSponsors(
+				allSponsors.filter((s) => s.status === "current"),
+			);
+			setPreviousSponsors(
+				allSponsors.filter((s) => s.status === "previous"),
+			);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	useEffect(() => {
+		loadSponsors();
+	}, []);
 
 	return (
 		<div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
-			<Header />
-
 			<main className="flex-1 flex flex-col items-center py-12 px-6 md:px-8">
 				{/* Page Header */}
 				<div className="w-full max-w-4xl mx-auto mb-8 flex flex-col items-center">
@@ -263,8 +305,8 @@ export default function SponsorManagerPage() {
 											htmlFor="description"
 											className="mb-1 block text-sm font-semibold text-gray-700"
 										>
-											About Sponsor
-										</label>
+                      Description:
+                    </label>
 										<textarea
 											id="description"
 											name="description"
@@ -290,9 +332,42 @@ export default function SponsorManagerPage() {
 						</div>
 					</div>
 				)}
-			</main>
 
-			<Footer />
+				{confirmModal.isOpen && (
+					<div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
+						<div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
+							<h3 className="text-lg font-bold text-gray-800">
+								{confirmModal.action === "delete"
+									? `Are you sure you want to delete ${selectedSponsorName}?`
+									: "Move to Previous Sponsor?"}
+							</h3>
+
+							<div className="mt-6 flex justify-end gap-2">
+								<button
+									type="button"
+									onClick={closeConfirmModal}
+									className="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100"
+								>
+									Cancel
+								</button>
+								<button
+									type="button"
+									onClick={executeConfirmedAction}
+									className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
+										confirmModal.action === "delete"
+											? "bg-red-700 hover:bg-red-800"
+											: "bg-gray-700 hover:bg-gray-800"
+									} `}
+								>
+									{confirmModal.action === "delete"
+										? "Delete"
+										: "Move"}
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+			</main>
 		</div>
 	);
 }
