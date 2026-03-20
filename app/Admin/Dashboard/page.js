@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Header } from "../../(Navigation)/(Admin)/UI/Header";
 import { Footer } from "../../(Navigation)/(Admin)/UI/Footer";
-import { HeroSection } from "../../(Navigation)/(Admin)/UI/HeroSection";
+
 import { Landmark, CalendarDays, Users, Image, Handshake, FolderCog } from "lucide-react";
 
 const stats = [
@@ -97,8 +97,6 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
       <Header />
       <main className="flex-1">
-        <HeroSection title="PASOC Dashboard" description="What would you like to do today?" />
-        {/* Stats */}
         <div style={{ maxWidth: 900, margin: "40px auto 0", padding: "0 24px" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "center" }}>
             {stats.map(s => <StatCard key={s.label} label={s.label} value={s.value} />)}
