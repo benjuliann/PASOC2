@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
     <LoginPageTemp backHref="/">
       {/* Title */}
       <div className="text-center mb-6">
-        <h1 className="font-serif text-4xl text-[#556B2F] tracking-wide">
+        <h1 className="font-serif font-extrabold text-4xl text-[#556B2F] tracking-wide">
           ADMIN LOGIN
         </h1>
 

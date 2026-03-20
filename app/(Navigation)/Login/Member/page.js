@@ -93,7 +93,7 @@ export default function LoginPage() {
     <LoginPageTemp backHref="/">
       {/* LOGIN Title */}
       <div className="text-center mb-6">
-        <h1 className="font-serif text-4xl text-[#556B2F] tracking-wide">
+        <h1 className="font-serif font-extrabold text-4xl text-[#556B2F] tracking-wide">
           LOGIN
         </h1>
         <Divider />
