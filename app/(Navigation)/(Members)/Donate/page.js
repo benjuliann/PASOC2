@@ -15,6 +15,7 @@ export default function Donate() {
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [customAmount, setCustomAmount] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("paypal");
+  const [loading, setLoading] = useState(false);
 
   const total = selectedAmount || parseFloat(customAmount) || 0;
 
@@ -27,13 +28,33 @@ export default function Donate() {
     setCustomAmount(val);
     setSelectedAmount(null);
   };
-  const handleDonate = (e) => {
+
+
+ const handleDonate = async (e) => {
     e.preventDefault();
     if (total <= 0) {
       alert("Please enter a donation amount.");
       return;
     }
-    alert(`Thank you for your generous donation of $${total.toFixed(2)} to PASOC!`);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: total,
+          type: "donation",
+          metadata: { donor_email: "" },
+        }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Render
@@ -183,12 +204,15 @@ export default function Donate() {
           </div>
           <button
             type="submit"
-            className="bg-[#556B2F] hover:bg-[#6b7d45] text-white font-semibold text-sm px-10 py-2.5 rounded-lg transition-all hover:shadow-md active:scale-95"
+            disabled={loading}
+            className="bg-[#556B2F] hover:bg-[#6b7d45] disabled:opacity-60 text-white font-semibold text-sm px-10 py-2.5 rounded-lg transition-all hover:shadow-md active:scale-95"
           >
-            Donate Now
+            {loading ? "Redirecting..." : "Donate Now"}
           </button>
         </div>
+ 
       </form>
     </main>
   );
 }
+ 

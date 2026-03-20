@@ -1,87 +1,33 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Divider, SectionTitle } from "./components/FormUI";
+import BackButton from "../../(Members)/UI/BackButton";
 import MemberInfoSection from "./components/MemberInfoSection";
 import AdditionalInfoSection from "./components/AdditionalInfoSection";
 import ConsentSection from "./components/ConsentSection";
 import EmailNotificationsSection from "./components/EmailNotificationsSection";
 import DependantsSection from "./components/DependantsSection";
 
-import { REQUIRED_FIELDS, initialMembershipForm } from "../../../_utils/membershipFormConfig";
+import { REQUIRED_FIELDS, initialMembershipForm} from "../../../_utils/membershipFormConfig";
 import { sanitizeByKey } from "../../../_utils/membershipFormSanitizers";
-import { getPasswordChecks, validateField, validateAll } from "../../../_utils/membershipFormValidators";
+import { getPasswordChecks, validateField, validateAll} from "../../../_utils/membershipFormValidators";
 
-// ─── Pricing helper ───────────────────────────────────────────────────────────
-const ADULT_FEE = 5.00;
-const YOUTH_FEE = 2.50;
-
-const getAge = (birthday) => {
-  if (!birthday) return null;
-  const today = new Date();
-  const dob = new Date(birthday);
-  let age = today.getFullYear() - dob.getFullYear();
-  const monthDiff = today.getMonth() - dob.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-    age--;
-  }
-  return age;
-};
-
-const getMemberFee = (birthday) => {
-  const age = getAge(birthday);
-  if (age === null) return ADULT_FEE; // default to adult if unknown
-  return age < 18 ? YOUTH_FEE : ADULT_FEE;
-};
-
-const calculateMembershipTotal = (form) => {
-  // Primary member fee
-  const memberFee = getMemberFee(form.birthday);
-
-  // Dependant fees — each dependant's birthday determines their rate
-  const dependantFees = form.hasChildren === "yes"
-    ? form.dependants.reduce((sum, dep) => sum + getMemberFee(dep.birthday), 0)
-    : 0;
-
-  return memberFee + dependantFees;
-};
-
-const buildPricingDescription = (form) => {
-  const memberAge = getAge(form.birthday);
-  const memberType = memberAge !== null && memberAge < 18 ? "Youth" : "Adult";
-  const memberFee = getMemberFee(form.birthday);
-
-  let desc = `${memberType} member: $${memberFee.toFixed(2)}`;
-
-  if (form.hasChildren === "yes" && form.dependants.length > 0) {
-    form.dependants.forEach((dep, i) => {
-      const depAge = getAge(dep.birthday);
-      const depType = depAge !== null && depAge < 18 ? "Youth" : "Adult";
-      const depFee = getMemberFee(dep.birthday);
-      desc += ` | Dependant ${i + 1} (${depType}): $${depFee.toFixed(2)}`;
-    });
-  }
-
-  return desc;
-};
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function MembershipForm() {
+  // Convert required fields array into a Set
   const REQUIRED = useMemo(() => new Set(REQUIRED_FIELDS), []);
-
+  // Main form state
   const [form, setForm] = useState(initialMembershipForm);
+  // Error state
   const [errors, setErrors] = useState({});
+  // Tracks whether user interacted with a field
   const [touched, setTouched] = useState({});
+  // Controls incomplete form modal
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [loading, setLoading] = useState(false); // ← NEW
-
+  // Used for password checklist display
   const passwordChecks = getPasswordChecks(form.password);
-
-  // Derived pricing — recalculates reactively as form changes
-  const membershipTotal = calculateMembershipTotal(form);
-  const pricingDescription = buildPricingDescription(form);
-
+  // Handles normal field changes
   const setField = (key) => (e) => {
     const isCheckbox = e.target.type === "checkbox";
     const rawValue = isCheckbox ? e.target.checked : e.target.value;
@@ -141,6 +87,7 @@ export default function MembershipForm() {
     });
   };
 
+  // Handles dependant field changes
   const updateDependant = (index, field, rawValue) => {
     const value = sanitizeByKey(field === "birthday" ? "birthday" : field, rawValue);
 
@@ -153,7 +100,9 @@ export default function MembershipForm() {
 
       if (nextForm.hasChildren === "yes") {
         const errorKey = `dep_${index}_${field}`;
+
         setTouched((t) => ({ ...t, [errorKey]: true }));
+
         setErrors((errs) => ({
           ...errs,
           [errorKey]: String(value).trim() ? "" : "Required",
@@ -164,6 +113,7 @@ export default function MembershipForm() {
     });
   };
 
+  // Add a new dependant row
   const addDependant = () => {
     setForm((prev) => ({
       ...prev,
@@ -174,6 +124,7 @@ export default function MembershipForm() {
     }));
   };
 
+  // Remove a dependant row
   const removeDependant = (index) => {
     setForm((prev) => ({
       ...prev,
@@ -197,11 +148,12 @@ export default function MembershipForm() {
     });
   };
 
-  // ← UPDATED handleSubmit with Stripe
-  const handleSubmit = async (e) => {
+  // Runs when user clicks submit
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const touchThese = {};
+
     for (const key of REQUIRED) {
       touchThese[key] = true;
     }
@@ -224,52 +176,12 @@ export default function MembershipForm() {
       return;
     }
 
-    // All validation passed — proceed to Stripe
-    setLoading(true);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: membershipTotal,
-          type: "membership",
-          metadata: {
-            first_name: form.firstName,
-            last_name: form.lastName,
-            email: form.email,
-            phone: form.phone,
-            dependants: String(form.hasChildren === "yes" ? form.dependants.length : 0),
-            description: pricingDescription,
-          },
-        }),
-      });
-
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    alert("✅ Looks good! Continue to payment.");
   };
 
   return (
     <main className="min-h-dvh bg-[#F4EFE7] relative overflow-y-auto md:overflow-hidden">
-      <Link href="/" className="absolute left-6 top-6" aria-label="Go back">
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#556B2F"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </Link>
+      <BackButton href="/" />
 
       {showErrorModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -277,10 +189,12 @@ export default function MembershipForm() {
             <h2 className="font-serif text-2xl text-[#556B2F]">
               Form is incomplete!
             </h2>
+
             <p className="mt-2 text-sm text-black/70">
               Some required fields are missing or invalid.
               <br /> Go back and complete the fields marked in red.
             </p>
+
             <div className="mt-5 flex justify-end">
               <button
                 type="button"
@@ -352,22 +266,11 @@ export default function MembershipForm() {
 
             <Divider className="bg-black/40" />
 
-            {/* ← Pricing summary — updates live as form fills in */}
-            <div className="rounded-xl bg-white/60 border border-black/10 px-4 py-3 text-sm text-black/70 space-y-1">
-              <p className="font-semibold text-black/80">Order Summary</p>
-              <p>{pricingDescription}</p>
-              <p className="font-bold text-[#556B2F] text-base">
-                Total: ${membershipTotal.toFixed(2)} CAD
-              </p>
-            </div>
-
-            {/* ← UPDATED submit button with loading state */}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-[#7E9A45] text-white py-3 rounded-xl shadow-md hover:brightness-95 disabled:opacity-60 transition"
+              className="w-full bg-[#7E9A45] text-white py-3 rounded-xl shadow-md hover:brightness-95 transition"
             >
-              {loading ? "Redirecting to payment..." : "Continue to Payment"}
+              Continue to Payment
             </button>
           </form>
         </div>
