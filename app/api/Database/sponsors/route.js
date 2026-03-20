@@ -1,6 +1,15 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 
+function toDbSponsorStatus(value) {
+	const normalized = String(value || "")
+		.trim()
+		.toLowerCase();
+	if (normalized === "current") return "Current";
+	if (normalized === "previous") return "Previous";
+	return null;
+}
+
 export async function GET() {
 	try {
 		const [rows] = await pool.query(`
@@ -8,8 +17,8 @@ export async function GET() {
                 sponsorId AS id,
                 sponsorName AS name,
                 sponsorDescription AS description,
-                sponsorStatus AS status
-            FROM sponsorinfo
+				LOWER(sponsorStatus) AS status
+			FROM SponsorInfo
             ORDER BY sponsorName ASC
         `);
 		return NextResponse.json(rows);
@@ -25,7 +34,7 @@ export async function POST(request) {
 		const id = `sp_${Date.now()}`;
 		const name = (body.name || "").trim();
 		const description = (body.description || "").trim();
-		const status = body.status || "current";
+		const status = toDbSponsorStatus(body.status || "current");
 
 		if (!name) {
 			return NextResponse.json(
@@ -34,14 +43,21 @@ export async function POST(request) {
 			);
 		}
 
+		if (!status) {
+			return NextResponse.json(
+				{ error: "Status must be Current or Previous" },
+				{ status: 400 },
+			);
+		}
+
 		await pool.query(
-			`INSERT INTO sponsorinfo (sponsorId, sponsorName, sponsorDescription, sponsorStatus)
+			`INSERT INTO SponsorInfo (sponsorId, sponsorName, sponsorDescription, sponsorStatus)
              VALUES (?, ?, ?, ?)`,
 			[id, name, description, status],
 		);
 
 		return NextResponse.json(
-			{ id, name, description, status },
+			{ id, name, description, status: status.toLowerCase() },
 			{ status: 201 },
 		);
 	} catch (err) {

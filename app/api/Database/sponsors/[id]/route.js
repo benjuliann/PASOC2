@@ -1,6 +1,15 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 
+function toDbSponsorStatus(value) {
+	const normalized = String(value || "")
+		.trim()
+		.toLowerCase();
+	if (normalized === "current") return "Current";
+	if (normalized === "previous") return "Previous";
+	return null;
+}
+
 export async function PUT(request, context) {
 	try {
 		const { id } = await context.params;
@@ -18,8 +27,15 @@ export async function PUT(request, context) {
 			values.push(body.description.trim());
 		}
 		if (typeof body.status === "string") {
+			const normalizedStatus = toDbSponsorStatus(body.status);
+			if (!normalizedStatus) {
+				return NextResponse.json(
+					{ error: "Status must be Current or Previous" },
+					{ status: 400 },
+				);
+			}
 			fields.push("sponsorStatus = ?");
-			values.push(body.status);
+			values.push(normalizedStatus);
 		}
 
 		if (!fields.length) {
@@ -32,7 +48,7 @@ export async function PUT(request, context) {
 		values.push(id);
 
 		const [result] = await pool.query(
-			`UPDATE sponsorinfo SET ${fields.join(", ")} WHERE sponsorId = ?`,
+			`UPDATE SponsorInfo SET ${fields.join(", ")} WHERE sponsorId = ?`,
 			values,
 		);
 
@@ -55,7 +71,7 @@ export async function DELETE(_request, context) {
 		const { id } = await context.params;
 
 		const [result] = await pool.query(
-			`DELETE FROM sponsorinfo WHERE sponsorId = ?`,
+			`DELETE FROM SponsorInfo WHERE sponsorId = ?`,
 			[id],
 		);
 
