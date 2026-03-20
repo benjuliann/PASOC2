@@ -53,15 +53,7 @@ export default function Donate() {
   // PayPal / Interac
   const [paymentEmail, setPaymentEmail] = useState("");
 
-  // Billing address
-  const [billingFirst, setBillingFirst] = useState("");
-  const [billingLast, setBillingLast] = useState("");
-  const [street, setStreet] = useState("");
-  const [city, setCity] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [province, setProvince] = useState("");
-  const [country, setCountry] = useState("");
-  const [cellNumber, setCellNumber] = useState("");
+  // Billing address removed
 
   // Errors
   const [errors, setErrors] = useState({});
@@ -108,14 +100,7 @@ export default function Donate() {
       if (cvv.length < 3) errs.cvv = "CVV must be 3 or 4 digits.";
     }
 
-    if (!billingFirst.trim()) errs.billingFirst = "First name is required.";
-    if (!billingLast.trim()) errs.billingLast = "Last name is required.";
-    if (!street.trim()) errs.street = "Street address is required.";
-    if (!city.trim()) errs.city = "City is required.";
-    if (!postalCode.trim()) errs.postalCode = "Postal code is required.";
-    if (!province.trim()) errs.province = "Province is required.";
-    if (!country.trim()) errs.country = "Country is required.";
-    if (cellNumber && digitsOnly(cellNumber).length < 10) errs.cellNumber = "Please enter a valid 10-digit phone number.";
+    // Billing address validation removed
 
     return errs;
   };
@@ -256,53 +241,7 @@ export default function Donate() {
             </div>
           </div>
         )}
-        {/* Billing Address */}
-        <div className="mb-8">
-          <h2 className="text-sm font-semibold text-neutral-900 mb-3">Billing Address</h2>
-          <div className="mb-3">
-            <label className="block text-xs text-neutral-700 mb-1">Name</label>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <input type="text" placeholder="First" value={billingFirst} onChange={(e) => setBillingFirst(nameOnly(e.target.value))} className={`border ${errors.billingFirst ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
-                {errMsg("billingFirst")}
-              </div>
-              <div>
-                <input type="text" placeholder="Last" value={billingLast} onChange={(e) => setBillingLast(nameOnly(e.target.value))} className={`border ${errors.billingLast ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
-                {errMsg("billingLast")}
-              </div>
-            </div>
-          </div>
-          <div className="mb-3">
-            <label className="block text-xs text-neutral-700 mb-1">Address</label>
-            <input type="text" placeholder="Street" value={street} onChange={(e) => setStreet(e.target.value)} className={`w-full border ${errors.street ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all mb-2`} />
-            {errMsg("street")}
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <div>
-                <input type="text" placeholder="City" value={city} onChange={(e) => setCity(lettersAndSpaces(e.target.value))} className={`border ${errors.city ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
-                {errMsg("city")}
-              </div>
-              <div>
-                <input type="text" placeholder="Postal Code" value={postalCode} onChange={(e) => setPostalCode(alphanumericSpace(e.target.value).toUpperCase().slice(0, 7))} className={`border ${errors.postalCode ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
-                {errMsg("postalCode")}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <input type="text" placeholder="Province" value={province} onChange={(e) => setProvince(lettersAndSpaces(e.target.value))} className={`border ${errors.province ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
-                {errMsg("province")}
-              </div>
-              <div>
-                <input type="text" placeholder="Country" value={country} onChange={(e) => setCountry(lettersAndSpaces(e.target.value))} className={`border ${errors.country ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all w-full`} />
-                {errMsg("country")}
-              </div>
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs text-neutral-700 mb-1">Cell Number</label>
-            <input type="tel" inputMode="numeric" placeholder="xxx-xxx-xxxx" value={cellNumber} onChange={(e) => setCellNumber(formatPhone(e.target.value))} className={`w-64 border ${errors.cellNumber ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all`} />
-            {errMsg("cellNumber")}
-          </div>
-        </div>
+        {/* Billing Address removed */}
         {/* Total & Submit */}
         <div className="border-t border-gray-300 pt-5 flex flex-col items-center gap-4">
           <div className="flex items-center justify-center gap-4 text-sm">
