@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const { emailSignIn, googleSignIn, facebookSignIn } = useUserAuth();
+  const { emailSignIn, googleSignIn, facebookSignIn, resetPassword } = useUserAuth();
   const [loading, setLoading] = useState(false); // Prevent multiple clicks on login button while processing
   const router = useRouter();
 
@@ -76,6 +76,23 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setError("Please enter your email first.");
+      return;
+    }
+    try{
+      await resetPassword(email);
+      setError("Password reset email sent.");
+    } catch (error) {
+      if(error.code === "auth/user-not-found") {
+        setError("No account found with that email.");
+      } else {
+        setError("Something went wrong.");
+      }
+    }
+  }
+
   return (
     <LoginPageTemp backHref="/">
       {/* LOGIN Title */}
@@ -125,9 +142,13 @@ export default function LoginPage() {
               Remember me
             </label>
 
-            <a href="#" className="hover:underline">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="hover:underline"
+            >
               Forgot Password?
-            </a>
+            </button>
           </div>
         </div>
 

@@ -12,6 +12,7 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { redirect } from "next/navigation";
+import { sendPasswordResetEmail } from "firebase/auth";
 
 const AuthContext = createContext();
 
@@ -48,6 +49,10 @@ export function AuthProvider({ children }) {
         redirect('/');
     };
 
+    const resetPassword = (email) => {
+        return sendPasswordResetEmail(auth,email);
+    }
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -56,6 +61,7 @@ export function AuthProvider({ children }) {
             emailSignUp,
             emailSignIn,
             firebaseSignOut,
+            resetPassword,
         }}>
             {children}
         </AuthContext.Provider>
