@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Divider, SectionTitle } from "./components/FormUI";
+import BackButton from "../../(Members)/UI/BackButton";
 import MemberInfoSection from "./components/MemberInfoSection";
 import AdditionalInfoSection from "./components/AdditionalInfoSection";
 import ConsentSection from "./components/ConsentSection";
@@ -10,30 +10,22 @@ import EmailNotificationsSection from "./components/EmailNotificationsSection";
 import DependantsSection from "./components/DependantsSection";
 
 import { REQUIRED_FIELDS, initialMembershipForm} from "../../../_utils/membershipFormConfig";
-
 import { sanitizeByKey } from "../../../_utils/membershipFormSanitizers";
-
 import { getPasswordChecks, validateField, validateAll} from "../../../_utils/membershipFormValidators";
 
 export default function MembershipForm() {
   // Convert required fields array into a Set
   const REQUIRED = useMemo(() => new Set(REQUIRED_FIELDS), []);
-
   // Main form state
   const [form, setForm] = useState(initialMembershipForm);
-
   // Error state
   const [errors, setErrors] = useState({});
-
   // Tracks whether user interacted with a field
   const [touched, setTouched] = useState({});
-
   // Controls incomplete form modal
   const [showErrorModal, setShowErrorModal] = useState(false);
-
   // Used for password checklist display
   const passwordChecks = getPasswordChecks(form.password);
-
   // Handles normal field changes
   const setField = (key) => (e) => {
     const isCheckbox = e.target.type === "checkbox";
@@ -188,20 +180,7 @@ export default function MembershipForm() {
 
   return (
     <main className="min-h-dvh bg-[#F4EFE7] relative overflow-y-auto md:overflow-hidden">
-      <Link href="/" className="absolute left-6 top-6" aria-label="Go back">
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#556B2F"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-      </Link>
+      <BackButton href="/" />
 
       {showErrorModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">

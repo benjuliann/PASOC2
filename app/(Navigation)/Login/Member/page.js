@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useUserAuth } from '../../../_utils/auth-context';
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import LoginPageTemp from "../components/LoginPageTemp";
@@ -10,6 +9,7 @@ import PasswordField from "../components/PasswordField";
 import LoginSubmitButton from "../components/LoginSubmitButton";
 import SocialLoginButtons from "../components/SocialLoginButtons";
 import { getFirebaseErrorMessage, validateLoginForm } from "../../../_utils/loginHelpers";
+import { Divider } from "../Membership/components/FormUI";
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -84,14 +84,10 @@ export default function LoginPage() {
     try{
       await resetPassword(email);
       setError("Password reset email sent.");
-    } catch (error) {
-      if(error.code === "auth/user-not-found") {
-        setError("No account found with that email.");
-      } else {
-        setError("Something went wrong.");
+    } catch (err) {
+        setError(getFirebaseErrorMessage(err.code));
       }
     }
-  }
 
   return (
     <LoginPageTemp backHref="/">
@@ -100,7 +96,7 @@ export default function LoginPage() {
         <h1 className="font-serif text-4xl text-[#556B2F] tracking-wide">
           LOGIN
         </h1>
-        <div className="mx-auto mt-2 h-[2px] w-24 bg-[#556B2F]/60" />
+        <Divider />
       </div>
 
       {/* Form */}

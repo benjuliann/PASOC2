@@ -26,9 +26,7 @@ export default function ConsentSection({ form, errors, touched, setField }) {
         </p>
 
         <p>
-          You have the right to access, update, or request correction of your
-          personal information at any time by contacting us at{" "}
-          <span className="font-medium">[contact email or phone number]</span>.
+          You have the right to access, update, or request correction of your personal information at any time by contacting us.
         </p>
 
         <p>
