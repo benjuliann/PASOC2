@@ -1,5 +1,6 @@
 import React from "react";
 import { HeroSection } from "../UI/HeroSection.jsx";
+import { FaqsManager } from "../UI/FaqsManager.jsx";
 
 export default function FaqsPage() {
 	return (
@@ -8,6 +9,7 @@ export default function FaqsPage() {
 				title="Frequently Asked Questions"
 				showButtons={false}
 			/>
+			<FaqsManager />
 		</main>
 	);
 }
