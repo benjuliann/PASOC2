@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Divider, SectionTitle } from "./components/FormUI";
 import MemberInfoSection from "./components/MemberInfoSection";
 import AdditionalInfoSection from "./components/AdditionalInfoSection";
@@ -13,10 +13,7 @@ import { REQUIRED_FIELDS, initialMembershipForm } from "../../../_utils/membersh
 import { sanitizeByKey } from "../../../_utils/membershipFormSanitizers";
 import { getPasswordChecks, validateField, validateAll } from "../../../_utils/membershipFormValidators";
 
-// ─── Pricing helper ───────────────────────────────────────────────────────────
-const ADULT_FEE = 5.00;
-const YOUTH_FEE = 2.50;
-
+// ─── Age helper (no pricing dependency — safe outside component) ──────────────
 const getAge = (birthday) => {
   if (!birthday) return null;
   const today = new Date();
@@ -28,43 +25,6 @@ const getAge = (birthday) => {
   }
   return age;
 };
-
-const getMemberFee = (birthday) => {
-  const age = getAge(birthday);
-  if (age === null) return ADULT_FEE; // default to adult if unknown
-  return age < 18 ? YOUTH_FEE : ADULT_FEE;
-};
-
-const calculateMembershipTotal = (form) => {
-  // Primary member fee
-  const memberFee = getMemberFee(form.birthday);
-
-  // Dependant fees — each dependant's birthday determines their rate
-  const dependantFees = form.hasChildren === "yes"
-    ? form.dependants.reduce((sum, dep) => sum + getMemberFee(dep.birthday), 0)
-    : 0;
-
-  return memberFee + dependantFees;
-};
-
-const buildPricingDescription = (form) => {
-  const memberAge = getAge(form.birthday);
-  const memberType = memberAge !== null && memberAge < 18 ? "Youth" : "Adult";
-  const memberFee = getMemberFee(form.birthday);
-
-  let desc = `${memberType} member: $${memberFee.toFixed(2)}`;
-
-  if (form.hasChildren === "yes" && form.dependants.length > 0) {
-    form.dependants.forEach((dep, i) => {
-      const depAge = getAge(dep.birthday);
-      const depType = depAge !== null && depAge < 18 ? "Youth" : "Adult";
-      const depFee = getMemberFee(dep.birthday);
-      desc += ` | Dependant ${i + 1} (${depType}): $${depFee.toFixed(2)}`;
-    });
-  }
-
-  return desc;
-};
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function MembershipForm() {
@@ -74,11 +34,61 @@ export default function MembershipForm() {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [loading, setLoading] = useState(false); // ← NEW
+  const [loading, setLoading] = useState(false);
+
+  // ─── Pricing state — fetched from DB ────────────────────────────────────────
+  const [pricing, setPricing] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/Database/pricing")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.memberPrice && data.dependantPrice) {
+          setPricing(data);
+        }
+      })
+      .catch(() => console.error("Failed to fetch pricing"));
+  }, []);
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // ─── Pricing helpers (inside component — depend on pricing state) ────────────
+  const getMemberFee = (birthday) => {
+    if (!pricing) return 0;
+    const age = getAge(birthday);
+    const memberPrice = parseFloat(pricing.memberPrice);
+    const dependantPrice = parseFloat(pricing.dependantPrice);
+    if (age === null) return memberPrice;
+    return age < 18 ? dependantPrice : memberPrice;
+  };
+
+  const calculateMembershipTotal = (f) => {
+    const memberFee = getMemberFee(f.birthday);
+    const dependantFees =
+      f.hasChildren === "yes"
+        ? f.dependants.reduce((sum, dep) => sum + getMemberFee(dep.birthday), 0)
+        : 0;
+    return memberFee + dependantFees;
+  };
+
+  const buildPricingDescription = (f) => {
+    if (!pricing) return "Loading pricing...";
+    const memberAge = getAge(f.birthday);
+    const memberType = memberAge !== null && memberAge < 18 ? "Youth" : "Adult";
+    const memberFee = getMemberFee(f.birthday);
+    let desc = `${memberType} member: $${memberFee.toFixed(2)}`;
+    if (f.hasChildren === "yes" && f.dependants.length > 0) {
+      f.dependants.forEach((dep, i) => {
+        const depAge = getAge(dep.birthday);
+        const depType = depAge !== null && depAge < 18 ? "Youth" : "Adult";
+        const depFee = getMemberFee(dep.birthday);
+        desc += ` | Dependant ${i + 1} (${depType}): $${depFee.toFixed(2)}`;
+      });
+    }
+    return desc;
+  };
+  // ─────────────────────────────────────────────────────────────────────────────
 
   const passwordChecks = getPasswordChecks(form.password);
-
-  // Derived pricing — recalculates reactively as form changes
   const membershipTotal = calculateMembershipTotal(form);
   const pricingDescription = buildPricingDescription(form);
 
@@ -241,6 +251,7 @@ export default function MembershipForm() {
             date_of_birth: form.birthday,
             address: `${form.address}, ${form.city}`,
             postal_code: form.postalCode,
+            price_id: String(pricing?.priceId ?? ""),
             dependants: String(form.hasChildren === "yes" ? form.dependants.length : 0),
             description: pricingDescription,
             // Dependant details
@@ -249,8 +260,8 @@ export default function MembershipForm() {
                 ? form.dependants.flatMap((dep, i) => [
                     [`dep_${i}_name`, `${dep.firstName} ${dep.lastName}`.trim()],
                     [`dep_${i}_dob`, dep.birthday],
-                ])
-              : []
+                  ])
+                : []
             ),
           },
         }),
@@ -265,6 +276,15 @@ export default function MembershipForm() {
       setLoading(false);
     }
   };
+
+  // GUARD: don't render form until pricing is loaded
+  if (!pricing) {
+    return (
+      <main className="min-h-dvh bg-[#F4EFE7] flex items-center justify-center">
+        <p className="text-[#556B2F] text-sm">Loading membership pricing...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-dvh bg-[#F4EFE7] relative overflow-y-auto md:overflow-hidden">
@@ -314,8 +334,8 @@ export default function MembershipForm() {
 
           <p className="text-center text-black mt-2 text-sm sm:text-base max-w-xl mx-auto">
             One-time membership fee of: <br />
-            Adults (18+): $5.00 <br />
-            Youth (under 18): $2.50 <br />
+            Adults (18+): ${parseFloat(pricing.memberPrice).toFixed(2)} <br />
+            Youth (under 18): ${parseFloat(pricing.dependantPrice).toFixed(2)} <br />
           </p>
 
           <form className="mt-8 space-y-4" onSubmit={handleSubmit} noValidate>
@@ -364,7 +384,7 @@ export default function MembershipForm() {
 
             <Divider className="bg-black/40" />
 
-            {/* ← Pricing summary — updates live as form fills in */}
+            {/* Pricing summary — updates live as form fills in */}
             <div className="rounded-xl bg-white/60 border border-black/10 px-4 py-3 text-sm text-black/70 space-y-1">
               <p className="font-semibold text-black/80">Order Summary</p>
               <p>{pricingDescription}</p>
@@ -373,7 +393,6 @@ export default function MembershipForm() {
               </p>
             </div>
 
-            {/* ← UPDATED submit button with loading state */}
             <button
               type="submit"
               disabled={loading}
