@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Header } from "./UI/Header";
 import { Footer } from "./UI/Footer";
+import { FloatingButton } from "./UI/FloatingButton";
 
 export default function LayoutShell({ children }) {
   const pathname = usePathname();
@@ -13,11 +14,15 @@ export default function LayoutShell({ children }) {
       pathname === "/Pages/SignUp" ||
       pathname === "/Pages/ForgotPassword";
 
+  // Exclude FloatingButton from FAQs page
+  const hideFAQButton = pathname === "/Faqs" || pathname === "/Admin/Faqs";
+
   return (
     <>
       {!hideLayout && <Header />}
       {children}
       {!hideLayout && <Footer />}
+      {!hideFAQButton && <FloatingButton />}
     </>
   );
 }

@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
-import CurrentSponsorCard from "../UI/CurrentSponsorCard";
-import PreviousSponsorCard from "../UI/PreviousSponsorCard";
+import CurrentSponsorCard from "./CurrentSponsorCard";
+import PreviousSponsorCard from "./PreviousSponsorCard";
 
-export default function SponsorManagerPage() {
+export function SponsorsManager() {
 	const [currentSponsors, setCurrentSponsors] = useState([]);
 	const [previousSponsors, setPreviousSponsors] = useState([]);
 	const [isAddSponsorModalOpen, setIsAddSponsorModalOpen] = useState(false);
@@ -14,7 +14,7 @@ export default function SponsorManagerPage() {
 
 	const [confirmModal, setConfirmModal] = useState({
 		isOpen: false,
-		action: null, // "delete" | "move"
+		action: null,
 		sponsorId: null,
 	});
 
@@ -24,12 +24,16 @@ export default function SponsorManagerPage() {
 	});
 
 	const selectedSponsorName =
-		currentSponsors.find((sponsor) => sponsor.id === confirmModal.sponsorId)
-			?.name ||
-		previousSponsors.find(
-			(sponsor) => sponsor.id === confirmModal.sponsorId,
-		)?.name ||
-		"this sponsor";
+		(confirmModal.action === "create" || confirmModal.action === "edit") &&
+		newSponsor.name
+			? newSponsor.name
+			: currentSponsors.find(
+					(sponsor) => sponsor.id === confirmModal.sponsorId,
+				)?.name ||
+				previousSponsors.find(
+					(sponsor) => sponsor.id === confirmModal.sponsorId,
+				)?.name ||
+				"this sponsor";
 
 	const handleSponsorFieldChange = (event) => {
 		const { name, value } = event.target;
@@ -58,10 +62,57 @@ export default function SponsorManagerPage() {
 
 	const executeConfirmedAction = async () => {
 		const { action, sponsorId } = confirmModal;
-		if (!action || !sponsorId) return;
 
 		try {
 			let response;
+
+			if (action === "create") {
+				response = await fetch("/api/Database/sponsors", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						name: newSponsor.name.trim(),
+						description: newSponsor.description.trim(),
+						status: "current",
+					}),
+				});
+				if (response.ok) {
+					closeAddSponsorModal();
+					closeConfirmModal();
+					loadSponsors();
+				} else {
+					console.error(
+						"Create failed:",
+						response.status,
+						await response.text(),
+					);
+				}
+				return;
+			}
+
+			if (action === "edit" && sponsorId) {
+				response = await fetch(`/api/Database/sponsors/${sponsorId}`, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						name: newSponsor.name.trim(),
+						description: newSponsor.description.trim(),
+						status: "current",
+					}),
+				});
+				if (response.ok) {
+					closeAddSponsorModal();
+					closeConfirmModal();
+					loadSponsors();
+				} else {
+					console.error(
+						"Edit failed:",
+						response.status,
+						await response.text(),
+					);
+				}
+				return;
+			}
 
 			if (action === "delete") {
 				response = await fetch(`/api/Database/sponsors/${sponsorId}`, {
@@ -91,15 +142,15 @@ export default function SponsorManagerPage() {
 		}
 	};
 
-	const handleDeleteCurrentSponsor = async (sponsorId) => {
+	const handleDeleteCurrentSponsor = (sponsorId) => {
 		openConfirmModal("delete", sponsorId);
 	};
 
-	const handleDeletePreviousSponsor = async (sponsorId) => {
+	const handleDeletePreviousSponsor = (sponsorId) => {
 		openConfirmModal("delete", sponsorId);
 	};
 
-	const handleMoveToPrevious = async (sponsorId) => {
+	const handleMoveToPrevious = (sponsorId) => {
 		openConfirmModal("move", sponsorId);
 	};
 
@@ -120,36 +171,14 @@ export default function SponsorManagerPage() {
 		setIsAddSponsorModalOpen(true);
 	};
 
-	const handleAddSponsor = async (event) => {
+	const handleAddSponsor = (event) => {
 		event.preventDefault();
 		if (!newSponsor.name.trim()) return;
 
 		const isEdit = Boolean(editingSponsorId);
-		const url = isEdit
-			? `/api/Database/sponsors/${editingSponsorId}`
-			: "/api/Database/sponsors";
+		const action = isEdit ? "edit" : "create";
 
-		const response = await fetch(url, {
-			method: isEdit ? "PUT" : "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				name: newSponsor.name.trim(),
-				description: newSponsor.description.trim(),
-				status: "current",
-			}),
-		});
-
-		if (!response.ok) {
-			console.error(
-				"Save failed:",
-				response.status,
-				await response.text(),
-			);
-			return;
-		}
-
-		closeAddSponsorModal();
-		loadSponsors();
+		openConfirmModal(action, editingSponsorId || null);
 	};
 
 	const loadSponsors = async () => {
@@ -296,7 +325,7 @@ export default function SponsorManagerPage() {
 											value={newSponsor.name}
 											onChange={handleSponsorFieldChange}
 											required
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-green-400"
+											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#556B2F]"
 										/>
 									</div>
 
@@ -305,15 +334,15 @@ export default function SponsorManagerPage() {
 											htmlFor="description"
 											className="mb-1 block text-sm font-semibold text-gray-700"
 										>
-                      Description:
-                    </label>
+											Description:
+										</label>
 										<textarea
 											id="description"
 											name="description"
 											rows={4}
 											value={newSponsor.description}
 											onChange={handleSponsorFieldChange}
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-green-400"
+											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#556B2F]"
 										/>
 									</div>
 
@@ -338,8 +367,14 @@ export default function SponsorManagerPage() {
 						<div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
 							<h3 className="text-lg font-bold text-gray-800">
 								{confirmModal.action === "delete"
-									? `Are you sure you want to delete ${selectedSponsorName}?`
-									: "Move to Previous Sponsor?"}
+									? `Are you sure you want to delete "${selectedSponsorName}"?`
+									: confirmModal.action === "move"
+										? `Are you sure you want to move "${selectedSponsorName}" to previous sponsor?`
+										: confirmModal.action === "create"
+											? `Are you sure you want to create "${selectedSponsorName}"?`
+											: confirmModal.action === "edit"
+												? `Are you sure you want to save changes to "${selectedSponsorName}"?`
+												: "Confirm action"}
 							</h3>
 
 							<div className="mt-6 flex justify-end gap-2">
@@ -356,12 +391,16 @@ export default function SponsorManagerPage() {
 									className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
 										confirmModal.action === "delete"
 											? "bg-red-700 hover:bg-red-800"
-											: "bg-gray-700 hover:bg-gray-800"
+											: "bg-[#556B2F] hover:bg-[#6b8e23]"
 									} `}
 								>
 									{confirmModal.action === "delete"
 										? "Delete"
-										: "Move"}
+										: confirmModal.action === "move"
+											? "Move"
+											: confirmModal.action === "create"
+												? "Create"
+												: "Save"}
 								</button>
 							</div>
 						</div>
