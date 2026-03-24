@@ -6,7 +6,7 @@ import Image from "next/image";
 import CurrentSponsorCard from "../UI/CurrentSponsorCard";
 import PreviousSponsorCard from "../UI/PreviousSponsorCard";
 
-export default function SponsorManagerPage() {
+export default function SponsorsManagerPage() {
 	const [currentSponsors, setCurrentSponsors] = useState([]);
 	const [previousSponsors, setPreviousSponsors] = useState([]);
 	const [isAddSponsorModalOpen, setIsAddSponsorModalOpen] = useState(false);
@@ -305,8 +305,8 @@ export default function SponsorManagerPage() {
 											htmlFor="description"
 											className="mb-1 block text-sm font-semibold text-gray-700"
 										>
-                      Description:
-                    </label>
+											Description:
+										</label>
 										<textarea
 											id="description"
 											name="description"

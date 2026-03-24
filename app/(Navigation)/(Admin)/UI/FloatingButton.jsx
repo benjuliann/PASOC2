@@ -7,11 +7,11 @@ export function FloatingButton() {
 	const router = useRouter();
 	const pathname = usePathname();
 
-	const adminTopLevelRoutes = new Set(["/Dashboard", "/SponsorManager"]);
+	const adminTopLevelRoutes = new Set(["/Dashboard", "/SponsorsManager"]);
 	const isAdminPath =
 		pathname?.startsWith("/Admin") ||
 		adminTopLevelRoutes.has(pathname || "");
-	const faqTarget = isAdminPath ? "/Admin/Faqs" : "/Faqs";
+	const faqTarget = isAdminPath ? "/Admin/FaqsManager" : "/Faqs";
 
 	return (
 		<button

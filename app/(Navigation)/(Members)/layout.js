@@ -15,7 +15,7 @@ export default function LayoutShell({ children }) {
       pathname === "/Pages/ForgotPassword";
 
   // Exclude FloatingButton from FAQs page
-  const hideFAQButton = pathname === "/Faqs";
+  const hideFAQButton = pathname === "/Faqs" || pathname === "/Admin/Faqs";
 
   return (
     <>
