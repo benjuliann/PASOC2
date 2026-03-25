@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useUserAuth } from '../../../_utils/auth-context';
 import { useRouter } from "next/navigation";
-
+import Link from "next/link";
 import LoginPageTemp from "../components/LoginPageTemp";
 import InputFields from "../components/InputFields";
 import PasswordField from "../components/PasswordField";
@@ -138,13 +138,12 @@ export default function LoginPage() {
               Remember me
             </label>
 
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              className="hover:underline"
-            >
-              Forgot Password?
-            </button>
+        <Link
+          href="/Login/ForgotPassword"
+          className="text-sm text-emerald-700 hover:underline"
+        >
+          Forgot Password?
+        </Link>
           </div>
         </div>
 

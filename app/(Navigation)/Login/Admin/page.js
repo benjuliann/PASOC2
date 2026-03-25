@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const { emailSignIn, resetPassword } = useUserAuth();
+  const { emailSignIn } = useUserAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -145,13 +145,12 @@ export default function AdminLoginPage() {
           )}
 
           <div className="flex items-center justify-end text-xs text-black/70">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
+            <Link
+              href="/Login/ForgotPassword"
               className="hover:underline"
             >
               Forgot Password?
-            </button>
+            </Link>
           </div>
         </div>
 
