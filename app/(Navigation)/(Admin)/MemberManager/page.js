@@ -1,19 +1,18 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Header } from "../../(Navigation)/(Admin)/UI/Header";
-import { Footer } from "../../(Navigation)/(Admin)/UI/Footer";
-import { Handshake, CheckCircle, Users, Landmark, CalendarDays } from "lucide-react";
+import { Header } from "../UI/Header";
+import { Footer } from "../UI/Footer";
+import { Users, UserPlus, Pencil, Trash2 } from "lucide-react";
 
-const reportTiles = [
-  { label: "Sponsor Reports", Icon: Handshake, href: "/Admin/Reports/Sponsor" },
-  { label: "Attendence Reports", Icon: CheckCircle, href: "/Admin/Reports/Attendence" },
-  { label: "Membership Reports", Icon: Users, href: "/Admin/Reports/Membership" },
-  { label: "Donation Reports", Icon: Landmark, href: "/Admin/Reports/Donation" },
-  { label: "Event Reports", Icon: CalendarDays, href: "/Admin/Reports/Event" },
+const memberTiles = [
+  { label: "Manage Members", Icon: Users, href: "/Admin/MemberManager/Manage" },
+  { label: "Add Member", Icon: UserPlus, href: "/Admin/MemberManager/Add" },
+  { label: "Edit Member", Icon: Pencil, href: "/Admin/MemberManager/Edit" },
+  { label: "Delete Member", Icon: Trash2, href: "/Admin/MemberManager/Delete" },
 ];
 
-function ReportTile({ label, Icon, href }) {
+function MemberTile({ label, Icon, href }) {
   return (
     <Link
       href={href}
@@ -26,7 +25,7 @@ function ReportTile({ label, Icon, href }) {
   );
 }
 
-export default function ReportsPage() {
+export default function MemberManagerPage() {
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
       <Header />
@@ -34,13 +33,12 @@ export default function ReportsPage() {
         <div className="w-full max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-6 mt-8 mb-8">
             <hr className="flex-1 border-[#556B2F] border-t-2" />
-            <h2 className="text-3xl font-serif text-[#556B2F] text-center mx-4">REPORTS</h2>
+            <h2 className="text-3xl font-serif text-[#556B2F] text-center mx-4">MEMBERSHIP MANAGER</h2>
             <hr className="flex-1 border-[#556B2F] border-t-2" />
           </div>
-          <p className="text-center text-lg text-[#556B2F] mb-12">Select which type of report you would like to generate</p>
           <div className="flex justify-center gap-12 mt-24">
-            {reportTiles.map(tile => (
-              <ReportTile key={tile.label} {...tile} />
+            {memberTiles.map(tile => (
+              <MemberTile key={tile.label} {...tile} />
             ))}
           </div>
         </div>

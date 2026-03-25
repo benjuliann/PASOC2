@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import { Header } from "../../(Navigation)/(Admin)/UI/Header";
-import { Footer } from "../../(Navigation)/(Admin)/UI/Footer";
+import { Header } from "../UI/Header";
+import { Footer } from "../UI/Footer";
 
 export default function GalleryManagerPage() {
   return (

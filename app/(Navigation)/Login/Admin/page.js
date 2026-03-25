@@ -48,8 +48,7 @@ export default function AdminLoginPage() {
       //Store ID to cookie
       await setAuthCookie(firebaseUser.uid)
 
-      // 🔐 Later you can add role check here (admin only)
-      router.push("/Admin/Dashboard");
+      router.push("/Dashboard");
     } catch (err) {
       // Firebase error handling
       setErrors({

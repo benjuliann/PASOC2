@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from "react";
-import { Header } from "../../(Navigation)/(Admin)/UI/Header";
-import { Footer } from "../../(Navigation)/(Admin)/UI/Footer";
+import { Header } from "../UI/Header";
+import { Footer } from "../UI/Footer";
 
 const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MONTHS = [
