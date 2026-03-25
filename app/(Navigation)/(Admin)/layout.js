@@ -1,3 +1,6 @@
+"use server"
+
+import LayoutShell from "./layoutShell";
 import { redirect } from "next/navigation";
 import db from "@/lib/db";
 import { cookies } from "next/headers";
@@ -31,5 +34,5 @@ export default async function AdminLayout({ children }) {
     redirect("/Unauthorized"); 
   }
 
-  return <section>{children}</section>;
+  return <LayoutShell>{children}</LayoutShell>
 }

@@ -1,8 +1,6 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Header } from "../UI/Header";
-import { Footer } from "../UI/Footer";
 import { HeroSection } from "../UI/HeroSection";
 import {
   Landmark,
@@ -166,7 +164,6 @@ function ManagerTile({ label, Icon, href }) {
 export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
-      <Header />
       <main className="flex-1">
         <HeroSection
           title="PASOC Dashboard"
@@ -213,7 +210,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
