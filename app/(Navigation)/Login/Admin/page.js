@@ -19,7 +19,7 @@ import {
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
       await emailSignIn(email, password);
 
       // 🔐 Later you can add role check here (admin only)
-      router.push("/Admin/Dashboard");
+      router.push("/Dashboard");
     } catch (err) {
       // Firebase error handling
       setErrors({
@@ -110,14 +110,14 @@ export default function AdminLoginPage() {
             type="email"
             placeholder="Admin Email Address"
             value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setErrors((prev) => ({
-                  ...prev,
-                  email: "",
-                  general: "",
-                }));
-              }}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setErrors((prev) => ({
+                ...prev,
+                email: "",
+                general: "",
+              }));
+            }}
             error={errors.email}
           />
 
