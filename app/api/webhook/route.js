@@ -60,7 +60,10 @@ export async function POST(req) {
 
       const { priceId, memberPrice, dependantPrice } = pricing[0];
       const dependantCount = parseInt(meta.dependants || "0", 10);
-      const totalAmount = memberPrice + dependantCount * dependantPrice;
+
+      const parsedMemberPrice = parseFloat(memberPrice);
+      const parsedDependantPrice = parseFloat(dependantPrice);
+      const totalAmount = parsedMemberPrice + dependantCount * parsedDependantPrice;
 
       // 1. Insert into UserLogin FIRST
       await pool.execute(
@@ -115,8 +118,8 @@ export async function POST(req) {
           priceId,
           "stripe",
           totalAmount,
-          memberPrice,
-          dependantPrice,
+          parsedMemberPrice,
+          parsedDependantPrice,
           session.payment_intent,
           null, // Stripe payment, no admin recorded it
         ]
