@@ -148,15 +148,16 @@ export default function EventManagerPage() {
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
       <main className="flex-1 flex flex-col items-center py-10">
-        {/* Section Header */}
-        <div className="w-full max-w-5xl mx-auto mb-4 flex flex-col items-center">
-          <div className="flex items-center w-full justify-between mb-1">
-            <hr className="flex-1 border-t border-[#556B2F] mx-4" />
-            <span className="text-3xl font-serif font-bold italic text-[#556B2F] tracking-wide underline underline-offset-4">EVENTS MANAGER</span>
-            <hr className="flex-1 border-t border-[#556B2F] mx-4" />
+        {/* Page Header */}
+          <div className="w-full max-w-4xl mx-auto mb-8 flex flex-col items-center">
+            <div className="flex items-center w-full justify-between mb-2">
+              <hr className="flex-1 border-t border-[#556B2F] mx-4" />
+              <h1 className="text-3xl font-serif font-bold text-[#556B2F] tracking-wide">
+                EVENT MANAGER
+              </h1>
+              <hr className="flex-1 border-t border-[#556B2F] mx-4" />
+            </div>
           </div>
-          <span className="text-sm text-[#2a2420] mt-2 cursor-pointer hover:underline">Access All Events</span>
-        </div>
 
         {/* Main Content: Left (events) + Right (calendar) */}
         <div className="w-full max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-4 px-4">
