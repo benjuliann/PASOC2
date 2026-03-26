@@ -74,62 +74,20 @@ export default async function AboutUs() {
                     {officers.map((officer) => (
                         <div
                             key={officer.officerId}
-                            className="text-lg text-black flex items-center gap-4 justify-center"
+                            className="text-lg text-black grid grid-cols-[100px_1fr] items-center gap-4 justify-center"
                         >
-                            <div className="w-25 h-25 rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]" />
+                        <div className="w-24 h-24 rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]" />
 
                             <div>
                                 {officer.name}
                                 <br />
-                                {officer.email}
+                                {officer.occupation}
                             </div>
-
                         </div>
                     ))}
 
                 </div>
 
-            </section>
-
-            {/* CONTACTS */}
-            <section className="w-full flex flex-row gap-6 max-w-7xl mx-auto justify-between mt-12">
-
-                <div className="w-full md:w-1/2 mx-auto">
-
-                    <h2 className="text-xl font-semibold text-center underline text-black">
-                        Your PASOC Contacts
-                    </h2>
-
-                    <p className="text-lg text-black">
-                        PASOC Secretary:
-                        <a href="mailto:dgsv0508@yahoo.ca">
-                            dgsv0508@yahoo.ca
-                        </a>
-                    </p>
-
-                    <h3>Contact Persons:</h3>
-
-                    <ul className="list-disc list-inside">
-
-                        {staticContacts.map((contact,index)=>(
-                            <li key={index} className="text-black">
-
-                                {contact.name}
-                                <br/>
-
-                                {contact.position}
-                                <br/>
-
-                                <a href={`mailto:${contact.email}`}>
-                                    {contact.email}
-                                </a>
-
-                            </li>
-                        ))}
-
-                    </ul>
-
-                </div>
             </section>
         </main>
     );
