@@ -19,7 +19,7 @@ import {
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
       await emailSignIn(email, password);
 
       // 🔐 Later you can add role check here (admin only)
-      router.push("/Admin/Dashboard");
+      router.push("/Dashboard");
     } catch (err) {
       // Firebase error handling
       setErrors({
@@ -54,11 +54,41 @@ export default function AdminLoginPage() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        general: "Please enter your email first.",
+      }));
+      return;
+    }
+
+    try {
+      await resetPassword(email);
+      setErrors((prev) => ({
+        ...prev,
+        general: "Password reset email sent.",
+      }));
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        setErrors((prev) => ({
+          ...prev,
+          general: "No account found with that email.",
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: "Something went wrong.",
+        }));
+      }
+    }
+  };
+
   return (
     <LoginPageTemp backHref="/">
       {/* Title */}
       <div className="text-center mb-6">
-        <h1 className="font-serif text-4xl text-[#556B2F] tracking-wide">
+        <h1 className="font-serif font-extrabold text-4xl text-[#556B2F] tracking-wide">
           ADMIN LOGIN
         </h1>
 
@@ -82,7 +112,11 @@ export default function AdminLoginPage() {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              setErrors({ ...errors, email: "", general: "" });
+              setErrors((prev) => ({
+                ...prev,
+                email: "",
+                general: "",
+              }));
             }}
             error={errors.email}
           />
@@ -90,11 +124,15 @@ export default function AdminLoginPage() {
           <PasswordField
             placeholder="Admin Password"
             value={password}
-            type={showPassword ? "text" : "password"} // 👈 toggle
-            onToggle={() => setShowPassword(!showPassword)} // 👈 toggle button
+            type={showPassword ? "text" : "password"}
+            onToggle={() => setShowPassword(!showPassword)}
             onChange={(e) => {
               setPassword(e.target.value);
-              setErrors({ ...errors, password: "", general: "" });
+              setErrors((prev) => ({
+                ...prev,
+                password: "",
+                general: "",
+              }));
             }}
             error={errors.password}
           />
@@ -107,7 +145,10 @@ export default function AdminLoginPage() {
           )}
 
           <div className="flex items-center justify-end text-xs text-black/70">
-            <Link href="#" className="hover:underline">
+            <Link
+              href="/Login/ForgotPassword"
+              className="hover:underline"
+            >
               Forgot Password?
             </Link>
           </div>

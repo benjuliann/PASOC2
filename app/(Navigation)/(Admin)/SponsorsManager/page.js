@@ -305,8 +305,8 @@ export default function SponsorManagerPage() {
 											htmlFor="description"
 											className="mb-1 block text-sm font-semibold text-gray-700"
 										>
-                      Description:
-                    </label>
+											Description:
+										</label>
 										<textarea
 											id="description"
 											name="description"
@@ -353,11 +353,10 @@ export default function SponsorManagerPage() {
 								<button
 									type="button"
 									onClick={executeConfirmedAction}
-									className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
-										confirmModal.action === "delete"
-											? "bg-red-700 hover:bg-red-800"
-											: "bg-gray-700 hover:bg-gray-800"
-									} `}
+									className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${confirmModal.action === "delete"
+										? "bg-red-700 hover:bg-red-800"
+										: "bg-gray-700 hover:bg-gray-800"
+										} `}
 								>
 									{confirmModal.action === "delete"
 										? "Delete"

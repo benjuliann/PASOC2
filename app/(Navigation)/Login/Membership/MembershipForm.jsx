@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Divider, SectionTitle } from "./components/FormUI";
 import MemberInfoSection from "./components/MemberInfoSection";
 import AdditionalInfoSection from "./components/AdditionalInfoSection";
@@ -9,32 +9,89 @@ import ConsentSection from "./components/ConsentSection";
 import EmailNotificationsSection from "./components/EmailNotificationsSection";
 import DependantsSection from "./components/DependantsSection";
 
-import { REQUIRED_FIELDS, initialMembershipForm} from "../../../_utils/membershipFormConfig";
-
+import { REQUIRED_FIELDS, initialMembershipForm } from "../../../_utils/membershipFormConfig";
 import { sanitizeByKey } from "../../../_utils/membershipFormSanitizers";
+import { getPasswordChecks, validateField, validateAll } from "../../../_utils/membershipFormValidators";
 
-import { getPasswordChecks, validateField, validateAll} from "../../../_utils/membershipFormValidators";
+// ─── Age helper (no pricing dependency — safe outside component) ──────────────
+const getAge = (birthday) => {
+  if (!birthday) return null;
+  const today = new Date();
+  const dob = new Date(birthday);
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age;
+};
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function MembershipForm() {
-  // Convert required fields array into a Set
   const REQUIRED = useMemo(() => new Set(REQUIRED_FIELDS), []);
 
-  // Main form state
   const [form, setForm] = useState(initialMembershipForm);
-
-  // Error state
   const [errors, setErrors] = useState({});
-
-  // Tracks whether user interacted with a field
   const [touched, setTouched] = useState({});
-
-  // Controls incomplete form modal
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Used for password checklist display
+  // ─── Pricing state — fetched from DB ────────────────────────────────────────
+  const [pricing, setPricing] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/Database/pricing")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.memberPrice && data.dependantPrice) {
+          setPricing(data);
+        }
+      })
+      .catch(() => console.error("Failed to fetch pricing"));
+  }, []);
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // ─── Pricing helpers (inside component — depend on pricing state) ────────────
+  const getMemberFee = (birthday) => {
+    if (!pricing) return 0;
+    const age = getAge(birthday);
+    const memberPrice = parseFloat(pricing.memberPrice);
+    const dependantPrice = parseFloat(pricing.dependantPrice);
+    if (age === null) return memberPrice;
+    return age < 18 ? dependantPrice : memberPrice;
+  };
+
+  const calculateMembershipTotal = (f) => {
+    const memberFee = getMemberFee(f.birthday);
+    const dependantFees =
+      f.hasChildren === "yes"
+        ? f.dependants.reduce((sum, dep) => sum + getMemberFee(dep.birthday), 0)
+        : 0;
+    return memberFee + dependantFees;
+  };
+
+  const buildPricingDescription = (f) => {
+    if (!pricing) return "Loading pricing...";
+    const memberAge = getAge(f.birthday);
+    const memberType = memberAge !== null && memberAge < 18 ? "Youth" : "Adult";
+    const memberFee = getMemberFee(f.birthday);
+    let desc = `${memberType} member: $${memberFee.toFixed(2)}`;
+    if (f.hasChildren === "yes" && f.dependants.length > 0) {
+      f.dependants.forEach((dep, i) => {
+        const depAge = getAge(dep.birthday);
+        const depType = depAge !== null && depAge < 18 ? "Youth" : "Adult";
+        const depFee = getMemberFee(dep.birthday);
+        desc += ` | Dependant ${i + 1} (${depType}): $${depFee.toFixed(2)}`;
+      });
+    }
+    return desc;
+  };
+  // ─────────────────────────────────────────────────────────────────────────────
+
   const passwordChecks = getPasswordChecks(form.password);
+  const membershipTotal = calculateMembershipTotal(form);
+  const pricingDescription = buildPricingDescription(form);
 
-  // Handles normal field changes
   const setField = (key) => (e) => {
     const isCheckbox = e.target.type === "checkbox";
     const rawValue = isCheckbox ? e.target.checked : e.target.value;
@@ -94,7 +151,6 @@ export default function MembershipForm() {
     });
   };
 
-  // Handles dependant field changes
   const updateDependant = (index, field, rawValue) => {
     const value = sanitizeByKey(field === "birthday" ? "birthday" : field, rawValue);
 
@@ -107,9 +163,7 @@ export default function MembershipForm() {
 
       if (nextForm.hasChildren === "yes") {
         const errorKey = `dep_${index}_${field}`;
-
         setTouched((t) => ({ ...t, [errorKey]: true }));
-
         setErrors((errs) => ({
           ...errs,
           [errorKey]: String(value).trim() ? "" : "Required",
@@ -120,7 +174,6 @@ export default function MembershipForm() {
     });
   };
 
-  // Add a new dependant row
   const addDependant = () => {
     setForm((prev) => ({
       ...prev,
@@ -131,7 +184,6 @@ export default function MembershipForm() {
     }));
   };
 
-  // Remove a dependant row
   const removeDependant = (index) => {
     setForm((prev) => ({
       ...prev,
@@ -155,12 +207,10 @@ export default function MembershipForm() {
     });
   };
 
-  // Runs when user clicks submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const touchThese = {};
-
     for (const key of REQUIRED) {
       touchThese[key] = true;
     }
@@ -183,8 +233,58 @@ export default function MembershipForm() {
       return;
     }
 
-    alert("✅ Looks good! Continue to payment.");
+    // All validation passed — proceed to Stripe
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: membershipTotal,
+          type: "membership",
+          metadata: {
+            type: "membership",
+            first_name: form.firstName,
+            last_name: form.lastName,
+            email: form.email,
+            phone: form.phone,
+            date_of_birth: form.birthday,
+            address: `${form.address}, ${form.city}`,
+            postal_code: form.postalCode,
+            price_id: String(pricing?.priceId ?? ""),
+            dependants: String(form.hasChildren === "yes" ? form.dependants.length : 0),
+            description: pricingDescription,
+            // Dependant details
+            ...Object.fromEntries(
+              form.hasChildren === "yes"
+                ? form.dependants.flatMap((dep, i) => [
+                    [`dep_${i}_name`, `${dep.firstName} ${dep.lastName}`.trim()],
+                    [`dep_${i}_dob`, dep.birthday],
+                  ])
+                : []
+            ),
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // GUARD: don't render form until pricing is loaded
+  if (!pricing) {
+    return (
+      <main className="min-h-dvh bg-[#F4EFE7] flex items-center justify-center">
+        <p className="text-[#556B2F] text-sm">Loading membership pricing...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-dvh bg-[#F4EFE7] relative overflow-y-auto md:overflow-hidden">
@@ -209,12 +309,10 @@ export default function MembershipForm() {
             <h2 className="font-serif text-2xl text-[#556B2F]">
               Form is incomplete!
             </h2>
-
             <p className="mt-2 text-sm text-black/70">
               Some required fields are missing or invalid.
               <br /> Go back and complete the fields marked in red.
             </p>
-
             <div className="mt-5 flex justify-end">
               <button
                 type="button"
@@ -236,8 +334,8 @@ export default function MembershipForm() {
 
           <p className="text-center text-black mt-2 text-sm sm:text-base max-w-xl mx-auto">
             One-time membership fee of: <br />
-            Adults (18+): $5.00 <br />
-            Youth (under 18): $2.50 <br />
+            Adults (18+): ${parseFloat(pricing.memberPrice).toFixed(2)} <br />
+            Youth (under 18): ${parseFloat(pricing.dependantPrice).toFixed(2)} <br />
           </p>
 
           <form className="mt-8 space-y-4" onSubmit={handleSubmit} noValidate>
@@ -286,11 +384,21 @@ export default function MembershipForm() {
 
             <Divider className="bg-black/40" />
 
+            {/* Pricing summary — updates live as form fills in */}
+            <div className="rounded-xl bg-white/60 border border-black/10 px-4 py-3 text-sm text-black/70 space-y-1">
+              <p className="font-semibold text-black/80">Order Summary</p>
+              <p>{pricingDescription}</p>
+              <p className="font-bold text-[#556B2F] text-base">
+                Total: ${membershipTotal.toFixed(2)} CAD
+              </p>
+            </div>
+
             <button
               type="submit"
-              className="w-full bg-[#7E9A45] text-white py-3 rounded-xl shadow-md hover:brightness-95 transition"
+              disabled={loading}
+              className="w-full bg-[#7E9A45] text-white py-3 rounded-xl shadow-md hover:brightness-95 disabled:opacity-60 transition"
             >
-              Continue to Payment
+              {loading ? "Redirecting to payment..." : "Continue to Payment"}
             </button>
           </form>
         </div>

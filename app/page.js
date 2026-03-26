@@ -4,14 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HeroSection } from "./(Navigation)/(Members)/UI/HeroSection";
 import { ReadMore } from "./(Navigation)/(Members)/UI/ReadMoreNews";
-import { FloatingButton } from "./(Navigation)/(Members)/UI/FloatingButton";
+import { FloatingButton } from "./(Navigation)/(Admin)/UI/FloatingButton";
 
 
 export default function HomePage() {
   const router = useRouter();
   const [extend, setExtend] = useState(false);
   const [selectedNews, setSelectedNews] = useState(null);
-  {/* Sample news data; in a real app, this would likely come from the facebook api or the database */}
+  {/* Sample news data; in a real app, this would likely come from the facebook api or the database */ }
   const news = [
     {
       title: "2026 Scholarship Awardees",
@@ -35,9 +35,9 @@ export default function HomePage() {
 
       {/* HERO */}
       <HeroSection
-		title="Welcome to PASOC!"
-		description="It is our pleasure to receive you in our new online office. May you find this visit interesting and informative. Join us today below, or stayed tuned by signing as a Guest!"
-	  />
+        title="Welcome to PASOC!"
+        description="It is our pleasure to receive you in our new online office. May you find this visit interesting and informative. Join us today below, or stayed tuned by signing as a Guest!"
+      />
 
       {/* ABOUT */}
       <section className="bg-neutral-100 py-24 px-6">
@@ -55,7 +55,11 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="w-full h-105 rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]" />
+          <img
+            src="/PasocLeadership2012_01.jpg"
+            alt="PASOC Leadership 2012"
+            className="w-full h-105 object-cover rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+          />
         </div>
       </section>
 
@@ -159,7 +163,7 @@ export default function HomePage() {
             community engagement, and lifelong friendships.
           </p>
 
-          <button 
+          <button
             onClick={() => router.push("/Login/Membership")}
             className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200"
           >
