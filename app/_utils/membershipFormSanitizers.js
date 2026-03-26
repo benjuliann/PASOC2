@@ -85,6 +85,7 @@ export const sanitizeByKey = (key, rawValue) => {
     case "preferredName":
     case "city":
     case "address":
+    case "name":
       // should look nicely capitalized
       return toTitleCase(base);
 

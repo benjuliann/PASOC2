@@ -6,6 +6,7 @@ import { DeletionConfirmation } from "../UI/DeletionConfirmation";
 import { useState, useEffect } from "react";
 import { Link } from "lucide-react";
 import { validateField } from "../../../_utils/membershipFormValidators";
+import { sanitizeByKey, toTitleCase } from "../../../_utils/membershipFormSanitizers";
 
 async function getMemberInfo(userID) {
   try {
@@ -73,14 +74,22 @@ export default function Profile() {
   function handleChange(e) {
     const { name, value } = e.target;
 
+    let sanitizedValue = value;
+
+    if (name === "name") {
+      sanitizedValue = toTitleCase(value);
+    } else {
+      sanitizedValue = sanitizeByKey(name, value);
+    }
+
     const nextForm = {
       ...formData,
-      [name]: value,
+      [name]: sanitizedValue,
     };
 
     setFormData(nextForm);
 
-    const error = validateProfileField(name, value, nextForm);
+    const error = validateProfileField(name, sanitizedValue, nextForm);
 
     setErrors((prev) => ({
       ...prev,
