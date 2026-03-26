@@ -26,7 +26,7 @@ export function HeroSection({ title, description }) {
 				<h1 className="text-[70px] text-white m-0 font-serif leading-tight">
 					{title}
 				</h1>
-				<p className="text-[18px] text-white mt-2 font-serif max-w-95">
+				<p className="text-[18px] text-white mt-2 font-serif max-w-120">
 					{description}
 				</p>
 
@@ -42,7 +42,7 @@ export function HeroSection({ title, description }) {
 							href="/Guest"
 							className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white"
 						>
-							Guest Form
+							Join Newsletter
 						</Link>
 					</div>
 				)}
