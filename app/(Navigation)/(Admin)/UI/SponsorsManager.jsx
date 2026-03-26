@@ -14,7 +14,7 @@ export function SponsorsManager() {
 
 	const [confirmModal, setConfirmModal] = useState({
 		isOpen: false,
-		action: null,
+		action: null, // "delete" | "move" | "add"
 		sponsorId: null,
 	});
 
@@ -24,16 +24,12 @@ export function SponsorsManager() {
 	});
 
 	const selectedSponsorName =
-		(confirmModal.action === "create" || confirmModal.action === "edit") &&
-		newSponsor.name
-			? newSponsor.name
-			: currentSponsors.find(
-					(sponsor) => sponsor.id === confirmModal.sponsorId,
-				)?.name ||
-				previousSponsors.find(
-					(sponsor) => sponsor.id === confirmModal.sponsorId,
-				)?.name ||
-				"this sponsor";
+		currentSponsors.find((sponsor) => sponsor.id === confirmModal.sponsorId)
+			?.name ||
+		previousSponsors.find(
+			(sponsor) => sponsor.id === confirmModal.sponsorId,
+		)?.name ||
+		"this sponsor";
 
 	const handleSponsorFieldChange = (event) => {
 		const { name, value } = event.target;
@@ -62,57 +58,10 @@ export function SponsorsManager() {
 
 	const executeConfirmedAction = async () => {
 		const { action, sponsorId } = confirmModal;
+		if (!action || (!sponsorId && action !== "add")) return;
 
 		try {
 			let response;
-
-			if (action === "create") {
-				response = await fetch("/api/Database/sponsors", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						name: newSponsor.name.trim(),
-						description: newSponsor.description.trim(),
-						status: "current",
-					}),
-				});
-				if (response.ok) {
-					closeAddSponsorModal();
-					closeConfirmModal();
-					loadSponsors();
-				} else {
-					console.error(
-						"Create failed:",
-						response.status,
-						await response.text(),
-					);
-				}
-				return;
-			}
-
-			if (action === "edit" && sponsorId) {
-				response = await fetch(`/api/Database/sponsors/${sponsorId}`, {
-					method: "PUT",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						name: newSponsor.name.trim(),
-						description: newSponsor.description.trim(),
-						status: "current",
-					}),
-				});
-				if (response.ok) {
-					closeAddSponsorModal();
-					closeConfirmModal();
-					loadSponsors();
-				} else {
-					console.error(
-						"Edit failed:",
-						response.status,
-						await response.text(),
-					);
-				}
-				return;
-			}
 
 			if (action === "delete") {
 				response = await fetch(`/api/Database/sponsors/${sponsorId}`, {
@@ -123,6 +72,21 @@ export function SponsorsManager() {
 					method: "PUT",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ status: "previous" }),
+				});
+			} else if (action === "add") {
+				const isEdit = Boolean(editingSponsorId);
+				const url = isEdit
+					? `/api/Database/sponsors/${editingSponsorId}`
+					: "/api/Database/sponsors";
+
+				response = await fetch(url, {
+					method: isEdit ? "PUT" : "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						name: newSponsor.name.trim(),
+						description: newSponsor.description.trim(),
+						status: "current",
+					}),
 				});
 			}
 
@@ -142,15 +106,15 @@ export function SponsorsManager() {
 		}
 	};
 
-	const handleDeleteCurrentSponsor = (sponsorId) => {
+	const handleDeleteCurrentSponsor = async (sponsorId) => {
 		openConfirmModal("delete", sponsorId);
 	};
 
-	const handleDeletePreviousSponsor = (sponsorId) => {
+	const handleDeletePreviousSponsor = async (sponsorId) => {
 		openConfirmModal("delete", sponsorId);
 	};
 
-	const handleMoveToPrevious = (sponsorId) => {
+	const handleMoveToPrevious = async (sponsorId) => {
 		openConfirmModal("move", sponsorId);
 	};
 
@@ -171,14 +135,11 @@ export function SponsorsManager() {
 		setIsAddSponsorModalOpen(true);
 	};
 
-	const handleAddSponsor = (event) => {
+	const handleAddSponsor = async (event) => {
 		event.preventDefault();
 		if (!newSponsor.name.trim()) return;
 
-		const isEdit = Boolean(editingSponsorId);
-		const action = isEdit ? "edit" : "create";
-
-		openConfirmModal(action, editingSponsorId || null);
+		openConfirmModal("add", null);
 	};
 
 	const loadSponsors = async () => {
@@ -325,7 +286,7 @@ export function SponsorsManager() {
 											value={newSponsor.name}
 											onChange={handleSponsorFieldChange}
 											required
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#556B2F]"
+											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#556B2F] focus:ring-2 focus:ring-[#556B2F]"
 										/>
 									</div>
 
@@ -342,7 +303,7 @@ export function SponsorsManager() {
 											rows={4}
 											value={newSponsor.description}
 											onChange={handleSponsorFieldChange}
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-[#556B2F]"
+											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#556B2F] focus:ring-2 focus:ring-[#556B2F]"
 										/>
 									</div>
 
@@ -353,7 +314,7 @@ export function SponsorsManager() {
 										>
 											{editingSponsorId
 												? "Save Changes"
-												: "Add Sponsor"}
+												: "Create"}
 										</button>
 									</div>
 								</div>
@@ -370,37 +331,47 @@ export function SponsorsManager() {
 									? `Are you sure you want to delete "${selectedSponsorName}"?`
 									: confirmModal.action === "move"
 										? `Are you sure you want to move "${selectedSponsorName}" to previous sponsor?`
-										: confirmModal.action === "create"
-											? `Are you sure you want to create "${selectedSponsorName}"?`
-											: confirmModal.action === "edit"
-												? `Are you sure you want to save changes to "${selectedSponsorName}"?`
-												: "Confirm action"}
+										: confirmModal.action === "add"
+											? `${editingSponsorId ? `Are you sure you want to save changes to "${newSponsor.name.trim()}"?` : `Do you want to create "${newSponsor.name.trim()}"?`}`
+											: "Confirm action?"}
 							</h3>
 
 							<div className="mt-6 flex justify-end gap-2">
 								<button
 									type="button"
-									onClick={closeConfirmModal}
+									onClick={() => {
+										closeConfirmModal();
+										if (confirmModal.action === "add") {
+											closeAddSponsorModal();
+										}
+									}}
 									className="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100"
 								>
 									Cancel
 								</button>
 								<button
 									type="button"
-									onClick={executeConfirmedAction}
+									onClick={() => {
+										executeConfirmedAction();
+										if (confirmModal.action === "add") {
+											closeAddSponsorModal();
+										}
+									}}
 									className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
 										confirmModal.action === "delete"
 											? "bg-red-700 hover:bg-red-800"
-											: "bg-[#556B2F] hover:bg-[#6b8e23]"
+											: confirmModal.action === "add"
+												? "bg-[#556B2F] hover:bg-[#6b8e23]"
+												: "bg-gray-700 hover:bg-gray-800"
 									} `}
 								>
 									{confirmModal.action === "delete"
 										? "Delete"
-										: confirmModal.action === "move"
-											? "Move"
-											: confirmModal.action === "create"
-												? "Create"
-												: "Save"}
+										: confirmModal.action === "add"
+											? editingSponsorId
+												? "Save"
+												: "Create"
+											: "Move"}
 								</button>
 							</div>
 						</div>
