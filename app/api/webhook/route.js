@@ -7,6 +7,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const toMySQLDate = (dateStr) => {
   if (!dateStr) return null;
+  // If already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  // Convert MM/DD/YYYY to YYYY-MM-DD
   const [month, day, year] = dateStr.split("/");
   if (!month || !day || !year) return null;
   return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
