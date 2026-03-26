@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HeroSection } from "./(Navigation)/(Members)/UI/HeroSection";
 import { ReadMore } from "./(Navigation)/(Members)/UI/ReadMoreNews";
-import { FloatingButton } from "./(Navigation)/(Admin)/UI/FloatingButton";
+import { FloatingButton } from "./(Navigation)/(Members)/UI/FloatingButton";
 
 
 export default function HomePage() {
