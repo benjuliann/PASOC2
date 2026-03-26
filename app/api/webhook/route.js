@@ -52,11 +52,21 @@ export async function POST(req) {
       const dependantCount = parseInt(meta.dependants || "0", 10);
       const totalAmount = memberPrice + dependantCount * dependantPrice;
 
-      // Insert primary member
+      // 1. Insert into UserLogin FIRST
+      await pool.execute(
+        `INSERT INTO UserLogin (uuid, email)
+        VALUES (?, ?)`,
+        [
+          memberUUID,
+          meta.email || session.customer_details?.email || null,
+        ]
+      );
+
+      // 2. Then insert into MemberInfo
       await pool.execute(
         `INSERT INTO MemberInfo 
           (uuid, roleId, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           memberUUID,
           3,
