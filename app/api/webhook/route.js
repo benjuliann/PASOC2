@@ -5,6 +5,13 @@ import { v4 as uuidv4 } from "uuid";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+const toMySQLDate = (dateStr) => {
+  if (!dateStr) return null;
+  const [month, day, year] = dateStr.split("/");
+  if (!month || !day || !year) return null;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+};
+
 export async function POST(req) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
@@ -71,7 +78,7 @@ export async function POST(req) {
           memberUUID,
           3,
           fullName,
-          meta.date_of_birth || null,
+          meta.date_of_birth ? toMySQLDate(meta.date_of_birth) : null,
           today,
           meta.address || null,
           meta.postal_code || null,
@@ -84,7 +91,7 @@ export async function POST(req) {
       // Insert dependants if any
       for (let i = 0; i < dependantCount; i++) {
         const depName = meta[`dep_${i}_name`] || null;
-        const depDOB = meta[`dep_${i}_dob`] || null;
+        const depDOB = toMySQLDate(meta[`dep_${i}_dob`]);
 
         if (depName) {
           await pool.execute(
