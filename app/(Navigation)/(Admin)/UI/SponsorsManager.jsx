@@ -5,6 +5,7 @@ import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import CurrentSponsorCard from "./CurrentSponsorCard";
 import PreviousSponsorCard from "./PreviousSponsorCard";
+import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 export function SponsorsManager() {
 	const [currentSponsors, setCurrentSponsors] = useState([]);
@@ -22,6 +23,7 @@ export function SponsorsManager() {
 		name: "",
 		description: "",
 	});
+	const [formError, setFormError] = useState("");
 
 	const selectedSponsorName =
 		currentSponsors.find((sponsor) => sponsor.id === confirmModal.sponsorId)
@@ -33,15 +35,32 @@ export function SponsorsManager() {
 
 	const handleSponsorFieldChange = (event) => {
 		const { name, value } = event.target;
+		setFormError("");
 		setNewSponsor((previous) => ({
 			...previous,
 			[name]: value,
 		}));
 	};
 
+	const getSponsorModerationError = (sponsorDraft) => {
+		const name = sponsorDraft.name.trim();
+		const description = sponsorDraft.description.trim();
+
+		if (containsProfanity(name)) {
+			return "Sponsor name contains inappropriate language.";
+		}
+
+		if (containsProfanity(description)) {
+			return "Description contains inappropriate language.";
+		}
+
+		return "";
+	};
+
 	const closeAddSponsorModal = () => {
 		setIsAddSponsorModalOpen(false);
 		setEditingSponsorId(null);
+		setFormError("");
 		setNewSponsor({
 			name: "",
 			description: "",
@@ -91,11 +110,21 @@ export function SponsorsManager() {
 			}
 
 			if (!response?.ok) {
-				console.error(
-					`${action} failed:`,
-					response?.status,
-					await response?.text(),
-				);
+				const errorText = (await response?.text()) || "";
+				let parsedMessage = "";
+
+				try {
+					const parsed = JSON.parse(errorText);
+					parsedMessage = parsed?.error || "";
+				} catch {
+					parsedMessage = errorText;
+				}
+
+				if (action === "add") {
+					setFormError(parsedMessage || "Unable to save sponsor.");
+				}
+
+				console.error(`${action} failed:`, response?.status, errorText);
 				return;
 			}
 
@@ -128,6 +157,7 @@ export function SponsorsManager() {
 		}
 
 		setEditingSponsorId(sponsorId);
+		setFormError("");
 		setNewSponsor({
 			name: sponsorToEdit.name,
 			description: sponsorToEdit.description || "",
@@ -138,6 +168,12 @@ export function SponsorsManager() {
 	const handleAddSponsor = async (event) => {
 		event.preventDefault();
 		if (!newSponsor.name.trim()) return;
+
+		const moderationError = getSponsorModerationError(newSponsor);
+		if (moderationError) {
+			setFormError(moderationError);
+			return;
+		}
 
 		openConfirmModal("add", null);
 	};
@@ -261,6 +297,11 @@ export function SponsorsManager() {
 								onSubmit={handleAddSponsor}
 								className="flex flex-col gap-6"
 							>
+								{formError && (
+									<p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+										{formError}
+									</p>
+								)}
 								<div className="mx-auto flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-gray-200">
 									<Image
 										src="/pasoc_logo.png"
