@@ -28,7 +28,7 @@ export async function POST(req) {
     );
 
     await resend.emails.send({
-      from: 'Pangasinan Society of Calgary <onboarding@resend.dev>',
+      from: 'Pangasinan Society of Calgary <noreply@pasoc.cloud>',
       to: email,
       subject: `Welcome to PASOC, ${name}!`,
       html: `
