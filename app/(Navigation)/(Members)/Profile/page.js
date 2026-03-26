@@ -4,18 +4,18 @@ import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 import { useUserAuth } from "../../../_utils/auth-context";
 import { DeletionConfirmation } from "../UI/DeletionConfirmation";
 import { useState, useEffect } from "react";
+import { logout } from "@/app/_utils/actions";
 import { Link } from "lucide-react";
 
 async function getMemberInfo(userID) {
   try {
-    const baseURL =
-      process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     const res = await fetch(
       `${baseURL}/api/Database/MemberInfo?uid=${userID}`,
       {
         cache: "no-store",
-      }
+      },
     );
 
     if (!res.ok) {
@@ -39,41 +39,40 @@ export default function Profile() {
     name: "",
     address: "",
     postalCode: "",
-    primaryPhone: ""
+    primaryPhone: "",
   });
 
-  function handleChange(e){
+  function handleChange(e) {
     const { name, value } = e.target;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   }
 
-  async function handleSubmit(e){
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    if(!member?.memberID) return;
+    if (!member?.memberID) return;
 
     setSaving(true);
 
-    try{
-
-      const res = await fetch("/api/Database/MemberInfo",{
-        method:"PATCH",
-        headers:{
-          "Content-Type":"application/json"
+    try {
+      const res = await fetch("/api/Database/MemberInfo", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           memberID: member.memberID,
-          ...formData
-        })
+          ...formData,
+        }),
       });
 
       const result = await res.json();
 
-      if(!res.ok){
+      if (!res.ok) {
         throw new Error(result.error || "Update failed");
       }
 
@@ -82,15 +81,13 @@ export default function Profile() {
       setMember(updated);
 
       alert("Profile updated");
-
-    }catch(error){
+    } catch (error) {
       console.error(error);
       alert("Failed to update profile");
     }
 
     setSaving(false);
   }
-
 
   const [saving, setSaving] = useState(false);
 
@@ -114,15 +111,15 @@ export default function Profile() {
         name: member.name || "",
         address: member.address || "",
         postalCode: member.postalCode || "",
-        primaryPhone: member.primaryPhone || ""
+        primaryPhone: member.primaryPhone || "",
       });
     }
   }, [member]);
 
-  const inputStyle = "w-full rounded-lg border bg-white px-4 py-2 text-sm text-black outline-none focus:ring-2 focus:ring-[#556B2F]/50";
-  
-  const isMobile =
-    typeof window !== "undefined" && window.innerWidth < 768;
+  const inputStyle =
+    "w-full rounded-lg border bg-white px-4 py-2 text-sm text-black outline-none focus:ring-2 focus:ring-[#556B2F]/50";
+
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const profileImageSize = isMobile ? 100 : 150;
 
   return (
@@ -155,7 +152,10 @@ export default function Profile() {
               <h2 className="text-xl font-semibold text-center underline text-black">
                 Edit Profile Information
               </h2>
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6">
+              <form
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-4 mt-6"
+              >
                 <input
                   name="name"
                   type="text"
@@ -205,12 +205,17 @@ export default function Profile() {
 
           <section className="w-full flex flex-row gap-6 max-w-7xl mx-auto justify-between mt-12 border-t pt-12">
             <div className="md:w-1/2 mx-auto flex flex-col items-center gap-6">
-              <button
-                onClick={firebaseSignOut}
-                className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-              >
-                Sign Out
-              </button>
+              <form action={logout}>
+                <button
+                  onClick={async () => {
+                    await firebaseSignOut(); // Firebase signout first
+                    await logout(); // Then clear cookie + redirect
+                  }}
+                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+                >
+                  Sign Out
+                </button>
+              </form>
             </div>
           </section>
 

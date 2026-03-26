@@ -1,8 +1,6 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Header } from "../UI/Header";
-import { Footer } from "../UI/Footer";
 import { Handshake, CheckCircle, Users, Landmark, CalendarDays } from "lucide-react";
 
 const reportTiles = [
@@ -29,7 +27,6 @@ function ReportTile({ label, Icon, href }) {
 export default function ReportsPage() {
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
-      <Header />
       <main className="flex-1 flex flex-col items-center px-6 py-12">
         <div className="w-full max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-6 mt-8 mb-8">
@@ -45,7 +42,7 @@ export default function ReportsPage() {
           </div>
         </div>
       </main>
-      <Footer />
+
     </div>
   );
 }

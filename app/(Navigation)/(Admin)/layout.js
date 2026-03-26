@@ -36,3 +36,5 @@ export default async function AdminLayout({ children }) {
 
   return <LayoutShell>{children}</LayoutShell>
 }
+
+

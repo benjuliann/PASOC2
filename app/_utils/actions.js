@@ -16,3 +16,9 @@ export async function setAuthCookie(uid) {
     return { success: false };
   }
 }
+
+export async function logout() {
+  const cookieStore = await cookies();
+  cookieStore.delete("uuid");
+  redirect("/Login");
+}

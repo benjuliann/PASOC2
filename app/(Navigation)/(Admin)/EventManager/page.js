@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useMemo } from "react";
-import { Header } from "../UI/Header";
-import { Footer } from "../UI/Footer";
+
 
 const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MONTHS = [
@@ -149,7 +148,6 @@ export default function EventManagerPage() {
 
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
-      <Header />
       <main className="flex-1 flex flex-col items-center py-10">
         {/* Section Header */}
         <div className="w-full max-w-5xl mx-auto mb-4 flex flex-col items-center">
@@ -333,7 +331,6 @@ export default function EventManagerPage() {
           </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 }
