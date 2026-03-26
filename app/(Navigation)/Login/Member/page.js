@@ -10,6 +10,9 @@ import LoginSubmitButton from "../components/LoginSubmitButton";
 import SocialLoginButtons from "../components/SocialLoginButtons";
 import { getFirebaseErrorMessage, validateLoginForm } from "../../../_utils/loginHelpers";
 import { Divider } from "../Membership/components/FormUI";
+import RecaptchaWidget from "../components/RecaptchaWidget";
+import { verifyRecaptchaToken } from "../../../_utils/Recaptcha"
+
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -17,6 +20,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const { emailSignIn, googleSignIn, facebookSignIn, resetPassword } = useUserAuth();
   const [loading, setLoading] = useState(false); // Prevent multiple clicks on login button while processing
+  const [recaptchaToken, setRecaptchaToken] = useState(""); // Stores reCAPTCHA token once user completes verification
+  const [recaptchaError, setRecaptchaError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -29,6 +34,21 @@ export default function LoginPage() {
     const validationError = validateLoginForm(email, password);
     if (validationError) {
       setError(validationError);
+      return;
+    }
+
+    // Ensures that user completes reCAPTCHA before attempting to login
+    if (!recaptchaToken) {
+      setRecaptchaError("Please complete the reCAPTCHA.");
+      return;
+    }
+    
+    // Verifies token with backend before proceeding
+    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken);
+
+    if (!recaptchaResult.success) {
+      setRecaptchaToken(""); // Resets if verification fails
+      setRecaptchaError("reCAPTCHA verification failed. Try again.");
       return;
     }
 
@@ -138,15 +158,38 @@ export default function LoginPage() {
               Remember me
             </label>
 
-        <Link
-          href="/Login/ForgotPassword"
-          className="text-sm text-emerald-700 hover:underline"
-        >
-          Forgot Password?
-        </Link>
+          <Link
+            href="/Login/ForgotPassword"
+            className="text-sm text-emerald-700 hover:underline"
+          >
+            Forgot Password?
+          </Link>
+            </div>
           </div>
-        </div>
 
+        <div className="mt-4 space-y-2">
+          <RecaptchaWidget
+            onVerify={(token) => {
+              setRecaptchaToken(token);
+              setRecaptchaError("");
+            }}
+            onExpire={() => {
+              setRecaptchaToken("");
+              setRecaptchaError("reCAPTCHA expired. Please try again.");
+            }}
+            onError={() => {
+              setRecaptchaToken("");
+              setRecaptchaError("reCAPTCHA failed to load.");
+            }}
+          />
+
+          {recaptchaError && (
+            <p className="text-sm text-red-600 text-center">
+              {recaptchaError}
+            </p>
+          )}
+        </div>
+        
         <LoginSubmitButton loading={loading} loadingText="Logging in...">
           Log In
         </LoginSubmitButton>
