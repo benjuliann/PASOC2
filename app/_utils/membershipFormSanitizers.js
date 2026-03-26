@@ -83,11 +83,11 @@ export const sanitizeByKey = (key, rawValue) => {
     case "firstName":
     case "lastName":
     case "preferredName":
-      // names should look nicely capitalized
-      return toTitleCase(base);
-
     case "city":
     case "address":
+      // should look nicely capitalized
+      return toTitleCase(base);
+
     case "currentOrgInvolvement":
     case "positionsHeld":
     case "addressPhilippines":

@@ -6,9 +6,10 @@ export default function InputFields({
   value,
   onChange,
   error = "",
+  className = "",
 }) {
   return (
-    <div>
+    <div className={className}>
       <input
         type={type}
         placeholder={placeholder}

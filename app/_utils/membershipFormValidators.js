@@ -1,4 +1,5 @@
 import { isValidEmail } from "./loginHelpers";
+import { shouldRejectForModeration } from "./moderationHelpers";
 
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -49,28 +50,34 @@ export const validateField = (key, value, currentForm, requiredFields) => {
     }
   }
 
-  // Step 3: email validation
+  // Step 3: text moderator (checks for profanity and/or hate speech)
+  if (v && shouldRejectForModeration (key, v)) {
+    return "Please avoid using harmful or inappropriate language."
+  }
+
+
+  // Step 4: email validation
   if (key === "email" && v) {
     if (!isValidEmail(v)) {
       return "Enter a valid email.";
     }
   }
 
-  // Step 4: password validation
+  // Step 5: password validation
   if (key === "password" && v) {
     if (!passwordRegex.test(v)) {
       return "Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.";
     }
   }
 
-  // Step 5: confirm password must match password
+  // Step 6: confirm password must match password
   if (key === "confirmPassword" && v) {
     if (v !== currentForm.password) {
       return "Passwords do not match.";
     }
   }
 
-  // Step 6: phone number must be 10 digits
+  // Step 7: phone number must be 10 digits
   if (key === "phone" && v) {
     const digits = String(v).replace(/\D/g, "");
 
@@ -79,7 +86,7 @@ export const validateField = (key, value, currentForm, requiredFields) => {
     }
   }
 
-  // Step 7: Canadian postal code format
+  // Step 8: Canadian postal code format
   if (key === "postalCode" && v) {
     const postalRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
 

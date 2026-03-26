@@ -50,3 +50,20 @@ export function validateLoginForm(email, password) {
   // No validation errors
   return "";
 }
+
+// Validates forgot password email input
+export function validateResetEmail(email) {
+  const trimmedEmail = email.trim();
+
+  // Ensure email is provided
+  if (!email.trim()) {
+    return "Please enter your email address.";
+  }
+
+  // Validate email format
+  if (!isValidEmail(email)) {
+    return "Please enter a valid email address.";
+  }
+
+  return "";
+}

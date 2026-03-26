@@ -40,7 +40,7 @@ export function Divider({ className = "" }) {
 export function SectionTitle({ children, underlineWidth = "w-32", className = "" }) {
   return (
     <div className={`text-center ${className}`}>
-      <h2 className="text-[#556B2F] font-serif text-xl">{children}</h2>
+      <h2 className="text-[#556B2F] text-l">{children}</h2>
       <div className={`mx-auto mt-1 h-[2px] ${underlineWidth} bg-[#556B2F]/60`} />
     </div>
   );

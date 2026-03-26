@@ -19,11 +19,11 @@ import {
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const { emailSignIn, resetPassword } = useUserAuth();
+  const { emailSignIn } = useUserAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
       await emailSignIn(email, password);
 
       // 🔐 Later you can add role check here (admin only)
-      router.push("/Admin/Dashboard");
+      router.push("/Dashboard");
     } catch (err) {
       // Firebase error handling
       setErrors({
@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
     <LoginPageTemp backHref="/">
       {/* Title */}
       <div className="text-center mb-6">
-        <h1 className="font-serif text-4xl text-[#556B2F] tracking-wide">
+        <h1 className="font-serif font-extrabold text-4xl text-[#556B2F] tracking-wide">
           ADMIN LOGIN
         </h1>
 
@@ -110,14 +110,14 @@ export default function AdminLoginPage() {
             type="email"
             placeholder="Admin Email Address"
             value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setErrors((prev) => ({
-                  ...prev,
-                  email: "",
-                  general: "",
-                }));
-              }}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setErrors((prev) => ({
+                ...prev,
+                email: "",
+                general: "",
+              }));
+            }}
             error={errors.email}
           />
 
@@ -145,13 +145,12 @@ export default function AdminLoginPage() {
           )}
 
           <div className="flex items-center justify-end text-xs text-black/70">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
+            <Link
+              href="/Login/ForgotPassword"
               className="hover:underline"
             >
               Forgot Password?
-            </button>
+            </Link>
           </div>
         </div>
 
