@@ -1,8 +1,6 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Header } from "../../(Navigation)/(Admin)/UI/Header";
-import { Footer } from "../../(Navigation)/(Admin)/UI/Footer";
 import { Landmark, FileText, UserPlus, Receipt, FolderCog } from "lucide-react";
 
 const donationTiles = [
@@ -26,10 +24,9 @@ function DonationTile({ label, Icon, href }) {
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-4 text-center text-[#556B2F] font-semibold text-lg bg-white border-2 border-[#556B2F] rounded-2xl p-8 shadow-md hover:bg-[#f0ece1] transition-all duration-200"
-      style={{ minWidth: 180 }}
+      className="flex flex-col items-center gap-3 text-center text-[#556B2F] font-semibold text-base sm:text-lg bg-white border-2 border-[#556B2F] rounded-2xl p-6 sm:p-8 md:p-10 shadow-md hover:bg-[#f0ece1] transition-all duration-200 w-full"
     >
-      <Icon size={48} strokeWidth={2} />
+      <Icon size={36} strokeWidth={2} className="sm:w-12 sm:h-12" />
       <span>{label}</span>
     </Link>
   );
@@ -38,7 +35,6 @@ function DonationTile({ label, Icon, href }) {
 export default function DonationManagerPage() {
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
-      <Header />
       <main className="flex-1 flex flex-col items-center px-6 py-12">
         <div className="w-full max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-6 mt-8 mb-12">
@@ -47,14 +43,13 @@ export default function DonationManagerPage() {
             <hr className="flex-1 border-[#556B2F] border-t-2" />
           </div>
           <DonationStatCard />
-          <div className="flex justify-center gap-12 mt-16">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-16 md:mt-24">
             {donationTiles.map(tile => (
               <DonationTile key={tile.label} {...tile} />
             ))}
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
