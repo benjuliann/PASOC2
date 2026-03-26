@@ -65,6 +65,8 @@ export default function Events() {
 
       grouped[key].push({
         title: event.title,
+        datetime: event.startDatetime, // full raw value
+        date: new Date(event.startDatetime).toLocaleDateString(),
         time: new Date(event.startDatetime).toLocaleTimeString([], {
           hour: "numeric",
           minute: "2-digit",
@@ -263,6 +265,7 @@ export default function Events() {
         {selectedEvent && (
           <EventInformation
             title={selectedEvent.title}
+            date={selectedEvent.date}
             time={selectedEvent.time}
             description={selectedEvent.description}
             location={selectedEvent.location}

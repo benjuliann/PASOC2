@@ -1,4 +1,4 @@
-export function EventInformation({ title, time, description, location, onClose }) {
+export function EventInformation({ title, date, time, description, location, onClose }) {
   return (
     <div
         className="fixed inset-0 flex items-center justify-center z-50 bg-black/50"
@@ -18,6 +18,7 @@ export function EventInformation({ title, time, description, location, onClose }
         </button>
 
         <h2 className="text-xl font-bold mb-4">{title}</h2>
+        <p><strong>Date:</strong> {date}</p>
         <p><strong>Time:</strong> {time}</p>
         <p><strong>Location:</strong> {location}</p>
         <p><strong>Description:</strong> {description}</p>
