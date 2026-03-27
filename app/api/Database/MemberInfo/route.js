@@ -57,6 +57,7 @@ export async function POST(request) {
 
     const {
       uuid,
+      roleId,
       name,
       dateOfBirth,
       applicationDate,
@@ -79,11 +80,11 @@ export async function POST(request) {
 
     const [result] = await pool.query(
       `INSERT INTO MemberInfo
-      (uuid, roleID, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
+      (uuid, roleId, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        memberID,
-        roleID,
+        uuid,
+        roleId,
         name,
         dateOfBirth,
         applicationDate,
@@ -171,15 +172,15 @@ export async function PATCH(request) {
   try {
     const body = await request.json();
 
-    const { 
+    const {
       uuid,
       name,
-      applicationDate, 
-      address, 
-      postalCode, 
-      primaryPhone, 
-      secondaryPhone, 
-      email 
+      applicationDate,
+      address,
+      postalCode,
+      primaryPhone,
+      secondaryPhone,
+      email,
     } = body;
 
     if (!uuid) {

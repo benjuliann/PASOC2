@@ -1,5 +1,18 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { containsProfanity } from "@/app/_utils/moderationHelpers";
+
+function getFaqModerationError(question, answer) {
+	if (containsProfanity(question)) {
+		return "Question contains inappropriate language.";
+	}
+
+	if (containsProfanity(answer)) {
+		return "Answer contains inappropriate language.";
+	}
+
+	return "";
+}
 
 export async function GET() {
 	try {
@@ -24,6 +37,14 @@ export async function POST(request) {
 		if (!question || !answer) {
 			return NextResponse.json(
 				{ error: "Question and answer are required" },
+				{ status: 400 },
+			);
+		}
+
+		const moderationError = getFaqModerationError(question, answer);
+		if (moderationError) {
+			return NextResponse.json(
+				{ error: moderationError },
 				{ status: 400 },
 			);
 		}

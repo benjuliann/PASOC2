@@ -8,6 +8,7 @@ export function FaqsCard({
 	isEditing = false,
 	editQuestion,
 	editAnswer,
+	editErrorMessage = "",
 	onChangeEditQuestion,
 	onChangeEditAnswer,
 	onSave,
@@ -23,6 +24,11 @@ export function FaqsCard({
 		<article className="w-full">
 			{isEditing ? (
 				<div className="space-y-3 rounded-2xl border border-gray-300 bg-[#f3f4f6] p-4">
+					{editErrorMessage && (
+						<p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+							{editErrorMessage}
+						</p>
+					)}
 					<input
 						type="text"
 						value={editQuestion}

@@ -7,7 +7,7 @@ export async function GET() {
     connection.release();
 
     const [rows] = await pool.query(
-      "SELECT * FROM Events ORDER BY eventDate ASC"
+      "SELECT * FROM Events ORDER BY eventId DESC"
     );
 
     return NextResponse.json({
@@ -37,19 +37,19 @@ export async function GET() {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { name, date, time, where, sponsor } = body;
+    const { title, startDatetime, description, location } = body;
 
-    if (!name || !date || !time || !where) {
+    if (!title || !startDatetime) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields: name, date, time, where" },
+        { success: false, error: "Missing required fields: title, startDatetime" },
         { status: 400 }
       );
     }
 
     const [result] = await pool.query(
-      `INSERT INTO Events (eventName, eventDate, eventTime, eventLocation, eventSponsor)
-       VALUES (?, ?, ?, ?, ?)`,
-      [name, date, time, where, sponsor || null]
+      `INSERT INTO Events (title, startDatetime, description, location)
+       VALUES (?, ?, ?, ?)`,
+      [title, startDatetime, description || null, location || null]
     );
 
     return NextResponse.json({
@@ -69,7 +69,7 @@ export async function POST(request) {
 export async function PUT(request) {
   try {
     const body = await request.json();
-    const { id, name, date, time, where, sponsor } = body;
+    const { id, title, startDatetime, description, location } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -81,11 +81,10 @@ export async function PUT(request) {
     const fields = [];
     const values = [];
 
-    if (name !== undefined) { fields.push("eventName = ?"); values.push(name); }
-    if (date !== undefined) { fields.push("eventDate = ?"); values.push(date); }
-    if (time !== undefined) { fields.push("eventTime = ?"); values.push(time); }
-    if (where !== undefined) { fields.push("eventLocation = ?"); values.push(where); }
-    if (sponsor !== undefined) { fields.push("eventSponsor = ?"); values.push(sponsor); }
+    if (title !== undefined) { fields.push("title = ?"); values.push(title); }
+    if (startDatetime !== undefined) { fields.push("startDatetime = ?"); values.push(startDatetime); }
+    if (description !== undefined) { fields.push("description = ?"); values.push(description); }
+    if (location !== undefined) { fields.push("location = ?"); values.push(location); }
 
     if (fields.length === 0) {
       return NextResponse.json(

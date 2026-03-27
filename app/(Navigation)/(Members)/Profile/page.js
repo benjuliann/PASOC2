@@ -14,7 +14,7 @@ async function getMemberInfo(userID) {
     const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     const res = await fetch(
-      `${baseURL}/api/Database/MemberInfo?uuid=${userID}`,
+      `${baseURL}/api/Database/MemberInfo?uid=${userID}`,
       {
         cache: "no-store",
       },
@@ -136,7 +136,7 @@ export default function Profile() {
       }
 
       // Refresh profile info
-      const updated = await getMemberInfo(user.uuid);
+      const updated = await getMemberInfo(user.uid);
       setMember(updated);
 
       alert("Profile updated");
@@ -152,12 +152,12 @@ export default function Profile() {
 
   useEffect(() => {
     async function fetchMember() {
-      if (!user?.uuid) {
+      if (!user?.uid) {
         setMember(null);
         return;
       }
 
-      const memberData = await getMemberInfo(user.uuid);
+      const memberData = await getMemberInfo(user.uid);
       setMember(memberData);
     }
 

@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 function toDbSponsorStatus(value) {
 	const normalized = String(value || "")
@@ -8,6 +9,18 @@ function toDbSponsorStatus(value) {
 	if (normalized === "current") return "Current";
 	if (normalized === "previous") return "Previous";
 	return null;
+}
+
+function getSponsorModerationError(key, value) {
+	if (!value) return "";
+
+	if (containsProfanity(value)) {
+		return key === "name"
+			? "Sponsor name contains inappropriate language."
+			: "Sponsor description contains inappropriate language.";
+	}
+
+	return "";
 }
 
 export async function PUT(request, context) {
@@ -19,12 +32,38 @@ export async function PUT(request, context) {
 		const values = [];
 
 		if (typeof body.name === "string") {
+			const trimmedName = body.name.trim();
+			const nameModerationError = getSponsorModerationError(
+				"name",
+				trimmedName,
+			);
+
+			if (nameModerationError) {
+				return NextResponse.json(
+					{ error: nameModerationError },
+					{ status: 400 },
+				);
+			}
+
 			fields.push("sponsorName = ?");
-			values.push(body.name.trim());
+			values.push(trimmedName);
 		}
 		if (typeof body.description === "string") {
+			const trimmedDescription = body.description.trim();
+			const descriptionModerationError = getSponsorModerationError(
+				"description",
+				trimmedDescription,
+			);
+
+			if (descriptionModerationError) {
+				return NextResponse.json(
+					{ error: descriptionModerationError },
+					{ status: 400 },
+				);
+			}
+
 			fields.push("sponsorDescription = ?");
-			values.push(body.description.trim());
+			values.push(trimmedDescription);
 		}
 		if (typeof body.status === "string") {
 			const normalizedStatus = toDbSponsorStatus(body.status);
