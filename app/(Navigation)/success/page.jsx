@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default async function Success({ searchParams }) {
   const { type } = await searchParams;
 
@@ -11,6 +13,14 @@ export default async function Success({ searchParams }) {
           ? "Your generous support means a lot to the Pangasinan community in Calgary."
           : "Welcome to PASOC! We look forward to having you as part of our community."}
       </p>
+
+      <Link
+        href="/"
+        className="inline-block mt-5 bg-[#556B2F] text-white px-6 py-2 rounded-md text-sm hover:opacity-90 transition"
+      >
+        Return to Home
+      </Link>
     </main>
+    
   );
 }
