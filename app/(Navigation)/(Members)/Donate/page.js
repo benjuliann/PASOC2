@@ -99,7 +99,7 @@ function DonateContent() {
                 type="button"
                 key={amt}
                 onClick={() => handleAmountClick(amt)}
-                className={`amount-btn px-4 py-1.5 rounded-full border border-gray-300 text-sm font-semibold text-neutral-700 bg-white hover:border-[#556B2F] hover:text-[#556B2F] transition-all ${selectedAmount === amt ? "bg-[#556B2F] text-white border-[#556B2F]" : ""}`}
+                className={`amount-btn px-4 py-1.5 rounded-full border border-gray-300 text-sm font-semibold text-neutral-700 bg-white hover:border-[#556B2F] hover:text-[#556B2F] transition-all ${selectedAmount === amt ? "bg-[#556B2F] text-neutral-700 border-[#556B2F]" : ""}`}
               >
                 ${amt}
               </button>
