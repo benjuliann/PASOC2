@@ -68,7 +68,7 @@ export async function GET(request) {
     if (isAdmin(roleID)) {
       if (requestedMemberID) {
         const [rows] = await pool.query(
-          "SELECT * FROM MemberInfo WHERE memberID = ?",
+          "SELECT * FROM MemberInfo WHERE uuid = ?",
           [requestedMemberID]
         );
 
@@ -132,7 +132,7 @@ export async function POST(request) {
     const body = await request.json();
     const {
       uuid,
-      roleID: newRoleID,
+      roleId: newRoleID,
       name,
       dateOfBirth,
       applicationDate,
@@ -222,23 +222,23 @@ export async function DELETE(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const memberID = searchParams.get("memberID");
+    const memberID = searchParams.get("uuid");
 
     if (!memberID) {
       return NextResponse.json(
-        { success: false, error: "Missing required query parameter: memberID" },
+        { success: false, error: "Missing required query parameter: uuid" },
         { status: 400 }
       );
     }
 
     const [result] = await pool.query(
-      "DELETE FROM MemberInfo WHERE memberID = ?",
+      "DELETE FROM MemberInfo WHERE uuid = ?",
       [memberID]
     );
 
     if (result.affectedRows === 0) {
       return NextResponse.json(
-        { success: false, error: "No member found with the provided memberID" },
+        { success: false, error: "No member found with the provided uuid" },
         { status: 404 }
       );
     }
@@ -273,7 +273,7 @@ export async function PATCH(request) {
     const body = await request.json();
 
     const {
-      memberID,
+      uuid,
       roleID: requestedRoleID,
       name,
       applicationDate,
@@ -286,7 +286,7 @@ export async function PATCH(request) {
 
     // Members can update only their own row.
     // Admin/superadmin can update any row.
-    let targetMemberID = memberID;
+    let targetMemberID = uuid;
 
     if (!isAdmin(roleID)) {
       if (!memberRow) {
@@ -300,7 +300,7 @@ export async function PATCH(request) {
 
     if (!targetMemberID) {
       return NextResponse.json(
-        { success: false, error: "memberID is required" },
+        { success: false, error: "uuid is required" },
         { status: 400 }
       );
     }
@@ -359,7 +359,7 @@ export async function PATCH(request) {
     values.push(targetMemberID);
 
     const [result] = await pool.query(
-      `UPDATE MemberInfo SET ${fields.join(", ")} WHERE memberID = ?`,
+      `UPDATE MemberInfo SET ${fields.join(", ")} WHERE uuid = ?`,
       values
     );
 
