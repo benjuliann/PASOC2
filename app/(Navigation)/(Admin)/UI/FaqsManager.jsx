@@ -2,6 +2,7 @@
 
 import React from "react";
 import { FaqsCard } from "./FaqsCard.jsx";
+import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 export function FaqsManager() {
 	const [faqs, setFaqs] = React.useState([]);
@@ -18,6 +19,25 @@ export function FaqsManager() {
 		action: null,
 		faqId: null,
 	});
+
+	const getFaqValidationError = (questionValue, answerValue) => {
+		const trimmedQuestion = String(questionValue || "").trim();
+		const trimmedAnswer = String(answerValue || "").trim();
+
+		if (trimmedQuestion && containsProfanity(trimmedQuestion)) {
+			return "Question contains inappropriate language.";
+		}
+
+		if (trimmedAnswer && containsProfanity(trimmedAnswer)) {
+			return "Answer contains inappropriate language.";
+		}
+
+		if (!trimmedQuestion || !trimmedAnswer) {
+			return "Question and answer are required.";
+		}
+
+		return "";
+	};
 
 	const loadFaqs = React.useCallback(async () => {
 		try {
@@ -47,7 +67,15 @@ export function FaqsManager() {
 	const addFaq = async () => {
 		const trimmedQuestion = question.trim();
 		const trimmedAnswer = answer.trim();
-		if (!trimmedQuestion || !trimmedAnswer) return;
+		const validationError = getFaqValidationError(
+			trimmedQuestion,
+			trimmedAnswer,
+		);
+
+		if (validationError) {
+			setErrorMessage(validationError);
+			return false;
+		}
 
 		try {
 			setErrorMessage("");
@@ -69,8 +97,10 @@ export function FaqsManager() {
 			setQuestion("");
 			setAnswer("");
 			setIsAdding(false);
+			return true;
 		} catch (error) {
 			setErrorMessage(error.message || "Failed to add FAQ");
+			return false;
 		}
 	};
 
@@ -83,7 +113,15 @@ export function FaqsManager() {
 	const saveEdit = async (id) => {
 		const trimmedQuestion = editQuestion.trim();
 		const trimmedAnswer = editAnswer.trim();
-		if (!trimmedQuestion || !trimmedAnswer) return;
+		const validationError = getFaqValidationError(
+			trimmedQuestion,
+			trimmedAnswer,
+		);
+
+		if (validationError) {
+			setErrorMessage(validationError);
+			return false;
+		}
 
 		try {
 			setErrorMessage("");
@@ -115,8 +153,10 @@ export function FaqsManager() {
 			setEditingId(null);
 			setEditQuestion("");
 			setEditAnswer("");
+			return true;
 		} catch (error) {
 			setErrorMessage(error.message || "Failed to update FAQ");
+			return false;
 		}
 	};
 
@@ -124,6 +164,7 @@ export function FaqsManager() {
 		setEditingId(null);
 		setEditQuestion("");
 		setEditAnswer("");
+		setErrorMessage("");
 	};
 
 	const openDeleteConfirmModal = (id) => {
@@ -137,7 +178,15 @@ export function FaqsManager() {
 	const openCreateConfirmModal = () => {
 		const trimmedQuestion = question.trim();
 		const trimmedAnswer = answer.trim();
-		if (!trimmedQuestion || !trimmedAnswer) return;
+		const validationError = getFaqValidationError(
+			trimmedQuestion,
+			trimmedAnswer,
+		);
+
+		if (validationError) {
+			setErrorMessage(validationError);
+			return;
+		}
 
 		setConfirmModal({
 			isOpen: true,
@@ -149,7 +198,15 @@ export function FaqsManager() {
 	const openEditConfirmModal = (id) => {
 		const trimmedQuestion = editQuestion.trim();
 		const trimmedAnswer = editAnswer.trim();
-		if (!trimmedQuestion || !trimmedAnswer) return;
+		const validationError = getFaqValidationError(
+			trimmedQuestion,
+			trimmedAnswer,
+		);
+
+		if (validationError) {
+			setErrorMessage(validationError);
+			return;
+		}
 
 		setConfirmModal({
 			isOpen: true,
@@ -159,11 +216,18 @@ export function FaqsManager() {
 	};
 
 	const closeConfirmModal = () => {
+		const shouldClearFormError =
+			confirmModal.action === "create" || confirmModal.action === "edit";
+
 		setConfirmModal({
 			isOpen: false,
 			action: null,
 			faqId: null,
 		});
+
+		if (shouldClearFormError) {
+			setErrorMessage("");
+		}
 	};
 
 	const deleteFaq = async (id) => {
@@ -193,17 +257,23 @@ export function FaqsManager() {
 		"this FAQ";
 	const createFaqQuestion = question.trim() || "this FAQ";
 	const editFaqQuestion = editQuestion.trim() || "this FAQ";
+	const showGlobalError =
+		Boolean(errorMessage) && !isAdding && editingId === null;
 
-	const confirmAction = () => {
+	const confirmAction = async () => {
 		if (confirmModal.action === "create") {
-			addFaq();
-			closeConfirmModal();
+			const created = await addFaq();
+			if (created) {
+				closeConfirmModal();
+			}
 			return;
 		}
 
 		if (confirmModal.action === "edit" && confirmModal.faqId) {
-			saveEdit(confirmModal.faqId);
-			closeConfirmModal();
+			const saved = await saveEdit(confirmModal.faqId);
+			if (saved) {
+				closeConfirmModal();
+			}
 			return;
 		}
 
@@ -214,21 +284,36 @@ export function FaqsManager() {
 
 	return (
 		<section className="w-full max-w-6xl mx-auto px-6 py-10 space-y-6">
-			{errorMessage && (
+			{showGlobalError && (
 				<p className="text-red-700 font-medium">{errorMessage}</p>
 			)}
 			{isAdding ? (
 				<div className="rounded-xl bg-white shadow-md p-5 space-y-3">
+					{errorMessage && (
+						<p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+							{errorMessage}
+						</p>
+					)}
 					<input
 						type="text"
 						value={question}
-						onChange={(event) => setQuestion(event.target.value)}
+						onChange={(event) => {
+							setQuestion(event.target.value);
+							if (errorMessage) {
+								setErrorMessage("");
+							}
+						}}
 						placeholder="Question"
 						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black"
 					/>
 					<textarea
 						value={answer}
-						onChange={(event) => setAnswer(event.target.value)}
+						onChange={(event) => {
+							setAnswer(event.target.value);
+							if (errorMessage) {
+								setErrorMessage("");
+							}
+						}}
 						placeholder="Answer"
 						rows={4}
 						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black"
@@ -247,6 +332,7 @@ export function FaqsManager() {
 								setIsAdding(false);
 								setQuestion("");
 								setAnswer("");
+								setErrorMessage("");
 							}}
 							className="rounded-md bg-red-700 px-4 py-2 text-base font-semibold text-white hover:bg-red-800"
 						>
@@ -279,8 +365,21 @@ export function FaqsManager() {
 						isEditing={editingId === faq.id}
 						editQuestion={editQuestion}
 						editAnswer={editAnswer}
-						onChangeEditQuestion={setEditQuestion}
-						onChangeEditAnswer={setEditAnswer}
+						onChangeEditQuestion={(value) => {
+							setEditQuestion(value);
+							if (errorMessage) {
+								setErrorMessage("");
+							}
+						}}
+						onChangeEditAnswer={(value) => {
+							setEditAnswer(value);
+							if (errorMessage) {
+								setErrorMessage("");
+							}
+						}}
+						editErrorMessage={
+							editingId === faq.id ? errorMessage : ""
+						}
 						onSave={() => openEditConfirmModal(faq.id)}
 						onCancel={cancelEdit}
 					/>
