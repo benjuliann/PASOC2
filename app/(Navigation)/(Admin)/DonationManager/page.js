@@ -1,77 +1,44 @@
-"use client";
 import React from "react";
-import Link from "next/link";
-
-import { Landmark, FileText, UserPlus, Receipt, FolderCog } from "lucide-react";
+import { StatCard } from "../UI/StatCard";
+import { ManagerTile } from "../UI/ManagerTile";
 
 const donationTiles = [
-  {
-    label: "Donation Records",
-    Icon: FileText,
-    href: "/Admin/DonationManager/Records",
-  },
-  {
-    label: "In Person Donation",
-    Icon: UserPlus,
-    href: "/Admin/DonationManager/InPerson",
-  },
-  {
-    label: "Donation Receipts",
-    Icon: Receipt,
-    href: "/Admin/DonationManager/Receipts",
-  },
-  {
-    label: "Manage Donations",
-    Icon: FolderCog,
-    href: "/Admin/DonationManager/Manage",
-  },
+	{ label: "Donation Records", icon: "FileText", href: "/Admin/DonationManager/Records" },
+	{ label: "In Person Donation", icon: "UserPlus", href: "/Admin/DonationManager/InPerson" },
+	{ label: "Donation Receipts", icon: "Receipt", href: "/Admin/DonationManager/Receipts" },
+	{ label: "Manage Donations", icon: "FolderCog", href: "/Admin/DonationManager/Manage" },
 ];
 
-function DonationStatCard() {
-  return (
-    <div className="border-2 border-[#556B2F] rounded-2xl bg-white px-12 py-10 mx-auto flex flex-col items-center max-w-md shadow-md">
-      <span className="text-2xl font-serif text-[#556B2F] mb-2">
-        Annual Donations
-      </span>
-      <span className="text-lg font-serif text-[#556B2F] mb-2">Progress</span>
-      <span className="text-4xl font-bold text-black mt-2">$ 9999.99</span>
-    </div>
-  );
-}
-
-function DonationTile({ label, Icon, href }) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-col items-center gap-4 text-center text-[#556B2F] font-semibold text-lg bg-white border-2 border-[#556B2F] rounded-2xl p-8 shadow-md hover:bg-[#f0ece1] transition-all duration-200"
-      style={{ minWidth: 180 }}
-    >
-      <Icon size={48} strokeWidth={2} />
-      <span>{label}</span>
-    </Link>
-  );
-}
-
 export default function DonationManagerPage() {
-  return (
-    <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
-      <main className="flex-1 flex flex-col items-center px-6 py-12">
-        <div className="w-full max-w-4xl mx-auto">
-          <div className="flex items-center justify-center gap-6 mt-8 mb-12">
-            <hr className="flex-1 border-[#556B2F] border-t-2" />
-            <h2 className="text-3xl font-serif text-[#556B2F] text-center mx-4">
-              DONATION MANAGER
-            </h2>
-            <hr className="flex-1 border-[#556B2F] border-t-2" />
-          </div>
-          <DonationStatCard />
-          <div className="flex justify-center gap-12 mt-16">
-            {donationTiles.map((tile) => (
-              <DonationTile key={tile.label} {...tile} />
-            ))}
-          </div>
-        </div>
-      </main>
-    </div>
-  );
+	return (
+		<main className="flex-1 flex flex-col items-center px-6 py-12">
+			<div className="w-full max-w-4xl mx-auto">
+				{/* Section heading */}
+				<div className="flex items-center gap-4 mb-10">
+					<hr className="flex-1 border-t-2 border-[#556B2F]" />
+					<h2
+						className="text-2xl text-[#556B2F] text-center shrink-0"
+						style={{ fontFamily: "var(--font-serif)" }}
+					>
+						Donation Manager
+					</h2>
+					<hr className="flex-1 border-t-2 border-[#556B2F]" />
+				</div>
+
+				{/* Stat */}
+				<StatCard
+					label="Annual Donations"
+					sublabel="Current year"
+					value="$ 9,999.99"
+				/>
+
+				{/* Compact nav tiles */}
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
+					{donationTiles.map((tile) => (
+						<ManagerTile key={tile.label} variant="compact" {...tile} />
+					))}
+				</div>
+			</div>
+		</main>
+	);
 }

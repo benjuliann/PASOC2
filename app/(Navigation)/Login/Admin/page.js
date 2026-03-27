@@ -11,6 +11,8 @@ import LoginPageTemp from "../components/LoginPageTemp";
 import InputFields from "../components/InputFields";
 import PasswordField from "../components/PasswordField";
 import LoginSubmitButton from "../components/LoginSubmitButton";
+import RecaptchaWidget from "../components/RecaptchaWidget";
+import { verifyRecaptchaToken } from "../../../_utils/Recaptcha";
 
 import {
   getFirebaseErrorMessage,
@@ -20,9 +22,11 @@ import {
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const [recaptchaError, setRecaptchaError] = useState("");
 
   const { emailSignIn, resetPassword } = useUserAuth();
   const router = useRouter();
@@ -37,6 +41,21 @@ export default function AdminLoginPage() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) return;
+
+    // Ensure reCAPTCHA is completed before login
+    if (!recaptchaToken) {
+      setRecaptchaError("Please complete the reCAPTCHA.");
+      return;
+    }
+
+    // Verify reCAPTCHA token with backend
+    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken);
+
+    if (!recaptchaResult.success) {
+      setRecaptchaToken(""); // Reset token if verification fails
+      setRecaptchaError("reCAPTCHA verification failed. Try again.");
+      return;
+    }
 
     setLoading(true);
 
@@ -115,14 +134,14 @@ export default function AdminLoginPage() {
             type="email"
             placeholder="Admin Email Address"
             value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setErrors((prev) => ({
-                  ...prev,
-                  email: "",
-                  general: "",
-                }));
-              }}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setErrors((prev) => ({
+                ...prev,
+                email: "",
+                general: "",
+              }));
+            }}
             error={errors.email}
           />
 
@@ -150,14 +169,37 @@ export default function AdminLoginPage() {
           )}
 
           <div className="flex items-center justify-end text-xs text-black/70">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
+            <Link
+              href="/Login/ForgotPassword"
               className="hover:underline"
             >
               Forgot Password?
-            </button>
+            </Link>
           </div>
+        </div>
+
+        {/* reCAPTCHA verification */}
+        <div className="mt-4 space-y-2">
+          <RecaptchaWidget
+            onVerify={(token) => {
+              setRecaptchaToken(token); // Save token when user passes reCAPTCHA
+              setRecaptchaError(""); // Clear previous errors
+            }}
+            onExpire={() => {
+              setRecaptchaToken(""); // Reset token if expired
+              setRecaptchaError("reCAPTCHA expired. Please try again.");
+            }}
+            onError={() => {
+              setRecaptchaToken(""); // Reset token if widget fails
+              setRecaptchaError("reCAPTCHA failed to load.");
+            }}
+          />
+
+          {recaptchaError && (
+            <p className="text-sm text-red-600 text-center">
+              {recaptchaError}
+            </p>
+          )}
         </div>
 
         <LoginSubmitButton loading={loading}>

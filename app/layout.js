@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
       <body>
-        <div className={`bg-white`}>
+        <div className={"min-h-screen bg-[#f0ece1] flex flex-col"}>
           <AuthProvider>
             <ClientLayoutGuard>
               {children}  

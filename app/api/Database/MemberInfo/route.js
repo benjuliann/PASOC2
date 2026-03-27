@@ -79,10 +79,11 @@ export async function POST(request) {
 
     const [result] = await pool.query(
       `INSERT INTO MemberInfo
-      (uuid, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (uuid, roleID, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        uuid,
+        memberID,
+        roleID,
         name,
         dateOfBirth,
         applicationDate,

@@ -18,7 +18,7 @@ export async function POST(req) {
               name: type === "donation"
                 ? "Donation to Pangasinan Society of Calgary"
                 : "PASOC Membership Registration",
-              description: metadata?.description || "",
+              ...(metadata?.description ? { description: metadata.description } : {}),
             },
             unit_amount: Math.round(amount * 100),
           },
@@ -26,8 +26,10 @@ export async function POST(req) {
         },
       ],
       metadata: metadata || {},
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?type=${type}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${type === "donation" ? "donate" : "login/membership"}`,
+      success_url: type === "donation"
+        ? `${process.env.NEXT_PUBLIC_BASE_URL}/Donate?success=true&amount=${amount}`
+        : `${process.env.NEXT_PUBLIC_BASE_URL}/success?type=${type}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${type === "donation" ? "Donate?cancelled=true" : "login/membership"}`,
     });
 
     return NextResponse.json({ url: session.url });

@@ -6,13 +6,15 @@ import { DeletionConfirmation } from "../UI/DeletionConfirmation";
 import { useState, useEffect } from "react";
 import { logout } from "@/app/_utils/actions";
 import { Link } from "lucide-react";
+import { validateField } from "../../../_utils/membershipFormValidators";
+import { sanitizeByKey, toTitleCase } from "../../../_utils/membershipFormSanitizers";
 
 async function getMemberInfo(userID) {
   try {
     const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     const res = await fetch(
-      `${baseURL}/api/Database/MemberInfo?uid=${userID}`,
+      `${baseURL}/api/Database/MemberInfo?uuid=${userID}`,
       {
         cache: "no-store",
       },
@@ -35,6 +37,8 @@ export default function Profile() {
   const { user, firebaseSignOut } = useUserAuth();
   const [member, setMember] = useState(null);
   const [deletionClicked, setDeletionClicked] = useState(false);
+  const [errors, setErrors] = useState({});
+
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -42,12 +46,54 @@ export default function Profile() {
     primaryPhone: "",
   });
 
+  const profileRequiredFields = new Set ();
+
+  function validateProfileField(key, value, currentForm) {
+    const v = typeof value === "string" ? value.trim() : value;
+
+    // Profile only name validation
+    if (key === "name" && v) {
+      const fullNameRegex = /^[A-Za-zÀ-ÿ' -]+$/;
+
+      if (!fullNameRegex.test(v)) {
+        return "Name can only contain letters, spaces, apostrophes, and hyphens.";
+      }
+    }
+    // Handle Profile-only field name locally
+    if (key === "primaryPhone" && v) {
+      const digits = String(v).replace(/\D/g, "");
+
+      if (digits.length !== 10) {
+        return "Enter a valid 10 digit phone number.";
+      }
+    }
+
+    return validateField(key, value, currentForm, profileRequiredFields);
+  }
+
   function handleChange(e) {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
+    let sanitizedValue = value;
+
+    if (name === "name") {
+      sanitizedValue = toTitleCase(value);
+    } else {
+      sanitizedValue = sanitizeByKey(name, value);
+    }
+
+    const nextForm = {
+      ...formData,
+      [name]: sanitizedValue,
+    };
+
+    setFormData(nextForm);
+
+    const error = validateProfileField(name, sanitizedValue, nextForm);
+
+    setErrors((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: error,
     }));
   }
 
@@ -55,6 +101,19 @@ export default function Profile() {
     e.preventDefault();
 
     if (!member?.memberID) return;
+
+      const newErrors = {
+        name: validateProfileField("name", formData.name, formData),
+        address: validateProfileField("address", formData.address, formData),
+        postalCode: validateProfileField("postalCode", formData.postalCode, formData),
+        primaryPhone: validateProfileField("primaryPhone", formData.primaryPhone, formData),
+      };
+
+    setErrors(newErrors);
+
+    const hasErrors = Object.values(newErrors).some((error) => error);
+
+    if (hasErrors) return;
 
     setSaving(true);
 
@@ -77,7 +136,7 @@ export default function Profile() {
       }
 
       // Refresh profile info
-      const updated = await getMemberInfo(user.uid);
+      const updated = await getMemberInfo(user.uuid);
       setMember(updated);
 
       alert("Profile updated");
@@ -93,12 +152,12 @@ export default function Profile() {
 
   useEffect(() => {
     async function fetchMember() {
-      if (!user?.uid) {
+      if (!user?.uuid) {
         setMember(null);
         return;
       }
 
-      const memberData = await getMemberInfo(user.uid);
+      const memberData = await getMemberInfo(user.uuid);
       setMember(memberData);
     }
 
@@ -164,6 +223,9 @@ export default function Profile() {
                   onChange={handleChange}
                   className={inputStyle}
                 />
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                )}
 
                 <input
                   name="address"
@@ -173,6 +235,9 @@ export default function Profile() {
                   onChange={handleChange}
                   className={inputStyle}
                 />
+                {errors.address && (
+                  <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                )}
 
                 <input
                   name="postalCode"
@@ -182,6 +247,9 @@ export default function Profile() {
                   onChange={handleChange}
                   className={inputStyle}
                 />
+                {errors.postalCode && (
+                  <p className="mt-1 text-sm text-red-600">{errors.postalCode}</p>
+                )}
 
                 <input
                   name="primaryPhone"
@@ -191,6 +259,9 @@ export default function Profile() {
                   onChange={handleChange}
                   className={inputStyle}
                 />
+                {errors.primaryPhone && (
+                  <p className="mt-1 text-sm text-red-600">{errors.primaryPhone}</p>
+                )}
 
                 <button
                   type="submit"
