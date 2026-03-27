@@ -11,7 +11,7 @@ const navLinks = [
 	{ label: "Members", href: "/MemberManager" },
 	{ label: "Donations", href: "/DonationManager" },
 	{ label: "Events", href: "/EventManager" },
-	{ label: "Galleries", href: "/GalleryManager" },
+	// { label: "Galleries", href: "/GalleryManager" },
 	{ label: "Sponsors", href: "/SponsorsManager" },
 	{ label: "Reports", href: "/Reports" },
     { label: "FAQs", href: "/FaqsManager" },
