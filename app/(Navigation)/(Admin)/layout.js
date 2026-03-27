@@ -2,8 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { Header } from "./UI/Header";
-import { Footer } from "./UI/Footer";
-import { FloatingButton } from "./UI/FloatingButton";
 
 export default function LayoutShell({ children }) {
   const pathname = usePathname();
@@ -24,8 +22,6 @@ export default function LayoutShell({ children }) {
     <>
       {!hideLayout && <Header />}
       {children}
-      {!hideLayout && <Footer />}
-      {!hideFAQButton && <FloatingButton />}
     </>
   );
 }

@@ -11,7 +11,7 @@ export async function GET(request) {
 
     if (uid) {
       const [rows] = await pool.query(
-        "SELECT * FROM MemberInfo WHERE memberID = ?",
+        "SELECT * FROM MemberInfo WHERE uuid = ?",
         [uid]
       );
 
@@ -71,7 +71,7 @@ export async function POST(request) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields: memberID, name, email",
+          error: "Missing required fields: uuid, name, email",
         },
         { status: 400 }
       );
@@ -79,10 +79,11 @@ export async function POST(request) {
 
     const [result] = await pool.query(
       `INSERT INTO MemberInfo
-      (memberID, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (uuid, roleID, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         memberID,
+        roleID,
         name,
         dateOfBirth,
         applicationDate,
