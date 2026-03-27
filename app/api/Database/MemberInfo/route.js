@@ -56,7 +56,8 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      memberID,
+      uuid,
+      roleId,
       name,
       dateOfBirth,
       applicationDate,
@@ -67,7 +68,7 @@ export async function POST(request) {
       email,
     } = body;
 
-    if (!memberID || !name || !email) {
+    if (!uuid || !name || !email) {
       return NextResponse.json(
         {
           success: false,
@@ -79,11 +80,11 @@ export async function POST(request) {
 
     const [result] = await pool.query(
       `INSERT INTO MemberInfo
-      (uuid, roleID, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
+      (uuid, roleId, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        memberID,
-        roleID,
+        uuid,
+        roleId,
         name,
         dateOfBirth,
         applicationDate,
@@ -121,26 +122,26 @@ export async function POST(request) {
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const memberID = searchParams.get("memberID");
-    if (!memberID) {
+    const uuid = searchParams.get("uuid");
+    if (!uuid) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required query parameter: memberID",
+          error: "Missing required query parameter: uuid",
         },
         { status: 400 }
       );
     }
 
     const [result] = await pool.query(
-      "DELETE FROM MemberInfo WHERE memberID = ?",
-      [memberID]
+      "DELETE FROM MemberInfo WHERE uuid = ?",
+      [uuid]
     );
     if (result.affectedRows === 0) {
       return NextResponse.json(
         {
           success: false,
-          error: "No member found with the provided memberID",
+          error: "No member found with the provided uuid",
         },
         { status: 404 }
       );
@@ -171,22 +172,22 @@ export async function PATCH(request) {
   try {
     const body = await request.json();
 
-    const { 
-      memberID,
+    const {
+      uuid,
       name,
-      applicationDate, 
-      address, 
-      postalCode, 
-      primaryPhone, 
-      secondaryPhone, 
-      email 
+      applicationDate,
+      address,
+      postalCode,
+      primaryPhone,
+      secondaryPhone,
+      email,
     } = body;
 
-    if (!memberID) {
+    if (!uuid) {
       return NextResponse.json(
         {
           success: false,
-          error: "memberID is required",
+          error: "uuid is required",
         },
         { status: 400 }
       );
