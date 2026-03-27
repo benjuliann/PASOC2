@@ -13,6 +13,9 @@ import { REQUIRED_FIELDS, initialMembershipForm } from "../../../_utils/membersh
 import { sanitizeByKey } from "../../../_utils/membershipFormSanitizers";
 import { getPasswordChecks, validateField, validateAll } from "../../../_utils/membershipFormValidators";
 
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { app } from "../../../_utils/firebase";
+
 // ─── Age helper (no pricing dependency — safe outside component) ──────────────
 const getAge = (birthday) => {
   if (!birthday) return null;
@@ -233,10 +236,8 @@ export default function MembershipForm() {
       return;
     }
 
-    // All validation passed — proceed to Stripe
-    setLoading(true);
-    try {
-      const res = await fetch("/api/checkout", {
+    // All validation passed — create firebase user, proceed to Stripe
+    const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -244,6 +245,7 @@ export default function MembershipForm() {
           type: "membership",
           metadata: {
             type: "membership",
+            firebase_uid: firebaseUID,
             first_name: form.firstName,
             last_name: form.lastName,
             email: form.email,
