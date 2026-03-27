@@ -1,5 +1,5 @@
 import { isValidEmail } from "./loginHelpers";
-import { shouldRejectForModeration } from "./moderationHelpers";
+import { shouldRejectForModeration, MODERATED_FIELDS } from "./moderationHelpers";
 
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -103,8 +103,13 @@ export const validateField = (key, value, currentForm, requiredFields) => {
 export const validateAll = (form, requiredFields) => {
   const nextErrors = {};
 
+  const fieldsToValidate = new Set([
+    ...requiredFields,
+    ...MODERATED_FIELDS,
+  ]);
+
   // Validate every required top-level field
-  for (const key of requiredFields) {
+  for (const key of fieldsToValidate) {
     const message = validateField(key, form[key], form, requiredFields);
 
     if (message) {
