@@ -8,13 +8,13 @@ import { useUserAuth } from "../../../_utils/auth-context";
 
 const navLinks = [
 	{ label: "Overview", href: "/Dashboard" },
-	{ label: "Members", href: "/MemberManager" },
-	{ label: "Donations", href: "/DonationManager" },
-	{ label: "Events", href: "/EventManager" },
+	{ label: "Members", href: "/MembersManager" },
+	{ label: "Donations", href: "/DonationsManager" },
+	{ label: "Events", href: "/EventsManager" },
 	// { label: "Galleries", href: "/GalleryManager" },
 	{ label: "Sponsors", href: "/SponsorsManager" },
 	{ label: "Reports", href: "/Reports" },
-    { label: "FAQs", href: "/FaqsManager" },
+	{ label: "FAQs", href: "/FaqsManager" },
 ];
 
 export function Header() {
@@ -110,7 +110,9 @@ export function Header() {
 								onClick={() => setMenuOpen(false)}
 								className="px-6 py-3.5 no-underline font-bold text-[15px] border-b border-white/10 transition-colors duration-150"
 								style={{
-									color: isActive ? "#ffffff" : "rgba(255,255,255,0.7)",
+									color: isActive
+										? "#ffffff"
+										: "rgba(255,255,255,0.7)",
 									backgroundColor: isActive
 										? "rgba(255,255,255,0.1)"
 										: "transparent",

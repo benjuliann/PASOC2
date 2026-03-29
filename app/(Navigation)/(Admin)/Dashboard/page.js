@@ -1,29 +1,48 @@
 import React from "react";
 import { StatCard } from "../UI/StatCard";
 import { ManagerTile } from "../UI/ManagerTile";
-
-const stats = [
-	{ label: "Annual Donations", value: "$ 9,999.99" },
-	{ label: "Active Members", value: "250" },
-];
+import pool from "@/lib/db";
 
 const managerTiles = [
-	{ label: "Member Manager", icon: "Users", href: "/MemberManager" },
-    { label: "Donation Manager", icon: "Landmark", href: "/DonationManager" },
-	{ label: "Event Manager", icon: "CalendarDays", href: "/EventManager" },
+	{ label: "Member Manager", icon: "Users", href: "/MembersManager" },
+	{ label: "Donation Manager", icon: "Landmark", href: "/DonationsManager" },
+	{ label: "Event Manager", icon: "CalendarDays", href: "/EventsManager" },
 	{ label: "Gallery Manager", icon: "Image", href: "/GalleryManager" },
 	{ label: "Sponsor Manager", icon: "Handshake", href: "/SponsorsManager" },
 	{ label: "Reports", icon: "FolderCog", href: "/Reports" },
 ];
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+	let activeMembers = "N/A";
+
+	try {
+		const [rows] = await pool.query(
+			"SELECT COUNT(*) AS count FROM MemberInfo",
+		);
+		activeMembers = rows?.[0]?.count ?? 0;
+	} catch (err) {
+		console.error(
+			"[AdminDashboard] Failed to fetch active members count",
+			err,
+		);
+	}
+
+	const stats = [
+		{ label: "Annual Donations", value: "$ 9,999.99" },
+		{ label: "Active Members", value: activeMembers },
+	];
+
 	return (
 		<main className="flex-1 flex flex-col items-center px-6 py-12">
-            {/* Stats row */}
+			{/* Stats row */}
 			<section className="w-full max-w-3xl">
 				<div className="flex flex-wrap gap-6 justify-center">
 					{stats.map((s) => (
-						<StatCard key={s.label} label={s.label} value={s.value} />
+						<StatCard
+							key={s.label}
+							label={s.label}
+							value={s.value}
+						/>
 					))}
 				</div>
 			</section>

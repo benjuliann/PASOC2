@@ -267,7 +267,7 @@ export default function EventManagerPage() {
               </div>
             </div>
 
-            <div className="border border-[#2a2420] rounded-lg p-4 bg-white min-h-[280px]">
+            <div className="border border-[#2a2420] rounded-lg p-4 bg-white min-h-70">
               <h3 className="font-serif text-xl text-center underline underline-offset-4 font-semibold text-[#2a2420] mb-4">
                 Upcoming Events
               </h3>
