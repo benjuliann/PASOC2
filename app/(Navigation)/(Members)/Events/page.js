@@ -5,276 +5,293 @@ import { FloatingButton } from "../UI/FloatingButton.jsx";
 import { EventInformation } from "../UI/EventInformation.jsx";
 
 async function getEvents() {
-    try {
-
-        const baseURL =
-            process.env.NEXT_PUBLIC_BASE_URL ||
-            "http://localhost:3000";
-        const res = await fetch(
-            `${baseURL}/api/Database/events`,
-            {
-                cache:"no-store"
-            }
-        );
-        const data = await res.json();
-        return data.data || [];
-    } catch (error) {
-        console.error("Error fetching events:", error);
-        throw error;
-    }
+	try {
+		const baseURL =
+			process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+		const res = await fetch(`${baseURL}/api/Database/events`, {
+			cache: "no-store",
+		});
+		const data = await res.json();
+		return data.data || [];
+	} catch (error) {
+		console.error("Error fetching events:", error);
+		throw error;
+	}
 }
 
 export default function Events() {
-  const today = new Date();
+	const today = new Date();
 
-  // single source of truth for viewed month
-  const [viewDate, setViewDate] = useState(
-    new Date(today.getFullYear(), today.getMonth(), 1)
-  );
+	// single source of truth for viewed month
+	const [viewDate, setViewDate] = useState(
+		new Date(today.getFullYear(), today.getMonth(), 1),
+	);
 
-  const month = viewDate.getMonth();
-  const year = viewDate.getFullYear();
-  const [testEvents, setTestEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+	const month = viewDate.getMonth();
+	const year = viewDate.getFullYear();
+	const dayName = viewDate.toLocaleDateString("en-US", {
+		weekday: "long",
+	});
+	const [testEvents, setTestEvents] = useState([]);
+	const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const monthNames = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
-  ];
+	const monthNames = [
+		"January",
+		"February",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"September",
+		"October",
+		"November",
+		"December",
+	];
 
-  // Fetch events on mount and whenever month/year changes
-  useEffect(() => {
-    async function loadEvents() {
-      const eventsFromApi = await getEvents();
-      setTestEvents(eventsFromApi);
-    }
+	// Fetch events on mount and whenever month/year changes
+	useEffect(() => {
+		async function loadEvents() {
+			const eventsFromApi = await getEvents();
+			setTestEvents(eventsFromApi);
+		}
 
-    loadEvents();
-  }, []);
+		loadEvents();
+	}, []);
 
-  // Data structure transformation: group events by date for easy lookup
-  const events = useMemo(() => {
-    const grouped = {};
+	// Data structure transformation: group events by date for easy lookup
+	const events = useMemo(() => {
+		const grouped = {};
 
-    for (const event of testEvents) {
-      if (!event.startDatetime) continue;
+		for (const event of testEvents) {
+			if (!event.startDatetime) continue;
 
-      const key = new Date(event.startDatetime).toISOString().split("T")[0];
+			const key = new Date(event.startDatetime)
+				.toISOString()
+				.split("T")[0];
 
-      if (!grouped[key]) grouped[key] = [];
+			if (!grouped[key]) grouped[key] = [];
 
-      grouped[key].push({
-        title: event.title,
-        datetime: event.startDatetime, // full raw value
-        date: new Date(event.startDatetime).toLocaleDateString(),
-        time: new Date(event.startDatetime).toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-        description: event.description,
-        location: event.location,
-      });
-    }
+			grouped[key].push({
+				title: event.title,
+				datetime: event.startDatetime, // full raw value
+				date: new Date(event.startDatetime).toLocaleDateString(),
+				time: new Date(event.startDatetime).toLocaleTimeString([], {
+					hour: "numeric",
+					minute: "2-digit",
+				}),
+				description: event.description,
+				location: event.location,
+			});
+		}
 
-    return grouped;
-  }, [testEvents]);
+		return grouped;
+	}, [testEvents]);
 
-  // Get events for a specific day
-  const getEventsForDay = (day) => {
-    if (!day) return [];
+	const upcomingEvents = useMemo(() => {
+		const now = new Date();
 
-    const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return events[key] || [];
-  };
+		return testEvents
+			.filter((event) => event?.startDatetime)
+			.map((event) => {
+				const start = new Date(event.startDatetime);
+				return {
+					title: event.title,
+					datetime: start,
+					date: start.toLocaleDateString(),
+					time: start.toLocaleTimeString([], {
+						hour: "numeric",
+						minute: "2-digit",
+					}),
+					description: event.description,
+					location: event.location,
+				};
+			})
+			.filter(
+				(event) =>
+					!Number.isNaN(event.datetime.getTime()) &&
+					event.datetime >= now,
+			)
+			.sort((a, b) => a.datetime - b.datetime)
+			.slice(0, 6);
+	}, [testEvents]);
 
-  const handleEventsClick = (event) => {
-    setSelectedEvent(event);
-  };
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+	// Get events for a specific day
+	const getEventsForDay = (day) => {
+		if (!day) return [];
 
-  let weeks = [];
-  let week = new Array(firstDay).fill(null);
+		const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+		return events[key] || [];
+	};
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    week.push(day);
-    if (week.length === 7) {
-      weeks.push(week);
-      week = [];
-    }
-  }
+	const handleEventsClick = (event) => {
+		setSelectedEvent(event);
+	};
+	const firstDay = new Date(year, month, 1).getDay();
+	const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  while (week.length < 7) week.push(null);
-  if (!week.every((d) => d === null)) weeks.push(week);
+	let weeks = [];
+	let week = new Array(firstDay).fill(null);
 
-  // Handles calender changes (next and prev month)
-  const prevMonth = () => {
-    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-  const nextMonth = () => {
-    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
-  const currentMonth = () => {
-    setViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
-  };
+	for (let day = 1; day <= daysInMonth; day++) {
+		week.push(day);
+		if (week.length === 7) {
+			weeks.push(week);
+			week = [];
+		}
+	}
 
-  return (
-    <div className="min-h-screen flex flex-col md:flex-row gap-10 py-10 mx-5 text-gray-800">
+	while (week.length < 7) week.push(null);
+	if (!week.every((d) => d === null)) weeks.push(week);
 
-      <FloatingButton />
+	// Handles calender changes (next and prev month)
+	const prevMonth = () => {
+		setViewDate(
+			(prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
+		);
+	};
+	const nextMonth = () => {
+		setViewDate(
+			(prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
+		);
+	};
+	const currentMonth = () => {
+		setViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
+	};
 
-      {/* MINI CALENDAR */}
-      <section className="w-full md:w-auto max-w-md">
-        <div className="flex justify-between items-center mb-4">
-          <p>{monthNames[month]} {year}</p>
-          <button
-            className="w-min px-5 bg-blue-500 text-white rounded-2xl hover:bg-blue-600"
-            onClick={currentMonth}
-          >
-            Today
-          </button>
-        </div>
+	return (
+		<div className="min-h-screen flex flex-col md:flex-row gap-10 py-10 mx-5 text-gray-800">
+			<FloatingButton />
 
-        <div className="grid grid-cols-7 gap-2 text-center font-semibold mb-2">
-          <div>S</div><div>M</div><div>T</div><div>W</div>
-          <div>T</div><div>F</div><div>S</div>
-        </div>
+			{/* UPCOMING EVENTS */}
+			<section className="w-full md:w-auto max-w-md">
+				<div className="p-6 bg-white rounded-lg shadow-lg">
+					<h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
 
-        <div
-          className="grid grid-cols-7 gap-2"
-          style={{ gridTemplateRows: `repeat(${weeks.length}, 1fr)` }}
-        >
-          {weeks.map((week, i) =>
-            week.map((day, j) => {
-              const dayEvents = getEventsForDay(day);
+					<div className="flex flex-col gap-3">
+						{upcomingEvents.length === 0 && (
+							<p className="text-sm text-gray-500">
+								No upcoming events right now.
+							</p>
+						)}
 
-              return (
-                <div
-                  key={`${i}-${j}`}
-                  className="h-12 flex flex-col items-center justify-start"
-                >
-                  {day && (
-                    <>
-                      <span
-                        className={`text-lg ${
-                          day === today.getDate() &&
-                          month === today.getMonth() &&
-                          year === today.getFullYear()
-                            ? "bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                            : "w-8 h-8 flex items-center justify-center"
-                        }`}
-                      >
-                        {day}
-                      </span>
+						{upcomingEvents.map((event, index) => (
+							<button
+								key={`${event.title}-${index}`}
+								onClick={() => handleEventsClick(event)}
+								className="w-full text-left border border-gray-200 bg-gray-50 rounded-md px-3 py-2 hover:bg-[#eef3e3] hover:border-[#b8c99a] transition-colors"
+							>
+								<p className="text-sm font-semibold text-gray-900 truncate">
+									{event.title}
+								</p>
+								<p className="text-xs text-gray-600 mt-1">
+									{event.date} at {event.time}
+								</p>
+							</button>
+						))}
+					</div>
+				</div>
+			</section>
 
-                      {/* reserve dot space for every day */}
-                      <div className="h-2 mt-1 flex items-center justify-center">
-                        {dayEvents.length > 0 && (
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-      </section>
+			{/* FULL CALENDAR */}
+			<section className="p-6 w-full md:w-4/5 shadow-lg rounded-lg">
+				<div className="flex justify-between items-center mb-4">
+					<h2 className="text-xl font-bold">
+						{dayName}, {monthNames[month]} {year}
+					</h2>
 
+					<div>
+						<button
+							className="px-3 py-1 bg-[#556B2F] text-white rounded hover:bg-[#6b8a3a] mx-2"
+							onClick={prevMonth}
+						>
+							&lt;
+						</button>
 
-      {/* FULL CALENDAR */}
-      <section className="p-6 w-full md:w-4/5 shadow-lg rounded-lg">
+						<button
+							className="px-3 py-1 bg-[#556B2F] text-white rounded hover:bg-[#6b8a3a] mx-2"
+							onClick={nextMonth}
+						>
+							&gt;
+						</button>
+					</div>
+				</div>
 
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">
-            {monthNames[month]} {year}
-          </h2>
+				<div className="grid grid-cols-7 gap-2 text-center font-semibold mb-2">
+					<div>Sun</div>
+					<div>Mon</div>
+					<div>Tue</div>
+					<div>Wed</div>
+					<div>Thu</div>
+					<div>Fri</div>
+					<div>Sat</div>
+				</div>
 
-          <div>
-            <button
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 mx-2"
-              onClick={prevMonth}
-            >
-              Prev
-            </button>
+				<div
+					className="grid grid-cols-7 gap-2"
+					style={{ gridTemplateRows: `repeat(${weeks.length}, 1fr)` }}
+				>
+					{weeks.map((week, i) =>
+						week.map((day, j) => {
+							const dayEvents = getEventsForDay(day);
 
-            <button
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 mx-2"
-              onClick={nextMonth}
-            >
-              Next
-            </button>
-          </div>
-        </div>
+							return (
+								<div
+									key={`${i}-${j}`}
+									className="border border-gray-300 bg-gray-50 p-2 flex flex-col items-center justify-start h-32 overflow-hidden"
+								>
+									{/* DAY NUMBER AND EVENTS */}
+									{day && (
+										<>
+											<span
+												className={`font-semibold ${
+													day === today.getDate() &&
+													month ===
+														today.getMonth() &&
+													year === today.getFullYear()
+														? "bg-[#556B2F] text-white rounded-full w-8 h-8 flex items-center justify-center"
+														: ""
+												}`}
+											>
+												{day}
+											</span>
 
-        <div className="grid grid-cols-7 gap-2 text-center font-semibold mb-2">
-          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div>
-          <div>Thu</div><div>Fri</div><div>Sat</div>
-        </div>
+											{/* EVENTS */}
+											<div className="mt-2 flex flex-col gap-1">
+												{dayEvents.map((event, idx) => (
+													<div
+														key={idx}
+														onClick={() =>
+															handleEventsClick(
+																event,
+															)
+														}
+																		className="text-xs bg-[#dfe8ce] rounded px-2 py-1 truncate cursor-pointer hover:bg-[#cfdcb5]"
+													>
+														{event.title}
+													</div>
+												))}
+											</div>
+										</>
+									)}
+								</div>
+							);
+						}),
+					)}
+				</div>
 
-        <div className="grid grid-cols-7 gap-2"
-          style={{ gridTemplateRows: `repeat(${weeks.length}, 1fr)` }}
-        >
-          {weeks.map((week,i) =>
-            week.map((day,j) => {
-
-              const dayEvents = getEventsForDay(day);
-
-              return (
-                <div
-                  key={`${i}-${j}`}
-                  className="border border-gray-300 bg-gray-50 p-2 flex flex-col items-center justify-start h-32 overflow-hidden"
-                >
-                  {/* DAY NUMBER AND EVENTS */}
-                  {day && (
-                    <>
-                      <span
-                        className={`font-semibold ${
-                          day === today.getDate() &&
-                          month === today.getMonth() &&
-                          year === today.getFullYear()
-                            ? "bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center"
-                            : ""
-                        }`}
-                      >
-                        {day}
-                      </span>
-
-                      {/* EVENTS */}
-                      <div className="mt-2 flex flex-col gap-1">
-                        {dayEvents.map((event, idx) => (
-                          <div
-                            key={idx}
-                            onClick={() => handleEventsClick(event)}
-                            className="text-xs bg-blue-200 rounded px-2 py-1 truncate cursor-pointer hover:bg-blue-300"
-                          >
-                            {event.title}
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {selectedEvent && (
-          <EventInformation
-            title={selectedEvent.title}
-            date={selectedEvent.date}
-            time={selectedEvent.time}
-            description={selectedEvent.description}
-            location={selectedEvent.location}
-            onClose={() => setSelectedEvent(null)}
-          />
-        )}
-
-      </section>
-
-    </div>
-  );
+				{selectedEvent && (
+					<EventInformation
+						title={selectedEvent.title}
+						date={selectedEvent.date}
+						time={selectedEvent.time}
+						description={selectedEvent.description}
+						location={selectedEvent.location}
+						onClose={() => setSelectedEvent(null)}
+					/>
+				)}
+			</section>
+		</div>
+	);
 }
