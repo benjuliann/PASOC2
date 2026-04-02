@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
-import { v4 as uuidv4 } from "uuid";
+//import { v4 as uuidv4 } from "uuid";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -40,7 +40,12 @@ export async function POST(req) {
     }
 
     const meta = session.metadata;
-    const memberUUID = uuidv4();
+    //const memberUUID = uuidv4();
+    const memberUUID = meta.firebase_uid;
+    if (!memberUUID) {
+      console.error("No Firebase UID in metadata");
+      return NextResponse.json({ error: "Missing firebase_uid" }, { status: 400 });
+    }
     const today = new Date().toISOString().split("T")[0];
     const fullName = `${meta.first_name} ${meta.last_name}`.trim();
 
