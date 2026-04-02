@@ -291,7 +291,7 @@ export async function PATCH(request) {
 
     // Members can update only their own row.
     // Admin/superadmin can update any row.
-    let targetMemberID = uuid;
+    let targetUUID = uuid;
 
     if (!isAdmin(roleID)) {
       if (!memberRow) {
@@ -300,10 +300,10 @@ export async function PATCH(request) {
           { status: 404 }
         );
       }
-      targetMemberID = memberRow.memberID;
+      targetUUID = memberRow.uuid;
     }
 
-    if (!targetMemberID) {
+    if (!targetUUID) {
       return NextResponse.json(
         { success: false, error: "uuid is required" },
         { status: 400 }
@@ -361,7 +361,7 @@ export async function PATCH(request) {
       );
     }
 
-    values.push(targetMemberID);
+    values.push(targetUUID);
 
     const [result] = await pool.query(
       `UPDATE MemberInfo SET ${fields.join(", ")} WHERE uuid = ?`,
