@@ -1,8 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Users, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { useUserAuth } from "../../../_utils/auth-context";
 
 export default function ManageMembersPage() {
+  const { user } = useUserAuth();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,18 +13,36 @@ export default function ManageMembersPage() {
   const [sortDir, setSortDir] = useState("asc");
 
   useEffect(() => {
-    fetch("/api/Database/MemberInfo")
-      .then((res) => res.json())
-      .then((data) => {
+    async function fetchMembers() {
+      if (!user) return;
+
+      try {
+        const token = await user.getIdToken();
+
+        const res = await fetch("/api/Database/MemberInfo", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
+        });
+
+        const data = await res.json();
+
         if (data.success) {
           setMembers(data.data);
         } else {
           setError(data.error || "Failed to load members.");
         }
-      })
-      .catch(() => setError("Could not reach the server."))
-      .finally(() => setLoading(false));
-  }, []);
+      } catch (err) {
+        setError("Could not reach the server.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMembers();
+  }, [user]);
 
   const handleSort = (field) => {
     if (sortField === field) {
