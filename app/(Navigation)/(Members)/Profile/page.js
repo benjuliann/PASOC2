@@ -93,7 +93,7 @@ export default function Profile() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!member?.memberID || !user) return;
+    if (!member?.uuid || !user) return;
 
     const newErrors = {
       name: validateProfileField("name", formData.name, formData),
@@ -119,7 +119,7 @@ export default function Profile() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          memberID: member.memberID,
+          uuid: member.uuid,
           ...formData,
         }),
       });
@@ -127,16 +127,15 @@ export default function Profile() {
       const result = await res.json();
 
       if (!res.ok) {
+        console.error("PATCH error:", result);
         throw new Error(result.error || "Update failed");
       }
 
       const updatedMember = await getMemberInfo(user);
       setMember(updatedMember);
-
-      alert("Profile updated");
     } catch (error) {
-      console.error(error);
-      alert("Failed to update profile");
+      console.error("Profile update error:", error);
+      alert(error.message || "Failed to update profile");
     } finally {
       setSaving(false);
     }
@@ -193,7 +192,7 @@ export default function Profile() {
               <p className="text-lg text-black">
                 Name: {member?.name || "Loading..."} <br />
                 Email: {member?.email || "Loading..."} <br />
-                Date of Birth: {member?.dateOfBirth || "Loading..."} <br />
+                Date of Birth: {member?.dateOfBirth ? member.dateOfBirth.split('T')[0] : "Loading..."} <br />
                 Address: {member?.address || "Loading..."} <br />
                 Postal Code: {member?.postalCode || "Loading..."} <br />
                 Primary Phone: {member?.primaryPhone || "Loading..."} <br />
@@ -260,7 +259,7 @@ export default function Profile() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full bg-[#7E9A45] text-white py-3 rounded-lg shadow-md"
+                  className="w-full bg-[#7E9A45] text-white py-3 rounded-lg shadow-md hover:bg-[#7E9A45]/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? "Saving..." : "Save Changes"}
                 </button>
