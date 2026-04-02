@@ -144,9 +144,11 @@ export async function POST(request) {
     } = body;
 
     if (!uuid || !name || !email) {
+    if (!uuid || !name || !email) {
       return NextResponse.json(
         {
           success: false,
+          error: "Missing required fields: uuid, name, email",
           error: "Missing required fields: uuid, name, email",
         },
         { status: 400 }
@@ -276,6 +278,12 @@ export async function PATCH(request) {
       uuid,
       roleID: requestedRoleID,
       name,
+      applicationDate,
+      address,
+      postalCode,
+      primaryPhone,
+      secondaryPhone,
+      email,
       applicationDate,
       address,
       postalCode,

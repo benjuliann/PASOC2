@@ -1,41 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FloatingButton } from "../UI/FloatingButton.jsx";
+import { EventInformation } from "../UI/EventInformation.jsx";
 
-export default function Calendar() {
+async function getEvents() {
+    try {
+
+        const baseURL =
+            process.env.NEXT_PUBLIC_BASE_URL ||
+            "http://localhost:3000";
+        const res = await fetch(
+            `${baseURL}/api/Database/events`,
+            {
+                cache:"no-store"
+            }
+        );
+        const data = await res.json();
+        return data.data || [];
+    } catch (error) {
+        console.error("Error fetching events:", error);
+        throw error;
+    }
+}
+
+export default function Events() {
   const today = new Date();
-  const [month, setMonth] = useState(today.getMonth());
-  const [year, setYear] = useState(today.getFullYear());
+
+  // single source of truth for viewed month
+  const [viewDate, setViewDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
+
+  const month = viewDate.getMonth();
+  const year = viewDate.getFullYear();
+  const [testEvents, setTestEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const monthNames = [
     "January","February","March","April","May","June",
     "July","August","September","October","November","December"
   ];
 
-  // EVENTS
-  const events = {
-    "2026-03-08": [
-      { title: "Board Meeting", time: "10:00 AM" },
-      { title: "Community Lunch", time: "12:30 PM" }
-    ],
-    "2026-03-12": [
-      { title: "Volunteer Training", time: "6:00 PM" }
-    ],
-    "2026-03-21": [
-      { title: "Fundraiser Event", time: "7:00 PM" }
-    ]
-  };
+  // Fetch events on mount and whenever month/year changes
+  useEffect(() => {
+    async function loadEvents() {
+      const eventsFromApi = await getEvents();
+      setTestEvents(eventsFromApi);
+    }
 
-  // GET EVENTS FOR DAY
+    loadEvents();
+  }, []);
+
+  // Data structure transformation: group events by date for easy lookup
+  const events = useMemo(() => {
+    const grouped = {};
+
+    for (const event of testEvents) {
+      if (!event.startDatetime) continue;
+
+      const key = new Date(event.startDatetime).toISOString().split("T")[0];
+
+      if (!grouped[key]) grouped[key] = [];
+
+      grouped[key].push({
+        title: event.title,
+        datetime: event.startDatetime, // full raw value
+        date: new Date(event.startDatetime).toLocaleDateString(),
+        time: new Date(event.startDatetime).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
+        description: event.description,
+        location: event.location,
+      });
+    }
+
+    return grouped;
+  }, [testEvents]);
+
+  // Get events for a specific day
   const getEventsForDay = (day) => {
     if (!day) return [];
 
-    const key = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return events[key] || [];
   };
 
-  // GENERATE CALENDAR GRID
+  const handleEventsClick = (event) => {
+    setSelectedEvent(event);
+  };
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -51,31 +105,17 @@ export default function Calendar() {
   }
 
   while (week.length < 7) week.push(null);
-  if (!week.every(d => d === null)) weeks.push(week);
+  if (!week.every((d) => d === null)) weeks.push(week);
 
+  // Handles calender changes (next and prev month)
   const prevMonth = () => {
-    setMonth(m => {
-      if (m === 0) {
-        setYear(y => y - 1);
-        return 11;
-      }
-      return m - 1;
-    });
+    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
-
   const nextMonth = () => {
-    setMonth(m => {
-      if (m === 11) {
-        setYear(y => y + 1);
-        return 0;
-      }
-      return m + 1;
-    });
+    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
-
   const currentMonth = () => {
-    setMonth(today.getMonth());
-    setYear(today.getFullYear());
+    setViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
   };
 
   return (
@@ -85,7 +125,6 @@ export default function Calendar() {
 
       {/* MINI CALENDAR */}
       <section className="w-full md:w-auto max-w-md">
-
         <div className="flex justify-between items-center mb-4">
           <p>{monthNames[month]} {year}</p>
           <button
@@ -102,17 +141,18 @@ export default function Calendar() {
         </div>
 
         <div
-          className="grid grid-cols-7 gap-2 h-50"
+          className="grid grid-cols-7 gap-2"
           style={{ gridTemplateRows: `repeat(${weeks.length}, 1fr)` }}
         >
-          {weeks.map((week,i) =>
-            week.map((day,j) => {
-
+          {weeks.map((week, i) =>
+            week.map((day, j) => {
               const dayEvents = getEventsForDay(day);
 
               return (
-                <div key={`${i}-${j}`} className="flex flex-col items-center justify-center">
-
+                <div
+                  key={`${i}-${j}`}
+                  className="h-12 flex flex-col items-center justify-start"
+                >
                   {day && (
                     <>
                       <span
@@ -127,19 +167,19 @@ export default function Calendar() {
                         {day}
                       </span>
 
-                      {/* EVENT DOT */}
-                      {dayEvents.length > 0 && (
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1"></div>
-                      )}
+                      {/* reserve dot space for every day */}
+                      <div className="h-2 mt-1 flex items-center justify-center">
+                        {dayEvents.length > 0 && (
+                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                        )}
+                      </div>
                     </>
                   )}
-
                 </div>
               );
             })
           )}
         </div>
-
       </section>
 
 
@@ -206,7 +246,8 @@ export default function Calendar() {
                         {dayEvents.map((event, idx) => (
                           <div
                             key={idx}
-                            className="text-xs bg-blue-200 rounded px-2 py-1 truncate"
+                            onClick={() => handleEventsClick(event)}
+                            className="text-xs bg-blue-200 rounded px-2 py-1 truncate cursor-pointer hover:bg-blue-300"
                           >
                             {event.title}
                           </div>
@@ -220,6 +261,17 @@ export default function Calendar() {
             })
           )}
         </div>
+
+        {selectedEvent && (
+          <EventInformation
+            title={selectedEvent.title}
+            date={selectedEvent.date}
+            time={selectedEvent.time}
+            description={selectedEvent.description}
+            location={selectedEvent.location}
+            onClose={() => setSelectedEvent(null)}
+          />
+        )}
 
       </section>
 

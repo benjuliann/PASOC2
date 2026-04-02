@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 function toDbSponsorStatus(value) {
 	const normalized = String(value || "")
@@ -8,6 +9,18 @@ function toDbSponsorStatus(value) {
 	if (normalized === "current") return "Current";
 	if (normalized === "previous") return "Previous";
 	return null;
+}
+
+function getSponsorModerationError(name, description) {
+	if (containsProfanity(name)) {
+		return "Sponsor name contains inappropriate language.";
+	}
+
+	if (containsProfanity(description)) {
+		return "Sponsor description contains inappropriate language.";
+	}
+
+	return "";
 }
 
 export async function GET() {
@@ -46,6 +59,14 @@ export async function POST(request) {
 		if (!status) {
 			return NextResponse.json(
 				{ error: "Status must be Current or Previous" },
+				{ status: 400 },
+			);
+		}
+
+		const moderationError = getSponsorModerationError(name, description);
+		if (moderationError) {
+			return NextResponse.json(
+				{ error: moderationError },
 				{ status: 400 },
 			);
 		}
