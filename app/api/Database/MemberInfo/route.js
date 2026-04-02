@@ -116,12 +116,13 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    // Step 1: Authenticate user
     const authResult = await getAuthenticatedUser(request);
     if (authResult.error) return authResult.error;
 
     const { roleID, decoded } = authResult;
 
-    // Only admin/superadmin can create member rows
+    // Step 2: Check authorization - only admin/superadmin can create members
     if (!isAdmin(roleID)) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
@@ -129,6 +130,7 @@ export async function POST(request) {
       );
     }
 
+    // Step 3: Parse and extract request body
     const body = await request.json();
     const {
       uuid,
@@ -143,19 +145,18 @@ export async function POST(request) {
       email,
     } = body;
 
-    if (!uuid || !name || !email) {
+    // Step 4: Validate required fields
     if (!uuid || !name || !email) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields: uuid, name, email",
           error: "Missing required fields: uuid, name, email",
         },
         { status: 400 }
       );
     }
 
-    // Only superadmin can assign admin/superadmin roles
+    // Step 5: Validate role assignment - only superadmin can create admin/superadmin
     if (
       (newRoleID === ROLES.ADMIN || newRoleID === ROLES.SUPERADMIN) &&
       !isSuperAdmin(roleID)
@@ -166,8 +167,10 @@ export async function POST(request) {
       );
     }
 
+    // Step 6: Prepare member data
     const assignedRoleID = newRoleID ?? ROLES.MEMBER;
 
+    // Step 7: Insert member into database
     const [result] = await pool.query(
       `INSERT INTO MemberInfo 
       (uuid, roleID, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
@@ -207,7 +210,7 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-};
+}
 
 export async function DELETE(request) {
   try {
@@ -278,12 +281,6 @@ export async function PATCH(request) {
       uuid,
       roleID: requestedRoleID,
       name,
-      applicationDate,
-      address,
-      postalCode,
-      primaryPhone,
-      secondaryPhone,
-      email,
       applicationDate,
       address,
       postalCode,
