@@ -133,8 +133,6 @@ export default function Profile() {
 
       const updatedMember = await getMemberInfo(user);
       setMember(updatedMember);
-
-      alert("Profile updated successfully");
     } catch (error) {
       console.error("Profile update error:", error);
       alert(error.message || "Failed to update profile");

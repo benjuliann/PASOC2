@@ -35,7 +35,7 @@ async function getAuthenticatedUser(request) {
     return {
       decoded,
       memberRow: rows[0] || null,
-      roleID: rows[0]?.roleID ?? ROLES.GUEST,
+      roleId: rows[0]?.roleId ?? ROLES.GUEST,
     };
   } catch (error) {
     return {
@@ -47,12 +47,13 @@ async function getAuthenticatedUser(request) {
   }
 }
 
-function isAdmin(roleID) {
-  return roleID === ROLES.ADMIN || roleID === ROLES.SUPERADMIN;
+function isAdmin(roleId) {
+  const id = Number(roleId);
+  return id === ROLES.ADMIN || id === ROLES.SUPERADMIN;
 }
 
-function isSuperAdmin(roleID) {
-  return roleID === ROLES.SUPERADMIN;
+function isSuperAdmin(roleId) {
+  return Number(roleId) === ROLES.SUPERADMIN;
 }
 
 export async function GET(request) {
@@ -60,12 +61,13 @@ export async function GET(request) {
     const authResult = await getAuthenticatedUser(request);
     if (authResult.error) return authResult.error;
 
-    const { decoded, memberRow, roleID } = authResult;
+    const { decoded, memberRow, roleId } = authResult;
     const { searchParams } = new URL(request.url);
     const requestedMemberID = searchParams.get("memberID");
 
-    // Admin / Superadmin can fetch all members or a specific member by memberID
-    if (isAdmin(roleID)) {
+    // Admin / Superadmin can fetch all members
+    // or one specific member if memberID is provided
+    if (isAdmin(roleId)) {
       if (requestedMemberID) {
         const [rows] = await pool.query(
           "SELECT * FROM MemberInfo WHERE uuid = ?",
@@ -80,6 +82,7 @@ export async function GET(request) {
       }
 
       const [rows] = await pool.query("SELECT * FROM MemberInfo");
+
       return NextResponse.json({
         success: true,
         count: rows.length,
@@ -87,7 +90,7 @@ export async function GET(request) {
       });
     }
 
-    // Member / Guest only gets their own row by verified Firebase uid
+    // Non-admin users only get their own row
     return NextResponse.json({
       success: true,
       count: memberRow ? 1 : 0,
@@ -116,25 +119,22 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Step 1: Authenticate user
     const authResult = await getAuthenticatedUser(request);
     if (authResult.error) return authResult.error;
 
-    const { roleID, decoded } = authResult;
+    const { roleId, decoded } = authResult;
 
-    // Step 2: Check authorization - only admin/superadmin can create members
-    if (!isAdmin(roleID)) {
+    if (!isAdmin(roleId)) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
         { status: 403 }
       );
     }
 
-    // Step 3: Parse and extract request body
     const body = await request.json();
     const {
       uuid,
-      roleId: newRoleID,
+      roleId: newRoleId,
       name,
       dateOfBirth,
       applicationDate,
@@ -145,7 +145,6 @@ export async function POST(request) {
       email,
     } = body;
 
-    // Step 4: Validate required fields
     if (!uuid || !name || !email) {
       return NextResponse.json(
         {
@@ -156,10 +155,9 @@ export async function POST(request) {
       );
     }
 
-    // Step 5: Validate role assignment - only superadmin can create admin/superadmin
     if (
-      (newRoleID === ROLES.ADMIN || newRoleID === ROLES.SUPERADMIN) &&
-      !isSuperAdmin(roleID)
+      (newRoleId === ROLES.ADMIN || newRoleId === ROLES.SUPERADMIN) &&
+      !isSuperAdmin(roleId)
     ) {
       return NextResponse.json(
         { success: false, error: "Only superadmin can create admin accounts" },
@@ -167,17 +165,15 @@ export async function POST(request) {
       );
     }
 
-    // Step 6: Prepare member data
-    const assignedRoleID = newRoleID ?? ROLES.MEMBER;
+    const assignedRoleId = newRoleId ?? ROLES.MEMBER;
 
-    // Step 7: Insert member into database
     const [result] = await pool.query(
       `INSERT INTO MemberInfo 
-      (uuid, roleID, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
+      (uuid, roleId, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         uuid,
-        assignedRoleID,
+        assignedRoleId,
         name,
         dateOfBirth ?? null,
         applicationDate ?? null,
@@ -217,9 +213,9 @@ export async function DELETE(request) {
     const authResult = await getAuthenticatedUser(request);
     if (authResult.error) return authResult.error;
 
-    const { roleID } = authResult;
+    const { roleId } = authResult;
 
-    if (!isAdmin(roleID)) {
+    if (!isAdmin(roleId)) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
         { status: 403 }
@@ -274,12 +270,12 @@ export async function PATCH(request) {
     const authResult = await getAuthenticatedUser(request);
     if (authResult.error) return authResult.error;
 
-    const { roleID, memberRow, decoded } = authResult;
+    const { roleId, memberRow, decoded } = authResult;
     const body = await request.json();
 
     const {
       uuid,
-      roleID: requestedRoleID,
+      roleId: requestedRoleId,
       name,
       applicationDate,
       address,
@@ -289,11 +285,10 @@ export async function PATCH(request) {
       email,
     } = body;
 
-    // Members can update only their own row.
-    // Admin/superadmin can update any row.
     let targetUUID = uuid;
 
-    if (!isAdmin(roleID)) {
+    // Members can only update themselves
+    if (!isAdmin(roleId)) {
       if (!memberRow) {
         return NextResponse.json(
           { success: false, error: "No member profile found for this user" },
@@ -343,15 +338,15 @@ export async function PATCH(request) {
     }
 
     // Only superadmin can change roleID
-    if (requestedRoleID !== undefined) {
-      if (!isSuperAdmin(roleID)) {
+    if (requestedRoleId !== undefined) {
+      if (!isSuperAdmin(roleId)) {
         return NextResponse.json(
           { success: false, error: "Only superadmin can change roleID" },
           { status: 403 }
         );
       }
       fields.push("roleID = ?");
-      values.push(requestedRoleID);
+      values.push(requestedRoleId);
     }
 
     if (fields.length === 0) {
