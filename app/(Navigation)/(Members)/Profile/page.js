@@ -194,7 +194,7 @@ export default function Profile() {
               <p className="text-lg text-black">
                 Name: {member?.name || "Loading..."} <br />
                 Email: {member?.email || "Loading..."} <br />
-                Date of Birth: {member?.dateOfBirth || "Loading..."} <br />
+                Date of Birth: {member?.dateOfBirth ? member.dateOfBirth.split('T')[0] : "Loading..."} <br />
                 Address: {member?.address || "Loading..."} <br />
                 Postal Code: {member?.postalCode || "Loading..."} <br />
                 Primary Phone: {member?.primaryPhone || "Loading..."} <br />
