@@ -20,7 +20,7 @@ async function getEvents() {
 }
 
 export default function Events() {
-	const today = new Date();
+	const [today, setToday] = useState(() => new Date());
 
 	// single source of truth for viewed month
 	const [viewDate, setViewDate] = useState(
@@ -29,26 +29,8 @@ export default function Events() {
 
 	const month = viewDate.getMonth();
 	const year = viewDate.getFullYear();
-	const dayName = viewDate.toLocaleDateString("en-US", {
-		weekday: "long",
-	});
 	const [testEvents, setTestEvents] = useState([]);
 	const [selectedEvent, setSelectedEvent] = useState(null);
-
-	const monthNames = [
-		"January",
-		"February",
-		"March",
-		"April",
-		"May",
-		"June",
-		"July",
-		"August",
-		"September",
-		"October",
-		"November",
-		"December",
-	];
 
 	// Fetch events on mount and whenever month/year changes
 	useEffect(() => {
@@ -116,6 +98,27 @@ export default function Events() {
 			.sort((a, b) => a.datetime - b.datetime)
 			.slice(0, 6);
 	}, [testEvents]);
+
+	const todayLabel = useMemo(() => {
+		const weekday = today.toLocaleDateString("en-US", {
+			weekday: "long",
+		});
+		const monthName = today.toLocaleDateString("en-US", {
+			month: "long",
+		});
+
+		return `${weekday} ${monthName} ${today.getDate()}, ${today.getFullYear()}`;
+	}, [today]);
+
+	useEffect(() => {
+		const updateToday = () => setToday(new Date());
+
+		// Keep the highlighted day and header date accurate if the page stays open.
+		updateToday();
+		const intervalId = setInterval(updateToday, 60 * 1000);
+
+		return () => clearInterval(intervalId);
+	}, []);
 
 	// Get events for a specific day
 	const getEventsForDay = (day) => {
@@ -197,9 +200,7 @@ export default function Events() {
 			{/* FULL CALENDAR */}
 			<section className="p-6 w-full md:w-4/5 shadow-lg rounded-lg">
 				<div className="flex justify-between items-center mb-4">
-					<h2 className="text-xl font-bold">
-						{dayName}, {monthNames[month]} {year}
-					</h2>
+					<h2 className="text-xl font-bold">{todayLabel}</h2>
 
 					<div>
 						<button
@@ -267,7 +268,7 @@ export default function Events() {
 																event,
 															)
 														}
-																		className="text-xs bg-[#dfe8ce] rounded px-2 py-1 truncate cursor-pointer hover:bg-[#cfdcb5]"
+														className="text-xs bg-[#dfe8ce] rounded px-2 py-1 truncate cursor-pointer hover:bg-[#cfdcb5]"
 													>
 														{event.title}
 													</div>
