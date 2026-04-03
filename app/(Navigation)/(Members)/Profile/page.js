@@ -4,7 +4,6 @@ import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 import { useUserAuth } from "../../../_utils/auth-context";
 import { DeletionConfirmation } from "../UI/DeletionConfirmation";
 import { useState, useEffect } from "react";
-import { Link } from "lucide-react";
 import { validateField } from "../../../_utils/membershipFormValidators";
 import { sanitizeByKey, toTitleCase } from "../../../_utils/membershipFormSanitizers";
 

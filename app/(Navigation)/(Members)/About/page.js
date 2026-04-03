@@ -35,13 +35,6 @@ export default async function AboutUs() {
 
     const officers = await getOfficers();
 
-    const staticContacts = [
-        {
-            name: "FirstName LastName",
-            position: "Position",
-            email: "firstname.lastname@pasc.org"
-        }
-    ];
 
     return (
         <main>

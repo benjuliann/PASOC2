@@ -124,7 +124,7 @@ export default function AdminLoginPage() {
         className="w-full flex flex-col items-center"
         noValidate
       >
-        <div className="w-full max-w-[460px] space-y-5">
+        <div className="w-full max-w-115 space-y-5">
           <InputFields
             type="email"
             placeholder="Admin Email Address"
