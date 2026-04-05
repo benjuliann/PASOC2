@@ -125,7 +125,7 @@ export default function LoginPage() {
         className="w-full flex flex-col items-center"
         noValidate
       >
-        <div className="w-full max-w-[460px] space-y-6">
+        <div className="w-full max-w-115 space-y-6">
           <InputFields
             type="email"
             placeholder="Email Address"
@@ -203,7 +203,7 @@ export default function LoginPage() {
         </a>
 
         {/* Divider */}
-        <div className="mt-6 w-full max-w-[520px] flex items-center gap-3">
+        <div className="mt-6 w-full max-w-130 flex items-center gap-3">
           <div className="flex-1 h-px bg-black/20" />
           <span className="text-xs text-black/60">or log in with</span>
           <div className="flex-1 h-px bg-black/20" />
