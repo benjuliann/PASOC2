@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 
 export default function Bulletin() {
@@ -31,9 +32,11 @@ export default function Bulletin() {
 						</p>
 					</div>
 
-					<img
+					<Image
 						src="/cp_P1010110.jpg"
 						alt="PASOC Bulletin"
+						width={600}
+						height={400}
 						className="w-full h-105 object-cover rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
 					/>
 				</div>
