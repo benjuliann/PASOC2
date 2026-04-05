@@ -243,12 +243,12 @@ export async function PATCH(request) {
       );
     }
 
-    values.push(memberID);
+    values.push(uuid);
 
     const [result] = await pool.query(
       `UPDATE MemberInfo
        SET ${fields.join(", ")}
-       WHERE memberID = ?`,
+       WHERE uuid = ?`,
       values
     );
 
