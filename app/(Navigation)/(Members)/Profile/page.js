@@ -9,8 +9,9 @@ import { sanitizeByKey, toTitleCase } from "../../../_utils/membershipFormSaniti
 
 async function getMemberInfo(user) {
   const token = await user.getIdToken();
+  const memberID = user.uid;
 
-  const res = await fetch("/api/Database/MemberInfo", {
+  const res = await fetch(`/api/Database/MemberInfo?memberID=${memberID}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
