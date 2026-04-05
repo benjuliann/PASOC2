@@ -10,8 +10,12 @@ function normalizePublishedFlag(value) {
 
 function sortBulletins(items) {
 	return [...items].sort((left, right) => {
-		const leftDate = new Date(left.createdAt || left.updatedAt || 0).getTime();
-		const rightDate = new Date(right.createdAt || right.updatedAt || 0).getTime();
+		const leftDate = new Date(
+			left.createdAt || left.updatedAt || 0,
+		).getTime();
+		const rightDate = new Date(
+			right.createdAt || right.updatedAt || 0,
+		).getTime();
 
 		if (rightDate !== leftDate) {
 			return rightDate - leftDate;
@@ -45,6 +49,7 @@ function mapBulletinRecord(record) {
 		bulletinId: record.bulletinId,
 		title: record.title,
 		body: record.body,
+		publishDate: record.publishDate || null,
 		createdAt: record.createdAt || null,
 		updatedAt: record.updatedAt || null,
 		isPublished: normalizePublishedFlag(record.isPublished),
@@ -116,7 +121,10 @@ export function BulletinManager() {
 	const addBulletin = async () => {
 		const trimmedTitle = title.trim();
 		const trimmedBody = body.trim();
-		const validationError = getBulletinValidationError(trimmedTitle, trimmedBody);
+		const validationError = getBulletinValidationError(
+			trimmedTitle,
+			trimmedBody,
+		);
 
 		if (validationError) {
 			setErrorMessage(validationError);
@@ -160,7 +168,10 @@ export function BulletinManager() {
 	const saveEdit = async (id) => {
 		const trimmedTitle = editTitle.trim();
 		const trimmedBody = editBody.trim();
-		const validationError = getBulletinValidationError(trimmedTitle, trimmedBody);
+		const validationError = getBulletinValidationError(
+			trimmedTitle,
+			trimmedBody,
+		);
 
 		if (validationError) {
 			setErrorMessage(validationError);
@@ -276,11 +287,13 @@ export function BulletinManager() {
 	};
 
 	const selectedBulletinTitle =
-		bulletins.find((bulletin) => bulletin.bulletinId === confirmModal.bulletinId)
-			?.title || "this bulletin";
+		bulletins.find(
+			(bulletin) => bulletin.bulletinId === confirmModal.bulletinId,
+		)?.title || "this bulletin";
 	const createBulletinTitle = title.trim() || "this bulletin";
 	const editBulletinTitle = editTitle.trim() || "this bulletin";
-	const showGlobalError = Boolean(errorMessage) && !isAdding && editingId === null;
+	const showGlobalError =
+		Boolean(errorMessage) && !isAdding && editingId === null;
 
 	const confirmAction = async () => {
 		if (confirmModal.action === "create") {
@@ -344,7 +357,9 @@ export function BulletinManager() {
 						<input
 							type="checkbox"
 							checked={isPublished}
-							onChange={(event) => setIsPublished(event.target.checked)}
+							onChange={(event) =>
+								setIsPublished(event.target.checked)
+							}
 							className="h-4 w-4"
 						/>
 						Published
@@ -390,11 +405,14 @@ export function BulletinManager() {
 						key={bulletin.bulletinId}
 						title={bulletin.title}
 						body={bulletin.body}
+						publishDate={bulletin.publishDate}
 						createdAt={bulletin.createdAt}
 						updatedAt={bulletin.updatedAt}
 						isPublished={bulletin.isPublished}
 						onEdit={() => startEdit(bulletin)}
-						onDelete={() => openDeleteConfirmModal(bulletin.bulletinId)}
+						onDelete={() =>
+							openDeleteConfirmModal(bulletin.bulletinId)
+						}
 						isEditing={editingId === bulletin.bulletinId}
 						editTitle={editTitle}
 						editBody={editBody}
@@ -411,9 +429,13 @@ export function BulletinManager() {
 								setErrorMessage("");
 							}
 						}}
-						onChangeEditIsPublished={(value) => setEditIsPublished(value)}
+						onChangeEditIsPublished={(value) =>
+							setEditIsPublished(value)
+						}
 						editErrorMessage={
-							editingId === bulletin.bulletinId ? errorMessage : ""
+							editingId === bulletin.bulletinId
+								? errorMessage
+								: ""
 						}
 						onSave={() => openEditConfirmModal(bulletin.bulletinId)}
 						onCancel={cancelEdit}

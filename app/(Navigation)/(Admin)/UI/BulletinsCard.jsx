@@ -19,6 +19,7 @@ function formatDisplayDate(value) {
 export function BulletinCard({
 	title,
 	body,
+	publishDate,
 	createdAt,
 	updatedAt,
 	isPublished = false,
@@ -35,9 +36,12 @@ export function BulletinCard({
 	onSave,
 	onCancel,
 }) {
+	const formattedPublishDate = formatDisplayDate(publishDate || createdAt);
 	const formattedCreatedAt = formatDisplayDate(createdAt);
 	const formattedUpdatedAt = formatDisplayDate(updatedAt);
-	const showUpdatedAt = Boolean(updatedAt && createdAt && updatedAt !== createdAt);
+	const showUpdatedAt = Boolean(
+		updatedAt && createdAt && updatedAt !== createdAt,
+	);
 
 	return (
 		<article className="w-full">
@@ -45,7 +49,7 @@ export function BulletinCard({
 				<div className="overflow-hidden rounded-none border border-neutral-200 bg-neutral-100 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:rounded-3xl">
 					<div className="flex flex-col gap-6 p-6 md:p-8">
 						<div className="flex flex-wrap items-center gap-2">
-							<span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#556B2F]">
+							<span className="rounded-full bg-[#556B2F] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
 								Edit Bulletin
 							</span>
 							<span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
@@ -62,14 +66,18 @@ export function BulletinCard({
 						<input
 							type="text"
 							value={editTitle}
-							onChange={(event) => onChangeEditTitle(event.target.value)}
+							onChange={(event) =>
+								onChangeEditTitle(event.target.value)
+							}
 							placeholder="Title"
 							className="w-full border-0 border-b border-neutral-300 bg-transparent px-0 py-3 text-3xl font-semibold text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-[#556B2F]"
 						/>
 
 						<textarea
 							value={editBody}
-							onChange={(event) => onChangeEditBody(event.target.value)}
+							onChange={(event) =>
+								onChangeEditBody(event.target.value)
+							}
 							placeholder="Body"
 							rows={8}
 							className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-lg leading-relaxed text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-[#556B2F]"
@@ -80,7 +88,9 @@ export function BulletinCard({
 								type="checkbox"
 								checked={editIsPublished}
 								onChange={(event) =>
-									onChangeEditIsPublished(event.target.checked)
+									onChangeEditIsPublished(
+										event.target.checked,
+									)
 								}
 								className="h-4 w-4 accent-[#556B2F]"
 							/>
@@ -91,14 +101,14 @@ export function BulletinCard({
 							<button
 								type="button"
 								onClick={onSave}
-								className="rounded-full bg-[#556B2F] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#6b8e23]"
+								className="rounded-md bg-[#556B2F] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#6b8e23]"
 							>
 								Save
 							</button>
 							<button
 								type="button"
 								onClick={onCancel}
-								className="rounded-full bg-red-700 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-red-800"
+								className="rounded-md bg-red-700 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-red-800"
 							>
 								Cancel
 							</button>
@@ -109,7 +119,7 @@ export function BulletinCard({
 				<div className="overflow-hidden rounded-none border border-neutral-200 bg-neutral-100 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:rounded-3xl">
 					<div className="flex flex-col gap-6 p-6 md:p-8">
 						<div className="flex flex-wrap items-center gap-2">
-							<span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#556B2F]">
+							<span className="rounded-full bg-[#556B2F] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
 								Bulletin
 							</span>
 							<span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
@@ -121,10 +131,17 @@ export function BulletinCard({
 							{title}
 						</h3>
 
-							<div className="space-y-1 text-sm font-medium uppercase tracking-[0.16em] text-neutral-600">
-								<p>Published at {formattedCreatedAt}</p>
-								{showUpdatedAt && <p>Updated at {formattedUpdatedAt}</p>}
-							</div>
+						<div className="space-y-1 text-sm font-medium uppercase tracking-[0.16em] text-neutral-600">
+							{isPublished ? (
+								<p>Published at {formattedPublishDate}</p>
+							) : (
+								<p>Not published</p>
+							)}
+							<p>Created at {formattedCreatedAt}</p>
+							{showUpdatedAt && (
+								<p>Updated at {formattedUpdatedAt}</p>
+							)}
+						</div>
 
 						<p className="whitespace-pre-line text-lg leading-relaxed text-neutral-700 md:text-xl">
 							{body}
@@ -134,14 +151,14 @@ export function BulletinCard({
 							<button
 								type="button"
 								onClick={onEdit}
-								className="rounded-full bg-[#556B2F] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#6b8e23]"
+								className="rounded-md bg-[#556B2F] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#6b8e23]"
 							>
 								Edit
 							</button>
 							<button
 								type="button"
 								onClick={onDelete}
-								className="rounded-full bg-red-700 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-red-800"
+								className="rounded-md bg-red-700 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-red-800"
 							>
 								Delete
 							</button>

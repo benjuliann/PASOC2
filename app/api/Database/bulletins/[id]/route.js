@@ -2,6 +2,19 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
+function toIsoString(value) {
+	if (!value) {
+		return null;
+	}
+
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) {
+		return null;
+	}
+
+	return date.toISOString();
+}
+
 function normalizePublishedFlag(value) {
 	return value === true || value === 1 || value === "1" ? 1 : 0;
 }
@@ -41,12 +54,42 @@ export async function PUT(request, context) {
 			);
 		}
 
-		const [result] = await pool.query(
-			`UPDATE BulletinList
-			 SET title = ?, body = ?, isPublished = ?
-			 WHERE bulletinId = ?`,
-			[title, bulletinBody, isPublished, id],
-		);
+		const updateQuery = `UPDATE BulletinList
+			 SET title = ?,
+			     body = ?,
+			     isPublished = ?,
+			     publishDate = CASE
+			       WHEN ? = 1 THEN COALESCE(publishDate, NOW())
+			       ELSE NULL
+			     END
+			 WHERE bulletinId = ?`;
+		const updateParams = [
+			title,
+			bulletinBody,
+			isPublished,
+			isPublished,
+			id,
+		];
+
+		let result;
+		try {
+			[result] = await pool.query(updateQuery, updateParams);
+		} catch (error) {
+			const isPublishDateConstraintError =
+				!isPublished &&
+				error?.code === "ER_BAD_NULL_ERROR" &&
+				String(error.message || "").includes("publishDate");
+
+			if (!isPublishDateConstraintError) {
+				throw error;
+			}
+
+			await pool.query(
+				`ALTER TABLE BulletinList
+				 MODIFY COLUMN publishDate DATETIME NULL DEFAULT NULL`,
+			);
+			[result] = await pool.query(updateQuery, updateParams);
+		}
 
 		if (result.affectedRows === 0) {
 			return NextResponse.json(
@@ -55,10 +98,18 @@ export async function PUT(request, context) {
 			);
 		}
 
+		const [[updatedRow]] = await pool.query(
+			`SELECT publishDate
+			 FROM BulletinList
+			 WHERE bulletinId = ?`,
+			[id],
+		);
+
 		return NextResponse.json({
 			bulletinId: Number(id),
 			title,
 			body: bulletinBody,
+			publishDate: toIsoString(updatedRow?.publishDate),
 			isPublished: Boolean(isPublished),
 		});
 	} catch (error) {

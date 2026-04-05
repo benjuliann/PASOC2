@@ -32,12 +32,14 @@ function getBulletinModerationError(title, body) {
 }
 
 function mapBulletinRow(row) {
+	const isPublished = Boolean(row.isPublished);
+
 	return {
 		bulletinId: row.bulletinId,
 		title: row.title,
 		body: row.body,
-		publishDate: toIsoString(row.publishDate),
-		isPublished: Boolean(row.isPublished),
+		publishDate: isPublished ? toIsoString(row.publishDate) : null,
+		isPublished,
 		createdAt: toIsoString(row.createdAt),
 		updatedAt: toIsoString(row.updatedAt),
 	};
@@ -64,6 +66,7 @@ export async function POST(request) {
 		const title = (body.title || "").trim();
 		const bulletinBody = (body.body || "").trim();
 		const isPublished = normalizePublishedFlag(body.isPublished);
+		const publishDate = isPublished ? new Date() : null;
 
 		if (!title || !bulletinBody) {
 			return NextResponse.json(
@@ -80,17 +83,36 @@ export async function POST(request) {
 			);
 		}
 
-		const [result] = await pool.query(
-			`INSERT INTO BulletinList (title, body, publishDate, isPublished)
-			 VALUES (?, ?, NOW(), ?)`,
-			[title, bulletinBody, isPublished],
-		);
+		const insertQuery = `INSERT INTO BulletinList (title, body, publishDate, isPublished)
+			 VALUES (?, ?, ?, ?)`;
+		const insertParams = [title, bulletinBody, publishDate, isPublished];
+
+		let result;
+		try {
+			[result] = await pool.query(insertQuery, insertParams);
+		} catch (error) {
+			const isPublishDateConstraintError =
+				!isPublished &&
+				error?.code === "ER_BAD_NULL_ERROR" &&
+				String(error.message || "").includes("publishDate");
+
+			if (!isPublishDateConstraintError) {
+				throw error;
+			}
+
+			await pool.query(
+				`ALTER TABLE BulletinList
+				 MODIFY COLUMN publishDate DATETIME NULL DEFAULT NULL`,
+			);
+			[result] = await pool.query(insertQuery, insertParams);
+		}
 
 		return NextResponse.json(
 			{
 				bulletinId: result.insertId,
 				title,
 				body: bulletinBody,
+				publishDate: toIsoString(publishDate),
 				isPublished: Boolean(isPublished),
 			},
 			{ status: 201 },
