@@ -1,4 +1,4 @@
-import { Inter, Domine, Instrument_Serif } from "next/font/google";
+import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./_utils/auth-context";
 import ClientLayoutGuard from "./ClientLayoutGuard";
