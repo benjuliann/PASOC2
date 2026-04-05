@@ -7,10 +7,10 @@ export default function LayoutShell({ children }) {
   const pathname = usePathname();
 
   // pages where header/footer should NOT show
-    const hideLayout =
-      pathname === "/Portals" ||
-      pathname === "/Pages/SignUp" ||
-      pathname === "/Pages/ForgotPassword";
+  const hideLayout =
+    pathname === "/Portals" ||
+    pathname === "/Pages/SignUp" ||
+    pathname === "/Pages/ForgotPassword";
 
   return (
     <>

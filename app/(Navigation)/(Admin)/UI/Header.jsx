@@ -13,6 +13,7 @@ const navLinks = [
 	{ label: "Events", href: "/EventsManager" },
 	// { label: "Galleries", href: "/GalleryManager" },
 	{ label: "Sponsors", href: "/SponsorsManager" },
+	{ label: "Bulletins", href: "/BulletinsManager" },
 	{ label: "Reports", href: "/Reports" },
 	{ label: "FAQs", href: "/FaqsManager" },
 ];
