@@ -7,12 +7,12 @@ import { useUserAuth } from "../../../_utils/auth-context";
 
 const navLinks = [
 	{ label: "Home", href: "/" },
+	{ label: "Events", href: "/Events" },
+	{ label: "Bulletin", href: "/News" },
 	// these two are placeholders; no dedicated pages exist yet
 	{ label: "PASOC in Motion", href: "/Motion" },
-	{ label: "News", href: "/News" },
-	{ label: "Events", href: "/Events" },
-	{ label: "About", href: "/About" },
 	{ label: "Sponsors", href: "/Sponsors" },
+	{ label: "About", href: "/About" },
 	{ label: "Donate", href: "/Donate" },
 ];
 
