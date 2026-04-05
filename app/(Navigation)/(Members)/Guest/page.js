@@ -57,7 +57,7 @@ export default function GuestPage() {
         {/* Right Panel — form */}
         <div className="flex flex-col justify-center bg-white px-8 py-12 w-full md:w-1/2">
           <h2 className="text-2xl font-serif text-[#556B2F] mb-1">Become a Guest</h2>
-          <p className="text-sm text-gray-500 mb-8">Fill out the form below and we'll be in touch.</p>
+          <p className="text-sm text-gray-500 mb-8">Fill out the form below and we&apos;ll be in touch.</p>
 
           {success && (
             <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm mb-6">

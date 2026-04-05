@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HeroSection } from "./(Navigation)/(Members)/UI/HeroSection";
@@ -38,7 +39,7 @@ export default function HomePage() {
 			{/* HERO */}
 			<HeroSection
 				title="Welcome to PASOC!"
-				description="Explore our community and upcoming events. Become a member or join our newsletter to stay connected."
+				description="Explore our community, stay informed on upcoming events, and get involved. Become a full member to access all that PASOC has to offer, or sign up for our newsletter to stay connected with community news and announcements."
 			/>
 
 			{/* NEWS */}

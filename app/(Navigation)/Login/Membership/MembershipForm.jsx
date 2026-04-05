@@ -346,7 +346,7 @@ const handleSubmit = async (e) => {
       )}
 
       <div className="min-h-dvh px-4 flex justify-center items-start md:items-center py-10">
-        <div className="w-full max-w-[640px] bg-white/40 rounded-2xl p-6 sm:p-8 shadow-sm border border-black/10">
+        <div className="w-full max-w-160 bg-white/40 rounded-2xl p-6 sm:p-8 shadow-sm border border-black/10">
           <h1 className="font-serif text-3xl sm:text-4xl text-[#556B2F] tracking-wide text-center">
             Membership Registration
           </h1>
