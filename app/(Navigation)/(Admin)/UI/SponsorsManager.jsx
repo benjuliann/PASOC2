@@ -129,6 +129,9 @@ export function SponsorsManager() {
 			}
 
 			closeConfirmModal();
+			if (action === "add") {
+				closeAddSponsorModal();
+			}
 			loadSponsors();
 		} catch (error) {
 			console.error(error);
@@ -394,9 +397,6 @@ export function SponsorsManager() {
 									type="button"
 									onClick={() => {
 										executeConfirmedAction();
-										if (confirmModal.action === "add") {
-											closeAddSponsorModal();
-										}
 									}}
 									className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
 										confirmModal.action === "delete"
