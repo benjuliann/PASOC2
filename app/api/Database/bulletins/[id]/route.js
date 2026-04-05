@@ -19,6 +19,10 @@ function normalizePublishedFlag(value) {
 	return value === true || value === 1 || value === "1" ? 1 : 0;
 }
 
+function getCurrentTimestamp() {
+	return new Date();
+}
+
 function getBulletinModerationError(title, body) {
 	if (containsProfanity(title)) {
 		return "Title contains inappropriate language.";
@@ -57,6 +61,7 @@ export async function PUT(request, context) {
 		const bulletinBody = (body.body || "").trim();
 		const isPublished = normalizePublishedFlag(body.isPublished);
 		const preserveUpdatedAt = Boolean(body.preserveUpdatedAt);
+		const now = getCurrentTimestamp();
 
 		if (!title || !bulletinBody) {
 			return NextResponse.json(
@@ -78,12 +83,12 @@ export async function PUT(request, context) {
 			     body = ?,
 			     isPublished = ?,
 			     publishDate = CASE
-			       WHEN ? = 1 THEN COALESCE(publishDate, NOW())
+			       WHEN ? = 1 THEN COALESCE(publishDate, ?)
 			       ELSE NULL
 			     END,
 			     updatedAt = CASE
 			       WHEN ? = 1 THEN updatedAt
-			       ELSE NOW()
+			       ELSE ?
 			     END
 			 WHERE bulletinId = ?`;
 		const updateParams = [
@@ -91,7 +96,9 @@ export async function PUT(request, context) {
 			bulletinBody,
 			isPublished,
 			isPublished,
+			now,
 			preserveUpdatedAt ? 1 : 0,
+			now,
 			id,
 		];
 

@@ -19,6 +19,10 @@ function normalizePublishedFlag(value) {
 	return value === true || value === 1 || value === "1" ? 1 : 0;
 }
 
+function getCurrentTimestamp() {
+	return new Date();
+}
+
 function getBulletinModerationError(title, body) {
 	if (containsProfanity(title)) {
 		return "Title contains inappropriate language.";
@@ -66,7 +70,8 @@ export async function POST(request) {
 		const title = (body.title || "").trim();
 		const bulletinBody = (body.body || "").trim();
 		const isPublished = normalizePublishedFlag(body.isPublished);
-		const publishDate = isPublished ? new Date() : null;
+		const now = getCurrentTimestamp();
+		const publishDate = isPublished ? now : null;
 
 		if (!title || !bulletinBody) {
 			return NextResponse.json(
@@ -83,9 +88,17 @@ export async function POST(request) {
 			);
 		}
 
-		const insertQuery = `INSERT INTO BulletinList (title, body, publishDate, isPublished)
-			 VALUES (?, ?, ?, ?)`;
-		const insertParams = [title, bulletinBody, publishDate, isPublished];
+		const insertQuery = `INSERT INTO BulletinList
+			 (title, body, publishDate, isPublished, createdAt, updatedAt)
+		 VALUES (?, ?, ?, ?, ?, ?)`;
+		const insertParams = [
+			title,
+			bulletinBody,
+			publishDate,
+			isPublished,
+			now,
+			now,
+		];
 
 		let result;
 		try {
@@ -114,6 +127,8 @@ export async function POST(request) {
 				body: bulletinBody,
 				publishDate: toIsoString(publishDate),
 				isPublished: Boolean(isPublished),
+				createdAt: toIsoString(now),
+				updatedAt: toIsoString(now),
 			},
 			{ status: 201 },
 		);

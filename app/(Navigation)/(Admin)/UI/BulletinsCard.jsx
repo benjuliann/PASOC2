@@ -13,6 +13,7 @@ function formatDisplayDate(value) {
 	return new Intl.DateTimeFormat("en-US", {
 		dateStyle: "medium",
 		timeStyle: "short",
+		timeZone: "America/Edmonton",
 	}).format(date);
 }
 
@@ -108,11 +109,13 @@ export function BulletinCard({
 							<span className="rounded-full bg-[#556B2F] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
 								Bulletin
 							</span>
-							<span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
-								isPublished
-									? "border border-[#556B2F] bg-white text-[#556B2F]"
-									: "border border-black bg-white text-neutral-700"
-							}`}>
+							<span
+								className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
+									isPublished
+										? "border border-[#556B2F] bg-white text-[#556B2F]"
+										: "border border-black bg-white text-neutral-700"
+								}`}
+							>
 								{isPublished ? "Published" : "Draft"}
 							</span>
 						</div>

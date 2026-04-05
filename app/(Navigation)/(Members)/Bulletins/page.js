@@ -16,6 +16,7 @@ function formatDisplayDate(value) {
 	return new Intl.DateTimeFormat("en-US", {
 		dateStyle: "medium",
 		timeStyle: "short",
+		timeZone: "America/Edmonton",
 	}).format(date);
 }
 
@@ -132,11 +133,17 @@ export default function Bulletin() {
 										</p>
 										<div className="self-end pt-2 space-y-1 text-right text-xs font-medium uppercase tracking-[0.12em] text-neutral-500">
 											<p>
-												Published at {formatDisplayDate(bulletin.publishDate)}
+												Published at{" "}
+												{formatDisplayDate(
+													bulletin.publishDate,
+												)}
 											</p>
 											{showUpdatedAt && (
 												<p>
-													Updated at {formatDisplayDate(bulletin.updatedAt)}
+													Updated at{" "}
+													{formatDisplayDate(
+														bulletin.updatedAt,
+													)}
 												</p>
 											)}
 										</div>
