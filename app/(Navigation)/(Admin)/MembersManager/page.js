@@ -1,8 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Users, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { useUserAuth } from "../../../_utils/auth-context";
 
 export default function ManageMembersPage() {
+  const { user } = useUserAuth();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,18 +13,63 @@ export default function ManageMembersPage() {
   const [sortDir, setSortDir] = useState("asc");
 
   useEffect(() => {
-    fetch("/api/Database/MemberInfo")
-      .then((res) => res.json())
-      .then((data) => {
+    async function fetchMembers() {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const token = await user.getIdToken();
+
+        const res = await fetch("/api/Database/MemberInfo", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setError(data.error || "Failed to load members.");
+          setMembers([]);
+          return;
+        }
+
         if (data.success) {
-          setMembers(data.data);
+          // Normalize returned rows so frontend always has consistent keys
+          const normalizedMembers = Array.isArray(data.data)
+            ? data.data.map((member) => ({
+                ...member,
+                roleId: member.roleID ?? member.roleId ?? 4,
+              }))
+            : [];
+
+          setMembers(normalizedMembers);
+
+          // Helpful notice: if only one member came back, user may not be admin
+          if (normalizedMembers.length <= 1 && !data.count === 0) {
+            // no-op, just keeping room for future logic
+          }
         } else {
           setError(data.error || "Failed to load members.");
+          setMembers([]);
         }
-      })
-      .catch(() => setError("Could not reach the server."))
-      .finally(() => setLoading(false));
-  }, []);
+      } catch (err) {
+        setError("Could not reach the server.");
+        setMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMembers();
+  }, [user]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -33,26 +80,36 @@ export default function ManageMembersPage() {
     }
   };
 
-  const filtered = members
-    .filter((m) => {
-      const q = search.toLowerCase();
-      return (
-        m.name?.toLowerCase().includes(q) ||
-        m.email?.toLowerCase().includes(q) ||
-        m.uuid?.toLowerCase().includes(q)
-      );
-    })
-    .sort((a, b) => {
-      const aVal = (a[sortField] || "").toString().toLowerCase();
-      const bVal = (b[sortField] || "").toString().toLowerCase();
-      return sortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-    });
+  const filtered = useMemo(() => {
+    return [...members]
+      .filter((m) => {
+        const q = search.toLowerCase();
+        return (
+          m.name?.toLowerCase().includes(q) ||
+          m.email?.toLowerCase().includes(q) ||
+          m.uuid?.toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => {
+        const aVal = (a[sortField] ?? "").toString().toLowerCase();
+        const bVal = (b[sortField] ?? "").toString().toLowerCase();
+
+        return sortDir === "asc"
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      });
+  }, [members, search, sortField, sortDir]);
 
   const SortIcon = ({ field }) => {
-    if (sortField !== field) return <ChevronDown size={14} className="opacity-30" />;
-    return sortDir === "asc"
-      ? <ChevronUp size={14} className="text-[#556B2F]" />
-      : <ChevronDown size={14} className="text-[#556B2F]" />;
+    if (sortField !== field) {
+      return <ChevronDown size={14} className="opacity-30" />;
+    }
+
+    return sortDir === "asc" ? (
+      <ChevronUp size={14} className="text-[#556B2F]" />
+    ) : (
+      <ChevronDown size={14} className="text-[#556B2F]" />
+    );
   };
 
   const columns = [
@@ -66,11 +123,16 @@ export default function ManageMembersPage() {
 
   const roleLabel = (roleId) => {
     switch (parseInt(roleId)) {
-      case 1: return { label: "Superadmin", color: "bg-red-100 text-red-700" };
-      case 2: return { label: "Admin", color: "bg-orange-100 text-orange-700" };
-      case 3: return { label: "Member", color: "bg-green-100 text-green-700" };
-      case 4: return { label: "None", color: "bg-gray-100 text-gray-500" };
-      default: return { label: "Unknown", color: "bg-gray-100 text-gray-400" };
+      case 1:
+        return { label: "Superadmin", color: "bg-red-100 text-red-700" };
+      case 2:
+        return { label: "Admin", color: "bg-orange-100 text-orange-700" };
+      case 3:
+        return { label: "Member", color: "bg-green-100 text-green-700" };
+      case 4:
+        return { label: "None", color: "bg-gray-100 text-gray-500" };
+      default:
+        return { label: "Unknown", color: "bg-gray-100 text-gray-400" };
     }
   };
 
@@ -116,6 +178,14 @@ export default function ManageMembersPage() {
           </div>
         )}
 
+        {!loading && !error && members.length === 1 && (
+          <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-5 py-4 text-sm">
+            Only one account was returned. If you expected all accounts, make sure
+            this logged-in user has <strong>roleID 1 or 2</strong> in the
+            <code className="mx-1">MemberInfo</code> table.
+          </div>
+        )}
+
         {/* Table */}
         {!loading && !error && (
           <div className="bg-white rounded-2xl border border-[#556B2F]/10 shadow-sm overflow-hidden">
@@ -155,15 +225,25 @@ export default function ManageMembersPage() {
                           }`}
                         >
                           <td className="px-5 py-4">
-                            <div className="font-medium text-[#333]">{member.name || "—"}</div>
-                            <div className="text-xs text-[#999] mt-0.5 font-mono">{member.uuid}</div>
+                            <div className="font-medium text-[#333]">
+                              {member.name || "—"}
+                            </div>
+                            <div className="text-xs text-[#999] mt-0.5 font-mono">
+                              {member.uuid}
+                            </div>
                           </td>
-                          <td className="px-5 py-4 text-[#555]">{member.email || "—"}</td>
-                          <td className="px-5 py-4 text-[#555]">{member.primaryPhone || "—"}</td>
+                          <td className="px-5 py-4 text-[#555]">
+                            {member.email || "—"}
+                          </td>
+                          <td className="px-5 py-4 text-[#555]">
+                            {member.primaryPhone || "—"}
+                          </td>
                           <td className="px-5 py-4 text-[#555]">
                             <div>{member.address || "—"}</div>
                             {member.postalCode && (
-                              <div className="text-xs text-[#999]">{member.postalCode}</div>
+                              <div className="text-xs text-[#999]">
+                                {member.postalCode}
+                              </div>
                             )}
                           </td>
                           <td className="px-5 py-4 text-[#555]">
