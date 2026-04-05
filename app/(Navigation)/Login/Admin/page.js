@@ -1,6 +1,5 @@
 "use client";
 
-import { setAuthCookie } from "@/app/_utils/actions";
 import Link from "next/link";
 import { useState } from "react";
 import { useUserAuth } from "../../../_utils/auth-context";
@@ -60,13 +59,9 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      //Firebase signs the user in
-      const userCredential = await emailSignIn(email, password)
-      const firebaseUser = userCredential.user
+      await emailSignIn(email, password);
 
-      //Store ID to cookie
-      await setAuthCookie(firebaseUser.uid)
-
+      // 🔐 Later you can add role check here (admin only)
       router.push("/Dashboard");
     } catch (err) {
       // Firebase error handling

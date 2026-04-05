@@ -1,40 +1,27 @@
-"use server"
+"use client";
 
-import LayoutShell from "./layoutShell";
-import { redirect } from "next/navigation";
-import db from "@/lib/db";
-import { cookies } from "next/headers";
+import { usePathname } from "next/navigation";
+import { Header } from "./UI/Header";
 
-export default async function AdminLayout({ children }) {
-  const cookieStore = await cookies();
-  const uid = cookieStore.get("uuid")?.value;
+export default function LayoutShell({ children }) {
+  const pathname = usePathname();
 
-  if (!uid) {
-    redirect("/Login");
-  }
+  // pages where header/footer should NOT show
+    const hideLayout =
+      pathname === "/Portals" ||
+      pathname === "/Pages/SignUp" ||
+      pathname === "/Pages/ForgotPassword";
 
-  let user = null;
+  // Exclude FloatingButton from FAQ pages
+  const hideFAQButton =
+    pathname === "/FaqsManager" ||
+    pathname === "/Admin/FaqsManager" ||
+    pathname === "/Faqs" ;  
 
-  try {
-    const [rows] = await db.execute(
-      "SELECT roleId FROM MemberInfo WHERE uuid = ? LIMIT 1",
-      [uid],
-    );
-    user = rows[0];
-  } catch (error) {
-    console.error("Database error during admin check:", error);
-    redirect("/");
-  }
-
-
-  const allowedRoles = [1, 2];
-
-  if (!user || !allowedRoles.includes(user.roleId)) {
-    console.log("Access Denied: Role is", user?.roleId);
-    redirect("/Unauthorized"); 
-  }
-
-  return <LayoutShell>{children}</LayoutShell>
+  return (
+    <>
+      {!hideLayout && <Header />}
+      {children}
+    </>
+  );
 }
-
-
