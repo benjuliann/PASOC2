@@ -13,8 +13,9 @@ const navLinks = [
 	{ label: "Events", href: "/EventManager" },
 	// { label: "Galleries", href: "/GalleryManager" },
 	{ label: "Sponsors", href: "/SponsorsManager" },
+	{ label: "Bulletins", href: "/BulletinsManager" },
 	{ label: "Reports", href: "/Reports" },
-    { label: "FAQs", href: "/FaqsManager" },
+	{ label: "FAQs", href: "/FaqsManager" },
 ];
 
 export function Header() {
