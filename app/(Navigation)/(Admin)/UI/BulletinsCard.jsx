@@ -32,9 +32,9 @@ export function BulletinCard({
 	editErrorMessage = "",
 	onChangeEditTitle,
 	onChangeEditBody,
-	onChangeEditIsPublished,
 	onSave,
 	onCancel,
+	onPublish,
 }) {
 	const formattedPublishDate = formatDisplayDate(publishDate || createdAt);
 	const formattedCreatedAt = formatDisplayDate(createdAt);
@@ -83,21 +83,7 @@ export function BulletinCard({
 							className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-lg leading-relaxed text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-[#556B2F]"
 						/>
 
-						<label className="flex items-center gap-2 text-sm font-medium text-neutral-700">
-							<input
-								type="checkbox"
-								checked={editIsPublished}
-								onChange={(event) =>
-									onChangeEditIsPublished(
-										event.target.checked,
-									)
-								}
-								className="h-4 w-4 accent-[#556B2F]"
-							/>
-							Published
-						</label>
-
-						<div className="flex flex-wrap justify-end gap-2 pt-2">
+						<div className="flex flex-wrap justify-start gap-2 pt-2">
 							<button
 								type="button"
 								onClick={onSave}
@@ -122,7 +108,11 @@ export function BulletinCard({
 							<span className="rounded-full bg-[#556B2F] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
 								Bulletin
 							</span>
-							<span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
+							<span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
+								isPublished
+									? "border border-[#556B2F] bg-white text-[#556B2F]"
+									: "border border-black bg-white text-neutral-700"
+							}`}>
 								{isPublished ? "Published" : "Draft"}
 							</span>
 						</div>
@@ -131,7 +121,11 @@ export function BulletinCard({
 							{title}
 						</h3>
 
-						<div className="space-y-1 text-sm font-medium uppercase tracking-[0.16em] text-neutral-600">
+						<p className="whitespace-pre-line text-lg leading-relaxed text-neutral-700 md:text-xl">
+							{body}
+						</p>
+
+						<div className="self-end space-y-1 pt-1 text-right text-xs font-medium uppercase tracking-[0.12em] text-neutral-500">
 							{isPublished ? (
 								<p>Published at {formattedPublishDate}</p>
 							) : (
@@ -143,25 +137,35 @@ export function BulletinCard({
 							)}
 						</div>
 
-						<p className="whitespace-pre-line text-lg leading-relaxed text-neutral-700 md:text-xl">
-							{body}
-						</p>
+						<div className="flex flex-wrap items-end justify-between gap-2 pt-2">
+							<button
+								type="button"
+								onClick={onPublish}
+								className={`rounded-md px-5 py-2.5 text-sm font-semibold uppercase tracking-wide ${
+									isPublished
+										? "border border-red-700 bg-white text-red-700 hover:border-red-800 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300"
+										: "bg-[#556B2F] text-white hover:bg-[#6b8e23]"
+								}`}
+							>
+								{isPublished ? "Unpublish" : "Publish"}
+							</button>
 
-						<div className="flex flex-wrap justify-end gap-2 pt-2">
-							<button
-								type="button"
-								onClick={onEdit}
-								className="rounded-md bg-[#556B2F] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#6b8e23]"
-							>
-								Edit
-							</button>
-							<button
-								type="button"
-								onClick={onDelete}
-								className="rounded-md bg-red-700 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-red-800"
-							>
-								Delete
-							</button>
+							<div className="ml-auto flex flex-wrap gap-2">
+								<button
+									type="button"
+									onClick={onEdit}
+									className="rounded-md bg-[#556B2F] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#6b8e23]"
+								>
+									Edit
+								</button>
+								<button
+									type="button"
+									onClick={onDelete}
+									className="rounded-md bg-red-700 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-red-800"
+								>
+									Delete
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>

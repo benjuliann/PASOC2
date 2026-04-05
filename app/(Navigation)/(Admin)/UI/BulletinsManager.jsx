@@ -60,7 +60,6 @@ export function BulletinManager() {
 	const [bulletins, setBulletins] = React.useState([]);
 	const [title, setTitle] = React.useState("");
 	const [body, setBody] = React.useState("");
-	const [isPublished, setIsPublished] = React.useState(false);
 	const [editingId, setEditingId] = React.useState(null);
 	const [editTitle, setEditTitle] = React.useState("");
 	const [editBody, setEditBody] = React.useState("");
@@ -108,7 +107,6 @@ export function BulletinManager() {
 	const resetCreateForm = () => {
 		setTitle("");
 		setBody("");
-		setIsPublished(false);
 	};
 
 	const resetEditForm = () => {
@@ -139,7 +137,7 @@ export function BulletinManager() {
 				body: JSON.stringify({
 					title: trimmedTitle,
 					body: trimmedBody,
-					isPublished,
+					isPublished: false,
 				}),
 			});
 			const data = await response.json();
@@ -247,6 +245,51 @@ export function BulletinManager() {
 		});
 	};
 
+	const openPublishConfirmModal = (id, nextIsPublished) => {
+		setConfirmModal({
+			isOpen: true,
+			action: nextIsPublished ? "publish" : "unpublish",
+			bulletinId: id,
+		});
+	};
+
+	const publishBulletin = async (id, nextIsPublished) => {
+		try {
+			setErrorMessage("");
+			const bulletin = bulletins.find(
+				(item) => item.bulletinId === id,
+			);
+
+			if (!bulletin) {
+				setErrorMessage("Bulletin not found.");
+				return;
+			}
+
+			const response = await fetch(`/api/Database/bulletins/${id}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					title: bulletin.title,
+					body: bulletin.body,
+					isPublished: nextIsPublished,
+					preserveUpdatedAt: true,
+				}),
+			});
+
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data.error || "Failed to update bulletin status");
+			}
+
+			await loadBulletins();
+			return true;
+		} catch (error) {
+			setErrorMessage(error.message || "Failed to update bulletin status");
+			return false;
+		}
+	};
+
 	const closeConfirmModal = () => {
 		const shouldClearFormError =
 			confirmModal.action === "create" || confirmModal.action === "edit";
@@ -312,6 +355,22 @@ export function BulletinManager() {
 			return;
 		}
 
+		if (
+			(confirmModal.action === "publish" ||
+				confirmModal.action === "unpublish") &&
+			confirmModal.bulletinId
+		) {
+			const nextIsPublished = confirmModal.action === "publish";
+			const saved = await publishBulletin(
+				confirmModal.bulletinId,
+				nextIsPublished,
+			);
+			if (saved) {
+				closeConfirmModal();
+			}
+			return;
+		}
+
 		if (confirmModal.action === "delete" && confirmModal.bulletinId) {
 			deleteBulletin(confirmModal.bulletinId);
 		}
@@ -353,17 +412,6 @@ export function BulletinManager() {
 						rows={6}
 						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black"
 					/>
-					<label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-						<input
-							type="checkbox"
-							checked={isPublished}
-							onChange={(event) =>
-								setIsPublished(event.target.checked)
-							}
-							className="h-4 w-4"
-						/>
-						Published
-					</label>
 					<div className="flex justify-end gap-2">
 						<button
 							type="button"
@@ -417,6 +465,12 @@ export function BulletinManager() {
 						editTitle={editTitle}
 						editBody={editBody}
 						editIsPublished={editIsPublished}
+						onPublish={() =>
+							openPublishConfirmModal(
+								bulletin.bulletinId,
+								!bulletin.isPublished,
+							)
+						}
 						onChangeEditTitle={(value) => {
 							setEditTitle(value);
 							if (errorMessage) {
@@ -429,9 +483,6 @@ export function BulletinManager() {
 								setErrorMessage("");
 							}
 						}}
-						onChangeEditIsPublished={(value) =>
-							setEditIsPublished(value)
-						}
 						editErrorMessage={
 							editingId === bulletin.bulletinId
 								? errorMessage
@@ -451,6 +502,10 @@ export function BulletinManager() {
 								? `Are you sure you want to create "${createBulletinTitle}"?`
 								: confirmModal.action === "edit"
 									? `Are you sure you want to save changes to "${editBulletinTitle}"?`
+									: confirmModal.action === "publish"
+										? `Are you sure you want to publish "${selectedBulletinTitle}"?`
+										: confirmModal.action === "unpublish"
+											? `Are you sure you want to unpublish "${selectedBulletinTitle}"?`
 									: `Are you sure you want to delete "${selectedBulletinTitle}"?`}
 						</h3>
 
@@ -467,7 +522,9 @@ export function BulletinManager() {
 								onClick={confirmAction}
 								className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
 									confirmModal.action === "create" ||
-									confirmModal.action === "edit"
+									confirmModal.action === "edit" ||
+									confirmModal.action === "publish" ||
+									confirmModal.action === "unpublish"
 										? "bg-[#556B2F] hover:bg-[#6b8e23]"
 										: "bg-red-700 hover:bg-red-800"
 								}`}
@@ -476,6 +533,10 @@ export function BulletinManager() {
 									? "Create"
 									: confirmModal.action === "edit"
 										? "Save"
+										: confirmModal.action === "publish"
+											? "Publish"
+											: confirmModal.action === "unpublish"
+												? "Unpublish"
 										: "Delete"}
 							</button>
 						</div>

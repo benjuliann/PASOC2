@@ -31,13 +31,32 @@ function getBulletinModerationError(title, body) {
 	return "";
 }
 
+async function getBulletinIdFromContext(context) {
+	const params = await context?.params;
+	const id = Number(params?.id);
+
+	if (!Number.isInteger(id) || id <= 0) {
+		return null;
+	}
+
+	return id;
+}
+
 export async function PUT(request, context) {
 	try {
-		const { id } = context.params;
+		const id = await getBulletinIdFromContext(context);
+		if (!id) {
+			return NextResponse.json(
+				{ error: "Invalid bulletin id" },
+				{ status: 400 },
+			);
+		}
+
 		const body = await request.json();
 		const title = (body.title || "").trim();
 		const bulletinBody = (body.body || "").trim();
 		const isPublished = normalizePublishedFlag(body.isPublished);
+		const preserveUpdatedAt = Boolean(body.preserveUpdatedAt);
 
 		if (!title || !bulletinBody) {
 			return NextResponse.json(
@@ -61,6 +80,10 @@ export async function PUT(request, context) {
 			     publishDate = CASE
 			       WHEN ? = 1 THEN COALESCE(publishDate, NOW())
 			       ELSE NULL
+			     END,
+			     updatedAt = CASE
+			       WHEN ? = 1 THEN updatedAt
+			       ELSE NOW()
 			     END
 			 WHERE bulletinId = ?`;
 		const updateParams = [
@@ -68,6 +91,7 @@ export async function PUT(request, context) {
 			bulletinBody,
 			isPublished,
 			isPublished,
+			preserveUpdatedAt ? 1 : 0,
 			id,
 		];
 
@@ -99,7 +123,7 @@ export async function PUT(request, context) {
 		}
 
 		const [[updatedRow]] = await pool.query(
-			`SELECT publishDate
+			`SELECT publishDate, updatedAt
 			 FROM BulletinList
 			 WHERE bulletinId = ?`,
 			[id],
@@ -111,6 +135,7 @@ export async function PUT(request, context) {
 			body: bulletinBody,
 			publishDate: toIsoString(updatedRow?.publishDate),
 			isPublished: Boolean(isPublished),
+			updatedAt: toIsoString(updatedRow?.updatedAt),
 		});
 	} catch (error) {
 		console.error("[PUT /api/Database/bulletins/:id]", error.message);
@@ -120,7 +145,13 @@ export async function PUT(request, context) {
 
 export async function DELETE(_request, context) {
 	try {
-		const { id } = context.params;
+		const id = await getBulletinIdFromContext(context);
+		if (!id) {
+			return NextResponse.json(
+				{ error: "Invalid bulletin id" },
+				{ status: 400 },
+			);
+		}
 
 		const [result] = await pool.query(
 			`DELETE FROM BulletinList WHERE bulletinId = ?`,
