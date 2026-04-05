@@ -139,6 +139,8 @@ export default function ManageMembersPage() {
   return (
     <div className="min-h-screen bg-[#f0ece1] font-sans">
       <main className="max-w-7xl mx-auto px-6 py-12">
+
+        {/* Header */}
         <div className="flex items-center gap-4 mb-10">
           <div className="bg-[#556B2F] text-white rounded-xl p-3">
             <Users size={28} />
@@ -151,11 +153,9 @@ export default function ManageMembersPage() {
           </div>
         </div>
 
+        {/* Search */}
         <div className="relative mb-6 max-w-sm">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#556B2F]/50"
-          />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#556B2F]/50" />
           <input
             type="text"
             placeholder="Search by name, email, or UUID..."
@@ -165,6 +165,7 @@ export default function ManageMembersPage() {
           />
         </div>
 
+        {/* States */}
         {loading && (
           <div className="flex items-center justify-center py-24 text-[#556B2F]/50 text-sm">
             Loading members...
@@ -185,6 +186,7 @@ export default function ManageMembersPage() {
           </div>
         )}
 
+        {/* Table */}
         {!loading && !error && (
           <div className="bg-white rounded-2xl border border-[#556B2F]/10 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -208,17 +210,13 @@ export default function ManageMembersPage() {
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
-                      <td
-                        colSpan={columns.length}
-                        className="px-5 py-16 text-center text-[#999] text-sm"
-                      >
+                      <td colSpan={columns.length} className="px-5 py-16 text-center text-[#999] text-sm">
                         No members found.
                       </td>
                     </tr>
                   ) : (
                     filtered.map((member, i) => {
                       const role = roleLabel(member.roleId);
-
                       return (
                         <tr
                           key={member.uuid}
@@ -254,9 +252,7 @@ export default function ManageMembersPage() {
                               : "—"}
                           </td>
                           <td className="px-5 py-4">
-                            <span
-                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${role.color}`}
-                            >
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${role.color}`}>
                               {role.label}
                             </span>
                           </td>
