@@ -3,10 +3,26 @@ import { StatCard } from "../UI/StatCard";
 import { ManagerTile } from "../UI/ManagerTile";
 
 const donationTiles = [
-	{ label: "Donation Records", icon: "FileText", href: "/Admin/DonationManager/Records" },
-	{ label: "In Person Donation", icon: "UserPlus", href: "/Admin/DonationManager/InPerson" },
-	{ label: "Donation Receipts", icon: "Receipt", href: "/Admin/DonationManager/Receipts" },
-	{ label: "Manage Donations", icon: "FolderCog", href: "/Admin/DonationManager/Manage" },
+	{
+		label: "Donation Records",
+		icon: "FileText",
+		href: "/Admin/DonationsManager/Records",
+	},
+	{
+		label: "In Person Donation",
+		icon: "UserPlus",
+		href: "/Admin/DonationsManager/InPerson",
+	},
+	{
+		label: "Donation Receipts",
+		icon: "Receipt",
+		href: "/Admin/DonationsManager/Receipts",
+	},
+	{
+		label: "Manage Donations",
+		icon: "FolderCog",
+		href: "/Admin/DonationsManager/Manage",
+	},
 ];
 
 export default function DonationManagerPage() {
@@ -35,7 +51,11 @@ export default function DonationManagerPage() {
 				{/* Compact nav tiles */}
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
 					{donationTiles.map((tile) => (
-						<ManagerTile key={tile.label} variant="compact" {...tile} />
+						<ManagerTile
+							key={tile.label}
+							variant="compact"
+							{...tile}
+						/>
 					))}
 				</div>
 			</div>
