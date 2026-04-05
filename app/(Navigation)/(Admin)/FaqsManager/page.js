@@ -3,7 +3,7 @@ import { FaqsManager } from "../UI/FaqsManager.jsx";
 
 export default function FaqsPage() {
     return (
-        <main>
+        <main className="pt-12">
             {/* Page Header */}
           <div className="w-full max-w-4xl mx-auto mb-8 flex flex-col items-center">
             <div className="flex items-center w-full justify-between mb-2">
