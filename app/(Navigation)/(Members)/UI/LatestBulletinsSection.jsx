@@ -18,10 +18,18 @@ export function LatestBulletinsSection() {
 			try {
 				setIsLoadingBulletins(true);
 				setBulletinsError("");
-
-				const response = await fetch("/api/Database/bulletins", {
-					cache: "no-store",
+				const searchParams = new URLSearchParams({
+					page: "1",
+					limit: "5",
+					published: "true",
 				});
+
+				const response = await fetch(
+					`/api/Database/bulletins?${searchParams.toString()}`,
+					{
+						cache: "no-store",
+					},
+				);
 				const data = await response.json();
 
 				if (!response.ok) {
@@ -29,7 +37,12 @@ export function LatestBulletinsSection() {
 				}
 
 				if (isMounted) {
-					setBulletins(Array.isArray(data) ? data : []);
+					const rows = Array.isArray(data.data)
+						? data.data
+						: Array.isArray(data)
+							? data
+							: [];
+					setBulletins(rows);
 				}
 			} catch (error) {
 				if (isMounted) {

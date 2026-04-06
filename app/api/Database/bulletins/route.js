@@ -49,15 +49,109 @@ function mapBulletinRow(row) {
 	};
 }
 
-export async function GET() {
+function parsePositiveInteger(value, fallback) {
+	const parsed = Number.parseInt(value, 10);
+	if (!Number.isInteger(parsed) || parsed <= 0) {
+		return fallback;
+	}
+
+	return parsed;
+}
+
+function parsePublishedQuery(value) {
+	if (value === null || value === undefined || value === "") {
+		return { isValid: true, filter: null };
+	}
+
+	const normalized = String(value).toLowerCase();
+
+	if (normalized === "all") {
+		return { isValid: true, filter: null };
+	}
+
+	if (normalized === "true" || normalized === "1") {
+		return { isValid: true, filter: 1 };
+	}
+
+	if (normalized === "false" || normalized === "0") {
+		return { isValid: true, filter: 0 };
+	}
+
+	return { isValid: false, filter: null };
+}
+
+function getBulletinsWhereClause(publishedFilter) {
+	if (publishedFilter === null) {
+		return { whereClause: "", params: [] };
+	}
+
+	return {
+		whereClause: "WHERE isPublished = ?",
+		params: [publishedFilter],
+	};
+}
+
+export async function GET(request) {
 	try {
+		const { searchParams } = new URL(request.url);
+		const requestedPage = parsePositiveInteger(
+			searchParams.get("page"),
+			1,
+		);
+		const requestedLimit = parsePositiveInteger(
+			searchParams.get("limit"),
+			5,
+		);
+		const limit = Math.min(requestedLimit, 50);
+		const publishedQuery = parsePublishedQuery(
+			searchParams.get("published"),
+		);
+
+		if (!publishedQuery.isValid) {
+			return NextResponse.json(
+				{
+					error: 'Invalid "published" query. Use one of: all, true, false, 1, 0.',
+				},
+				{ status: 400 },
+			);
+		}
+
+		const publishedFilter = publishedQuery.filter;
+		const { whereClause, params } = getBulletinsWhereClause(
+			publishedFilter,
+		);
+
+		const [countRows] = await pool.query(
+			`SELECT COUNT(*) AS totalCount
+			 FROM BulletinList
+			 ${whereClause}`,
+			params,
+		);
+		const totalCount = Number(countRows?.[0]?.totalCount || 0);
+		const pageCount = totalCount > 0 ? Math.ceil(totalCount / limit) : 1;
+		const page = Math.min(requestedPage, pageCount);
+		const offset = (page - 1) * limit;
+
 		const [rows] = await pool.query(
 			`SELECT bulletinId, title, body, publishDate, isPublished, createdAt, updatedAt
 			 FROM BulletinList
-			 ORDER BY publishDate DESC, bulletinId DESC`,
+			 ${whereClause}
+			 ORDER BY COALESCE(publishDate, createdAt, updatedAt) DESC, bulletinId DESC
+			 LIMIT ? OFFSET ?`,
+			[...params, limit, offset],
 		);
 
-		return NextResponse.json(rows.map(mapBulletinRow));
+		return NextResponse.json({
+			data: rows.map(mapBulletinRow),
+			pagination: {
+				page,
+				limit,
+				totalCount,
+				pageCount,
+				hasPrevPage: page > 1,
+				hasNextPage: page < pageCount,
+			},
+		});
 	} catch (error) {
 		console.error("[GET /api/Database/bulletins]", error.message);
 		return NextResponse.json({ error: error.message }, { status: 500 });
