@@ -47,7 +47,7 @@ export default function Bulletin() {
 				const response = await fetch(
 					`/api/Database/bulletins?${searchParams.toString()}`,
 					{
-					cache: "no-store",
+						cache: "no-store",
 					},
 				);
 				const data = await response.json();
@@ -118,13 +118,11 @@ export default function Bulletin() {
 						</p>
 					)}
 
-					{!isLoading &&
-						!errorMessage &&
-						bulletins.length === 0 && (
-							<p className="text-neutral-700 leading-relaxed text-lg">
-								No bulletins have been published yet.
-							</p>
-						)}
+					{!isLoading && !errorMessage && bulletins.length === 0 && (
+						<p className="text-neutral-700 leading-relaxed text-lg">
+							No bulletins have been published yet.
+						</p>
+					)}
 
 					{!isLoading &&
 						!errorMessage &&
@@ -205,21 +203,32 @@ export default function Bulletin() {
 								</button>
 
 								{visiblePageNumbers.map((pageNumber, index) => {
-									const isActive = pageNumber === pagination.page;
-									const showComma = index < visiblePageNumbers.length - 1;
+									const isActive =
+										pageNumber === pagination.page;
+									const showComma =
+										index < visiblePageNumbers.length - 1;
 
 									return (
-										<span key={pageNumber} className="flex items-center gap-0">
+										<span
+											key={pageNumber}
+											className="flex items-center gap-0"
+										>
 											<button
 												type="button"
-												onClick={() => setCurrentPage(pageNumber)}
+												onClick={() =>
+													setCurrentPage(pageNumber)
+												}
 												className={`font-semibold transition-colors ${
 													isActive
 														? "text-black"
 														: "text-neutral-500 hover:text-neutral-700"
 												}`}
 												aria-label={`Go to page ${pageNumber}`}
-												aria-current={isActive ? "page" : undefined}
+												aria-current={
+													isActive
+														? "page"
+														: undefined
+												}
 											>
 												{pageNumber}
 											</button>
@@ -239,7 +248,10 @@ export default function Bulletin() {
 									type="button"
 									onClick={() =>
 										setCurrentPage((previous) =>
-											Math.min(pagination.pageCount, previous + 1),
+											Math.min(
+												pagination.pageCount,
+												previous + 1,
+											),
 										)
 									}
 									disabled={!pagination.hasNextPage}
@@ -249,7 +261,9 @@ export default function Bulletin() {
 								</button>
 								<button
 									type="button"
-									onClick={() => setCurrentPage(pagination.pageCount)}
+									onClick={() =>
+										setCurrentPage(pagination.pageCount)
+									}
 									disabled={!pagination.hasNextPage}
 									className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
 									aria-label="Go to oldest page"

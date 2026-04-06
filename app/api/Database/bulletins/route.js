@@ -94,10 +94,7 @@ function getBulletinsWhereClause(publishedFilter) {
 export async function GET(request) {
 	try {
 		const { searchParams } = new URL(request.url);
-		const requestedPage = parsePositiveInteger(
-			searchParams.get("page"),
-			1,
-		);
+		const requestedPage = parsePositiveInteger(searchParams.get("page"), 1);
 		const requestedLimit = parsePositiveInteger(
 			searchParams.get("limit"),
 			5,
@@ -117,9 +114,8 @@ export async function GET(request) {
 		}
 
 		const publishedFilter = publishedQuery.filter;
-		const { whereClause, params } = getBulletinsWhereClause(
-			publishedFilter,
-		);
+		const { whereClause, params } =
+			getBulletinsWhereClause(publishedFilter);
 
 		const [countRows] = await pool.query(
 			`SELECT COUNT(*) AS totalCount
