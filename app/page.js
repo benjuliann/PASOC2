@@ -63,9 +63,11 @@ export default function HomePage() {
 						</p>
 					</div>
 
-					<img
+					<Image
 						src="/PasocLeadership2012_01.jpg"
 						alt="PASOC Leadership 2012"
+						width={800}
+						height={600}
 						className="w-full h-105 object-cover rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
 					/>
 				</div>

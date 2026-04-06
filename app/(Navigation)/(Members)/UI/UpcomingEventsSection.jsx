@@ -51,6 +51,17 @@ export function UpcomingEventsSection() {
 
 	const upcomingEvents = useMemo(() => {
 		const now = new Date();
+		const dateLineFormatter = new Intl.DateTimeFormat("en-US", {
+			month: "short",
+			day: "numeric",
+		});
+		const yearFormatter = new Intl.DateTimeFormat("en-US", {
+			year: "numeric",
+		});
+		const timeFormatter = new Intl.DateTimeFormat("en-US", {
+			hour: "numeric",
+			minute: "2-digit",
+		});
 
 		return [...events]
 			.map((event) => {
@@ -59,11 +70,9 @@ export function UpcomingEventsSection() {
 				return {
 					title: event?.title || "Untitled event",
 					datetime: start,
-					date: start.toLocaleDateString(),
-					time: start.toLocaleTimeString([], {
-						hour: "numeric",
-						minute: "2-digit",
-					}),
+					dateLine: dateLineFormatter.format(start),
+					year: yearFormatter.format(start),
+					time: timeFormatter.format(start),
 				};
 			})
 			.filter(
@@ -109,14 +118,22 @@ export function UpcomingEventsSection() {
 							{upcomingEvents.map((event, index) => (
 								<div
 									key={`${event.title}-${event.datetime.toISOString()}-${index}`}
-									className="flex justify-between items-center bg-neutral-100 px-8 py-6 rounded-xl"
+									className="flex flex-row items-center justify-between gap-4 rounded-xl bg-neutral-100 px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6"
 								>
-									<span className="text-lg font-medium text-neutral-900">
+									<span className="min-w-0 text-base font-medium leading-snug text-neutral-900 sm:text-lg">
 										{event.title}
 									</span>
-									<span className="text-primary-600 font-semibold">
-										{event.date} at {event.time}
-									</span>
+									<div className="shrink-0 text-right font-semibold text-primary-600">
+										<div className="text-sm leading-tight sm:hidden">
+											<div>{event.dateLine}</div>
+											<div>{event.year}</div>
+											<div>{event.time}</div>
+										</div>
+										<div className="hidden text-base sm:block md:text-lg">
+											{event.dateLine}, {event.year}{" "}
+											{event.time}
+										</div>
+									</div>
 								</div>
 							))}
 						</div>
