@@ -1,9 +1,10 @@
 import React from "react";
 import Image from "next/image";
+import { X } from "lucide-react";
 
-export default function PreviousSponsorCard({ sponsor, onDelete }) {
+export default function OverTheYearsSponsorCard({ sponsor, onDelete }) {
 	return (
-		<div className="w-36 md:w-44 p-5 bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col items-center gap-3">
+		<div className="relative w-36 md:w-44 p-5 bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col items-center gap-3">
 			{/* Sponsor Image/Logo Placeholder */}
 			<div className="w-20 h-20 bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center shrink-0">
 				<Image
@@ -24,9 +25,10 @@ export default function PreviousSponsorCard({ sponsor, onDelete }) {
 			<button
 				type="button"
 				onClick={() => onDelete(sponsor.id)}
-				className="self-end rounded-md bg-red-700 px-2 py-1 text-xs font-semibold text-white hover:bg-red-800"
+				className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-700 flex items-center justify-center hover:bg-red-800 text-white"
+				aria-label="Delete sponsor"
 			>
-				Delete
+				<X size={16} strokeWidth={2.5} />
 			</button>
 		</div>
 	);

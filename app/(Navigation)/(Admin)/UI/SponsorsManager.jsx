@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
-import CurrentSponsorCard from "./CurrentSponsorCard";
-import PreviousSponsorCard from "./PreviousSponsorCard";
+import FeaturedSponsorCard from "./FeaturedSponsorCard";
+import OverTheYearsSponsorCard from "./OverTheYearsSponsorCard";
 import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 export function SponsorsManager() {
@@ -233,21 +233,21 @@ export function SponsorsManager() {
 				<section className="w-full max-w-4xl mb-16">
 					<div className="flex items-center justify-center gap-3 mb-8">
 						<h2 className="text-2xl font-semibold underline text-[#2a2420]">
-							Current Sponsors
+							Featured
 						</h2>
 						<button
 							type="button"
-							aria-label="Add current sponsor"
-							className="w-8 h-8 rounded-full bg-[#556B2F] flex items-center justify-center hover:bg-[#6b8e23] focus:outline-none text-white"
+							aria-label="Create featured sponsor"
+							className="ml-auto rounded-md bg-[#556B2F] px-4 py-2 text-base font-semibold text-white hover:bg-[#6b8e23] focus:outline-none"
 							onClick={() => setIsAddSponsorModalOpen(true)}
 						>
-							<Plus size={16} strokeWidth={3} />
+							Create Sponsor
 						</button>
 					</div>
 
 					<div className="flex flex-col gap-8 items-center">
 						{currentSponsors.map((sponsor) => (
-							<CurrentSponsorCard
+							<FeaturedSponsorCard
 								key={sponsor.id}
 								sponsor={sponsor}
 								onDelete={handleDeleteCurrentSponsor}
@@ -264,11 +264,11 @@ export function SponsorsManager() {
 				{/* Previous Sponsors Section */}
 				<section className="w-full max-w-4xl mb-16">
 					<h2 className="text-2xl font-semibold text-center mb-8 underline text-[#2a2420]">
-						Previous Sponsors
+						Over the Years
 					</h2>
 					<div className="flex flex-wrap justify-center gap-6">
 						{previousSponsors.map((sponsor) => (
-							<PreviousSponsorCard
+							<OverTheYearsSponsorCard
 								key={sponsor.id}
 								sponsor={sponsor}
 								onDelete={handleDeletePreviousSponsor}
@@ -284,7 +284,7 @@ export function SponsorsManager() {
 								<h3 className="text-center text-xl font-bold text-gray-800">
 									{editingSponsorId
 										? "Edit Sponsor"
-										: "Current Sponsor"}
+										: "Featured Sponsor"}
 								</h3>
 								<button
 									type="button"
@@ -374,7 +374,7 @@ export function SponsorsManager() {
 								{confirmModal.action === "delete"
 									? `Are you sure you want to delete "${selectedSponsorName}"?`
 									: confirmModal.action === "move"
-										? `Are you sure you want to move "${selectedSponsorName}" to previous sponsor?`
+										? `Are you sure you want to move "${selectedSponsorName}" to over the years?`
 										: confirmModal.action === "add"
 											? `${editingSponsorId ? `Are you sure you want to save changes to "${newSponsor.name.trim()}"?` : `Do you want to create "${newSponsor.name.trim()}"?`}`
 											: "Confirm action?"}

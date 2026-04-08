@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 
-export default function CurrentSponsorCard({
+export default function FeaturedSponsorCard({
 	sponsor,
 	onDelete,
 	onEdit,
@@ -59,7 +59,7 @@ export default function CurrentSponsorCard({
 					onClick={() => onMoveToPrevious(sponsor.id)}
 					className="rounded-md bg-gray-700 px-3 py-1 text-sm font-semibold text-white hover:bg-gray-800"
 				>
-					Move to Previous
+					Move
 				</button>
 			</div>
 		</div>
