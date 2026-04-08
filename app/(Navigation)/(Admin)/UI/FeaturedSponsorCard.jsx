@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { X } from "lucide-react";
 
 export default function FeaturedSponsorCard({
 	sponsor,
@@ -8,7 +9,7 @@ export default function FeaturedSponsorCard({
 	onMoveToPrevious,
 }) {
 	return (
-		<div className="w-full max-w-4xl rounded-3xl border border-[#d8d2c4] bg-white p-5 md:p-7 shadow-[0_16px_36px_rgba(0,0,0,0.08)]">
+		<div className="relative w-full max-w-4xl rounded-3xl border border-[#d8d2c4] bg-white p-5 md:p-7 shadow-[0_16px_36px_rgba(0,0,0,0.08)]">
 			<div className="flex flex-col md:flex-row gap-5 md:gap-7">
 				<div className="w-24 h-24 md:w-30 md:h-30 rounded-2xl border border-gray-300 bg-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
 					<Image
@@ -42,19 +43,21 @@ export default function FeaturedSponsorCard({
 				</button>
 				<button
 					type="button"
-					onClick={() => onDelete(sponsor.id)}
-					className="rounded-md bg-red-700 px-3 py-1 text-sm font-semibold text-white hover:bg-red-800 transition-colors"
-				>
-					Delete
-				</button>
-				<button
-					type="button"
 					onClick={() => onMoveToPrevious(sponsor.id)}
 					className="rounded-md bg-gray-700 px-3 py-1 text-sm font-semibold text-white hover:bg-gray-800 transition-colors"
 				>
 					Move to Over the Years
 				</button>
 			</div>
+
+			<button
+				type="button"
+				onClick={() => onDelete(sponsor.id)}
+				className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-700 flex items-center justify-center hover:bg-red-800 text-white transition-colors"
+				aria-label="Delete sponsor"
+			>
+				<X size={16} strokeWidth={2.5} />
+			</button>
 		</div>
 	);
 }
