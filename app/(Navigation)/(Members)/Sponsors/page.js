@@ -64,7 +64,6 @@ export default function SponsorsPage() {
 	const [currentSponsors, setCurrentSponsors] = useState([]);
 	const [previousSponsors, setPreviousSponsors] = useState([]);
 	const [loading, setLoading] = useState(true);
-	const featuredSponsors = currentSponsors.slice(0, 5);
 
 	useEffect(() => {
 		const loadSponsors = async () => {
@@ -132,13 +131,13 @@ export default function SponsorsPage() {
 							<div className="rounded-3xl border border-[#d8d2c4] bg-white p-8 text-center text-[#6b625a]">
 								Loading sponsors...
 							</div>
-						) : featuredSponsors.length === 0 ? (
+						) : currentSponsors.length === 0 ? (
 							<div className="rounded-3xl border border-dashed border-[#c8c1b3] bg-[#f7f4ec] p-8 text-center text-[#6b625a]">
 								No featured sponsors are listed yet.
 							</div>
 						) : (
 							<div className="grid gap-6">
-								{featuredSponsors.map((sponsor) => (
+								{currentSponsors.map((sponsor) => (
 									<CurrentSponsorCardReadOnly
 										key={sponsor.id}
 										sponsor={sponsor}
