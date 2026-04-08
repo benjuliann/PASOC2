@@ -40,8 +40,8 @@ function CurrentSponsorCardReadOnly({ sponsor }) {
 
 function PreviousSponsorCardReadOnly({ sponsor }) {
 	return (
-		<article className="w-full sm:w-55 p-5 bg-white rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,0.08)] border border-[#d8d2c4] flex flex-col items-center gap-4 transition-transform duration-200 hover:-translate-y-1">
-			<div className="w-18 h-18 bg-[#f7f4ec] rounded-xl border border-[#d8d2c4] flex items-center justify-center shrink-0">
+		<article className="w-36 md:w-44 p-5 bg-white rounded-lg shadow-[0_12px_30px_rgba(0,0,0,0.08)] border border-[#d8d2c4] flex flex-col items-center gap-4 transition-transform duration-200 hover:-translate-y-1">
+			<div className="w-20 h-20 bg-[#f7f4ec] rounded-lg border border-[#d8d2c4] flex items-center justify-center shrink-0">
 				<Image
 					src="/pasoc_logo.png"
 					alt={`${sponsor.name} logo`}
@@ -64,6 +64,7 @@ export default function SponsorsPage() {
 	const [currentSponsors, setCurrentSponsors] = useState([]);
 	const [previousSponsors, setPreviousSponsors] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const featuredSponsors = currentSponsors.slice(0, 5);
 
 	useEffect(() => {
 		const loadSponsors = async () => {
@@ -123,7 +124,7 @@ export default function SponsorsPage() {
 					<section className="space-y-6">
 						<div className="flex flex-wrap items-end justify-between gap-3">
 							<h3 className="text-2xl md:text-3xl font-bold text-[#2a2420]">
-								Recent Sponsors
+								Featured
 							</h3>
 						</div>
 
@@ -131,13 +132,13 @@ export default function SponsorsPage() {
 							<div className="rounded-3xl border border-[#d8d2c4] bg-white p-8 text-center text-[#6b625a]">
 								Loading sponsors...
 							</div>
-						) : currentSponsors.length === 0 ? (
+						) : featuredSponsors.length === 0 ? (
 							<div className="rounded-3xl border border-dashed border-[#c8c1b3] bg-[#f7f4ec] p-8 text-center text-[#6b625a]">
-								No current sponsors are listed yet.
+								No featured sponsors are listed yet.
 							</div>
 						) : (
 							<div className="grid gap-6">
-								{currentSponsors.map((sponsor) => (
+								{featuredSponsors.map((sponsor) => (
 									<CurrentSponsorCardReadOnly
 										key={sponsor.id}
 										sponsor={sponsor}
@@ -151,7 +152,7 @@ export default function SponsorsPage() {
 						<div className="h-px w-full bg-linear-to-r from-transparent via-[#556B2F] to-transparent" />
 						<div className="flex flex-wrap items-end justify-between gap-3">
 							<h3 className="text-2xl md:text-3xl font-bold text-[#2a2420]">
-								Past Sponsors
+								Over the Years
 							</h3>
 						</div>
 
@@ -161,10 +162,10 @@ export default function SponsorsPage() {
 							</div>
 						) : previousSponsors.length === 0 ? (
 							<div className="rounded-3xl border border-dashed border-[#c8c1b3] bg-[#f7f4ec] p-8 text-center text-[#6b625a]">
-								No previous sponsors are listed yet.
+								No sponsors over the years are listed yet.
 							</div>
 						) : (
-							<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+							<div className="flex flex-wrap justify-center gap-6">
 								{previousSponsors.map((sponsor) => (
 									<PreviousSponsorCardReadOnly
 										key={sponsor.id}
