@@ -7,6 +7,10 @@ import FeaturedSponsorCard from "./FeaturedSponsorCard";
 import OverTheYearsSponsorCard from "./OverTheYearsSponsorCard";
 import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
+const FEATURED_SPONSOR_LIMIT = 5;
+const FEATURED_LIMIT_REACHED_MESSAGE =
+	"Featured limit is reached. Move one to Over the Years first.";
+
 export function SponsorsManager() {
 	const [currentSponsors, setCurrentSponsors] = useState([]);
 	const [previousSponsors, setPreviousSponsors] = useState([]);
@@ -171,6 +175,11 @@ export function SponsorsManager() {
 	const handleAddSponsor = async (event) => {
 		event.preventDefault();
 		if (!newSponsor.name.trim()) return;
+
+		if (!editingSponsorId && currentSponsors.length >= FEATURED_SPONSOR_LIMIT) {
+			setFormError(FEATURED_LIMIT_REACHED_MESSAGE);
+			return;
+		}
 
 		const moderationError = getSponsorModerationError(newSponsor);
 		if (moderationError) {
