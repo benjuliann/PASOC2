@@ -35,8 +35,8 @@ function CurrentSponsorCardReadOnly({ sponsor }) {
 
 function PreviousSponsorCardReadOnly({ sponsor }) {
 	return (
-		<article className="w-36 md:w-44 p-5 bg-white rounded-lg shadow-[0_12px_30px_rgba(0,0,0,0.08)] border border-[#d8d2c4] flex flex-col items-center gap-4 transition-transform duration-200 hover:-translate-y-1">
-			<div className="w-20 h-20 bg-gray-200 rounded-lg border border-gray-300 flex items-center justify-center shrink-0">
+		<article className="w-36 md:w-44 p-5 bg-white rounded-3xl shadow-[0_12px_30px_rgba(0,0,0,0.08)] border border-[#d8d2c4] flex flex-col items-center gap-4 transition-transform duration-200 hover:-translate-y-1">
+			<div className="w-20 h-20 bg-gray-200 rounded-2xl border border-gray-300 flex items-center justify-center shrink-0">
 				<Image
 					src="/pasoc_logo.png"
 					alt={`${sponsor.name} logo`}
@@ -47,7 +47,7 @@ function PreviousSponsorCardReadOnly({ sponsor }) {
 			</div>
 
 			<div className="text-center">
-				<h3 className="font-bold text-[#556B2F] text-sm leading-snug">
+				<h3 className="font-bold text-neutral-900 text-sm leading-snug">
 					{sponsor.name}
 				</h3>
 			</div>

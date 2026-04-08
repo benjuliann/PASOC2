@@ -291,7 +291,7 @@ export function SponsorsManager() {
 
 				{isAddSponsorModalOpen && (
 					<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-						<div className="w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
+						<div className="w-full max-w-2xl rounded-3xl border border-gray-200 bg-white p-6 shadow-lg">
 							<div className="relative mb-4">
 								<h3 className="text-center text-xl font-bold text-gray-800">
 									{editingSponsorId
@@ -317,7 +317,7 @@ export function SponsorsManager() {
 										{formError}
 									</p>
 								)}
-								<div className="mx-auto flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-gray-200">
+								<div className="mx-auto flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-2xl border-2 border-gray-300 bg-gray-200">
 									<Image
 										src="/pasoc_logo.png"
 										alt="PASOC logo placeholder"
@@ -342,7 +342,7 @@ export function SponsorsManager() {
 											value={newSponsor.name}
 											onChange={handleSponsorFieldChange}
 											required
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#556B2F] focus:ring-2 focus:ring-[#556B2F]"
+											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 										/>
 									</div>
 
@@ -359,7 +359,7 @@ export function SponsorsManager() {
 											rows={4}
 											value={newSponsor.description}
 											onChange={handleSponsorFieldChange}
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#556B2F] focus:ring-2 focus:ring-[#556B2F]"
+											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 										/>
 									</div>
 
@@ -381,7 +381,7 @@ export function SponsorsManager() {
 
 				{confirmModal.isOpen && (
 					<div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
-						<div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
+						<div className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-6 shadow-lg">
 							<h3 className="text-lg font-bold text-gray-800">
 								{confirmModal.action === "delete"
 									? `Are you sure you want to delete "${selectedSponsorName}"?`

@@ -47,12 +47,9 @@ export function BulletinCard({
 	return (
 		<article className="w-full">
 			{isEditing ? (
-				<div className="overflow-hidden rounded-none border border-neutral-200 bg-neutral-100 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:rounded-3xl">
+				<div className="overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100 shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
 					<div className="flex flex-col gap-6 p-6 md:p-8">
 						<div className="flex flex-wrap items-center gap-2">
-							<span className="rounded-full bg-[#556B2F] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-								Edit Bulletin
-							</span>
 							<span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-700">
 								{editIsPublished ? "Published" : "Draft"}
 							</span>
@@ -71,7 +68,7 @@ export function BulletinCard({
 								onChangeEditTitle(event.target.value)
 							}
 							placeholder="Title"
-							className="w-full border-0 border-b border-neutral-300 bg-transparent px-0 py-3 text-3xl font-semibold text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-[#556B2F]"
+							className="w-full border-0 border-b border-neutral-300 bg-transparent px-0 py-3 text-3xl font-semibold text-neutral-900 outline-none placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 						/>
 
 						<textarea
@@ -81,7 +78,7 @@ export function BulletinCard({
 							}
 							placeholder="Body"
 							rows={8}
-							className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-lg leading-relaxed text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-[#556B2F]"
+							className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-lg leading-relaxed text-neutral-900 outline-none placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 						/>
 
 						<div className="flex flex-wrap justify-start gap-2 pt-2">
@@ -103,12 +100,9 @@ export function BulletinCard({
 					</div>
 				</div>
 			) : (
-				<div className="overflow-hidden rounded-none border border-neutral-200 bg-neutral-100 shadow-[0_20px_50px_rgba(0,0,0,0.08)] md:rounded-3xl">
+				<div className="overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100 shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
 					<div className="flex flex-col gap-6 p-6 md:p-8">
 						<div className="flex flex-wrap items-center gap-2">
-							<span className="rounded-full bg-[#556B2F] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-								Bulletin
-							</span>
 							<span
 								className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
 									isPublished
