@@ -48,49 +48,55 @@ export function FaqsManager() {
 		return "";
 	};
 
-	const loadFaqs = React.useCallback(async (pageToLoad = currentPage) => {
-		try {
-			setIsLoading(true);
-			setErrorMessage("");
-			const searchParams = new URLSearchParams({
-				page: String(pageToLoad),
-				limit: String(PAGE_LIMIT),
-			});
-			const response = await fetch(`/api/Database/faqs?${searchParams.toString()}`, {
-				cache: "no-store",
-			});
-			const data = await response.json();
+	const loadFaqs = React.useCallback(
+		async (pageToLoad = currentPage) => {
+			try {
+				setIsLoading(true);
+				setErrorMessage("");
+				const searchParams = new URLSearchParams({
+					page: String(pageToLoad),
+					limit: String(PAGE_LIMIT),
+				});
+				const response = await fetch(
+					`/api/Database/faqs?${searchParams.toString()}`,
+					{
+						cache: "no-store",
+					},
+				);
+				const data = await response.json();
 
-			if (!response.ok) {
-				throw new Error(data.error || "Failed to load FAQs");
+				if (!response.ok) {
+					throw new Error(data.error || "Failed to load FAQs");
+				}
+
+				const rows = Array.isArray(data?.data)
+					? data.data
+					: Array.isArray(data)
+						? data
+						: [];
+				const meta = data.pagination || {};
+				const page = Number(meta.page) || 1;
+				const pageCount = Math.max(1, Number(meta.pageCount) || 1);
+
+				setFaqs(rows);
+				setPagination({
+					page,
+					pageCount,
+					hasPrevPage: Boolean(meta.hasPrevPage),
+					hasNextPage: Boolean(meta.hasNextPage),
+				});
+
+				if (page !== pageToLoad) {
+					setCurrentPage(page);
+				}
+			} catch (error) {
+				setErrorMessage(error.message || "Failed to load FAQs");
+			} finally {
+				setIsLoading(false);
 			}
-
-			const rows = Array.isArray(data?.data)
-				? data.data
-				: Array.isArray(data)
-					? data
-					: [];
-			const meta = data.pagination || {};
-			const page = Number(meta.page) || 1;
-			const pageCount = Math.max(1, Number(meta.pageCount) || 1);
-
-			setFaqs(rows);
-			setPagination({
-				page,
-				pageCount,
-				hasPrevPage: Boolean(meta.hasPrevPage),
-				hasNextPage: Boolean(meta.hasNextPage),
-			});
-
-			if (page !== pageToLoad) {
-				setCurrentPage(page);
-			}
-		} catch (error) {
-			setErrorMessage(error.message || "Failed to load FAQs");
-		} finally {
-			setIsLoading(false);
-		}
-	}, [currentPage]);
+		},
+		[currentPage],
+	);
 
 	React.useEffect(() => {
 		loadFaqs(currentPage);
@@ -356,7 +362,7 @@ export function FaqsManager() {
 							onClick={openCreateConfirmModal}
 							className="rounded-md bg-[#556B2F] px-4 py-2 text-base font-semibold text-white hover:bg-[#6b8e23]"
 						>
-							Add FAQs
+							Create FAQs
 						</button>
 						<button
 							type="button"
@@ -379,7 +385,7 @@ export function FaqsManager() {
 						onClick={() => setIsAdding(true)}
 						className="rounded-md bg-[#556B2F] px-4 py-2 text-base font-semibold text-white hover:bg-[#6b8e23]"
 					>
-						Add FAQs
+						Create FAQs
 					</button>
 				</div>
 			)}
@@ -437,7 +443,9 @@ export function FaqsManager() {
 					<button
 						type="button"
 						onClick={() =>
-							setCurrentPage((previous) => Math.max(1, previous - 1))
+							setCurrentPage((previous) =>
+								Math.max(1, previous - 1),
+							)
 						}
 						disabled={!pagination.hasPrevPage}
 						className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
@@ -450,7 +458,10 @@ export function FaqsManager() {
 						const showComma = index < visiblePageNumbers.length - 1;
 
 						return (
-							<span key={pageNumber} className="flex items-center gap-0">
+							<span
+								key={pageNumber}
+								className="flex items-center gap-0"
+							>
 								<button
 									type="button"
 									onClick={() => setCurrentPage(pageNumber)}

@@ -6,9 +6,9 @@ import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 
 function CurrentSponsorCardReadOnly({ sponsor }) {
 	return (
-		<article className="w-full rounded-3xl border border-[#d8d2c4] bg-[#f7f4ec] p-5 md:p-7 shadow-[0_16px_36px_rgba(0,0,0,0.08)]">
+		<article className="w-full rounded-3xl border border-[#d8d2c4] bg-white p-5 md:p-7 shadow-[0_16px_36px_rgba(0,0,0,0.08)]">
 			<div className="flex flex-col md:flex-row gap-5 md:gap-7">
-				<div className="w-24 h-24 md:w-30 md:h-30 rounded-2xl border border-[#d8d2c4] bg-white flex items-center justify-center shrink-0 overflow-hidden">
+				<div className="w-24 h-24 md:w-30 md:h-30 rounded-2xl border border-gray-300 bg-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
 					<Image
 						src="/pasoc_logo.png"
 						alt={`${sponsor.name} logo`}
@@ -19,19 +19,14 @@ function CurrentSponsorCardReadOnly({ sponsor }) {
 				</div>
 
 				<div className="flex-1 min-w-0">
-					<h3 className="font-bold text-[#2a2420] text-2xl leading-tight mb-3">
+					<h3 className="text-3xl font-bold leading-tight text-neutral-900 md:text-4xl mb-3">
 						{sponsor.name}
 					</h3>
 
-					<div className="rounded-2xl border border-[#d8d2c4] bg-white p-4">
-						<p className="text-[13px] font-bold uppercase tracking-wide text-black mb-2">
-							About
-						</p>
-						<p className="text-[15px] text-[#3f332b] leading-relaxed">
-							{sponsor.description ||
-								"Information about this sponsor will be displayed here soon."}
-						</p>
-					</div>
+					<p className="whitespace-pre-line text-lg leading-relaxed text-neutral-700 md:text-xl">
+						{sponsor.description ||
+							"Information about this sponsor will be displayed here soon."}
+					</p>
 				</div>
 			</div>
 		</article>
@@ -41,7 +36,7 @@ function CurrentSponsorCardReadOnly({ sponsor }) {
 function PreviousSponsorCardReadOnly({ sponsor }) {
 	return (
 		<article className="w-36 md:w-44 p-5 bg-white rounded-lg shadow-[0_12px_30px_rgba(0,0,0,0.08)] border border-[#d8d2c4] flex flex-col items-center gap-4 transition-transform duration-200 hover:-translate-y-1">
-			<div className="w-20 h-20 bg-[#f7f4ec] rounded-lg border border-[#d8d2c4] flex items-center justify-center shrink-0">
+			<div className="w-20 h-20 bg-gray-200 rounded-lg border border-gray-300 flex items-center justify-center shrink-0">
 				<Image
 					src="/pasoc_logo.png"
 					alt={`${sponsor.name} logo`}
