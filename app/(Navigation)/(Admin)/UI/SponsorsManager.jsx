@@ -176,7 +176,10 @@ export function SponsorsManager() {
 		event.preventDefault();
 		if (!newSponsor.name.trim()) return;
 
-		if (!editingSponsorId && currentSponsors.length >= FEATURED_SPONSOR_LIMIT) {
+		if (
+			!editingSponsorId &&
+			currentSponsors.length >= FEATURED_SPONSOR_LIMIT
+		) {
 			setFormError(FEATURED_LIMIT_REACHED_MESSAGE);
 			return;
 		}
@@ -241,7 +244,7 @@ export function SponsorsManager() {
 				{/* Current Sponsors Section */}
 				<section className="w-full max-w-4xl mb-16">
 					<div className="flex items-center justify-center gap-3 mb-8">
-						<h2 className="text-2xl font-semibold underline text-[#2a2420]">
+						<h2 className="text-2xl md:text-3xl font-bold text-[#2a2420]">
 							Featured
 						</h2>
 						<button
@@ -272,7 +275,7 @@ export function SponsorsManager() {
 
 				{/* Previous Sponsors Section */}
 				<section className="w-full max-w-4xl mb-16">
-					<h2 className="text-2xl font-semibold text-center mb-8 underline text-[#2a2420]">
+					<h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-[#2a2420]">
 						Over the Years
 					</h2>
 					<div className="flex flex-wrap justify-center gap-6">

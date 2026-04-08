@@ -149,8 +149,8 @@ export default function SponsorsPage() {
 
 					<section className="space-y-6">
 						<div className="h-px w-full bg-linear-to-r from-transparent via-[#556B2F] to-transparent" />
-						<div className="flex flex-wrap items-end justify-between gap-3">
-							<h3 className="text-2xl md:text-3xl font-bold text-[#2a2420]">
+						<div className="flex justify-center">
+							<h3 className="text-center text-2xl md:text-3xl font-bold text-[#2a2420]">
 								Over the Years
 							</h3>
 						</div>
