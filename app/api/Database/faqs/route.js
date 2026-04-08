@@ -14,14 +14,53 @@ function getFaqModerationError(question, answer) {
 	return "";
 }
 
-export async function GET() {
+function parsePositiveInteger(value, fallback) {
+	const parsed = Number.parseInt(value, 10);
+	if (!Number.isInteger(parsed) || parsed <= 0) {
+		return fallback;
+	}
+
+	return parsed;
+}
+
+export async function GET(request) {
 	try {
+		const { searchParams } = new URL(request.url);
+		const requestedPage = parsePositiveInteger(searchParams.get("page"), 1);
+		const requestedLimit = parsePositiveInteger(
+			searchParams.get("limit"),
+			5,
+		);
+		const limit = Math.min(requestedLimit, 50);
+
+		const [countRows] = await pool.query(
+			`SELECT COUNT(*) AS totalCount
+			 FROM FaqList`,
+		);
+		const totalCount = Number(countRows?.[0]?.totalCount || 0);
+		const pageCount = totalCount > 0 ? Math.ceil(totalCount / limit) : 1;
+		const page = Math.min(requestedPage, pageCount);
+		const offset = (page - 1) * limit;
+
 		const [rows] = await pool.query(
 			`SELECT questionID AS id, questionTitle AS question, answerContent AS answer
              FROM FaqList
-             ORDER BY questionID ASC`,
+			 ORDER BY questionID ASC
+			 LIMIT ? OFFSET ?`,
+			[limit, offset],
 		);
-		return NextResponse.json(rows);
+
+		return NextResponse.json({
+			data: rows,
+			pagination: {
+				page,
+				limit,
+				totalCount,
+				pageCount,
+				hasPrevPage: page > 1,
+				hasNextPage: page < pageCount,
+			},
+		});
 	} catch (error) {
 		console.error("[GET /api/Database/faqs]", error.message);
 		return NextResponse.json({ error: error.message }, { status: 500 });
