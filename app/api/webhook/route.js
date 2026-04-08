@@ -1,9 +1,19 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
-import { v4 as uuidv4 } from "uuid";
+//import { v4 as uuidv4 } from "uuid";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+const toMySQLDate = (dateStr) => {
+  if (!dateStr) return null;
+  // If already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  // Convert MM/DD/YYYY to YYYY-MM-DD
+  const [month, day, year] = dateStr.split("/");
+  if (!month || !day || !year) return null;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+};
 
 export async function POST(req) {
   const body = await req.text();
@@ -30,7 +40,12 @@ export async function POST(req) {
     }
 
     const meta = session.metadata;
-    const memberUUID = uuidv4();
+    //const memberUUID = uuidv4();
+    const memberUUID = meta.firebase_uid;
+    if (!memberUUID) {
+      console.error("No Firebase UID in metadata");
+      return NextResponse.json({ error: "Missing firebase_uid" }, { status: 400 });
+    }
     const today = new Date().toISOString().split("T")[0];
     const fullName = `${meta.first_name} ${meta.last_name}`.trim();
 
@@ -50,7 +65,10 @@ export async function POST(req) {
 
       const { priceId, memberPrice, dependantPrice } = pricing[0];
       const dependantCount = parseInt(meta.dependants || "0", 10);
-      const totalAmount = memberPrice + dependantCount * dependantPrice;
+
+      const parsedMemberPrice = parseFloat(memberPrice);
+      const parsedDependantPrice = parseFloat(dependantPrice);
+      const totalAmount = parsedMemberPrice + dependantCount * parsedDependantPrice;
 
       // 1. Insert into UserLogin FIRST
       await pool.execute(
@@ -71,7 +89,7 @@ export async function POST(req) {
           memberUUID,
           3,
           fullName,
-          meta.date_of_birth || null,
+          meta.date_of_birth ? toMySQLDate(meta.date_of_birth) : null,
           today,
           meta.address || null,
           meta.postal_code || null,
@@ -84,7 +102,7 @@ export async function POST(req) {
       // Insert dependants if any
       for (let i = 0; i < dependantCount; i++) {
         const depName = meta[`dep_${i}_name`] || null;
-        const depDOB = meta[`dep_${i}_dob`] || null;
+        const depDOB = toMySQLDate(meta[`dep_${i}_dob`]);
 
         if (depName) {
           await pool.execute(
@@ -105,8 +123,8 @@ export async function POST(req) {
           priceId,
           "stripe",
           totalAmount,
-          memberPrice,
-          dependantPrice,
+          parsedMemberPrice,
+          parsedDependantPrice,
           session.payment_intent,
           null, // Stripe payment, no admin recorded it
         ]

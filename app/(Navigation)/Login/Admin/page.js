@@ -1,5 +1,6 @@
 "use client";
 
+import { setAuthCookie } from "@/app/_utils/actions";
 import Link from "next/link";
 import { useState } from "react";
 import { useUserAuth } from "../../../_utils/auth-context";
@@ -10,6 +11,8 @@ import LoginPageTemp from "../components/LoginPageTemp";
 import InputFields from "../components/InputFields";
 import PasswordField from "../components/PasswordField";
 import LoginSubmitButton from "../components/LoginSubmitButton";
+import RecaptchaWidget from "../components/RecaptchaWidget";
+import { verifyRecaptchaToken } from "../../../_utils/Recaptcha";
 
 import {
   getFirebaseErrorMessage,
@@ -22,8 +25,10 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const [recaptchaError, setRecaptchaError] = useState("");
 
-  const { emailSignIn } = useUserAuth();
+  const { emailSignIn, resetPassword } = useUserAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -37,12 +42,31 @@ export default function AdminLoginPage() {
 
     if (Object.keys(newErrors).length > 0) return;
 
+    // Ensure reCAPTCHA is completed before login
+    if (!recaptchaToken) {
+      setRecaptchaError("Please complete the reCAPTCHA.");
+      return;
+    }
+
+    // Verify reCAPTCHA token with backend
+    const recaptchaResult = await verifyRecaptchaToken(recaptchaToken);
+
+    if (!recaptchaResult.success) {
+      setRecaptchaToken(""); // Reset token if verification fails
+      setRecaptchaError("reCAPTCHA verification failed. Try again.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await emailSignIn(email, password);
+      //Firebase signs the user in
+      const userCredential = await emailSignIn(email, password)
+      const firebaseUser = userCredential.user
 
-      // 🔐 Later you can add role check here (admin only)
+      //Store ID to cookie
+      await setAuthCookie(firebaseUser.uid)
+
       router.push("/Dashboard");
     } catch (err) {
       // Firebase error handling
@@ -105,7 +129,7 @@ export default function AdminLoginPage() {
         className="w-full flex flex-col items-center"
         noValidate
       >
-        <div className="w-full max-w-[460px] space-y-5">
+        <div className="w-full max-w-115 space-y-5">
           <InputFields
             type="email"
             placeholder="Admin Email Address"
@@ -152,6 +176,30 @@ export default function AdminLoginPage() {
               Forgot Password?
             </Link>
           </div>
+        </div>
+
+        {/* reCAPTCHA verification */}
+        <div className="mt-4 space-y-2">
+          <RecaptchaWidget
+            onVerify={(token) => {
+              setRecaptchaToken(token); // Save token when user passes reCAPTCHA
+              setRecaptchaError(""); // Clear previous errors
+            }}
+            onExpire={() => {
+              setRecaptchaToken(""); // Reset token if expired
+              setRecaptchaError("reCAPTCHA expired. Please try again.");
+            }}
+            onError={() => {
+              setRecaptchaToken(""); // Reset token if widget fails
+              setRecaptchaError("reCAPTCHA failed to load.");
+            }}
+          />
+
+          {recaptchaError && (
+            <p className="text-sm text-red-600 text-center">
+              {recaptchaError}
+            </p>
+          )}
         </div>
 
         <LoginSubmitButton loading={loading}>

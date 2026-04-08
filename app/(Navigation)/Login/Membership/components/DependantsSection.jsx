@@ -82,10 +82,10 @@ export default function DependantsSection({
                     required
                     error={touched[`dep_${i}_lastName`] ? errors[`dep_${i}_lastName`] : ""}
                   />
-
+                  
                   <Field
                     label="Birthday"
-                    placeholder="MM/DD/YYYY"
+                    type="date"
                     value={child.birthday}
                     onChange={(e) => updateDependant(i, "birthday", e.target.value)}
                     required

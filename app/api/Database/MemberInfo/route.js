@@ -1,39 +1,105 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import { adminAuth } from "@/lib/firebase-admin";
+
+const ROLES = {
+  SUPERADMIN: 1,
+  ADMIN: 2,
+  MEMBER: 3,
+  GUEST: 4,
+};
+
+async function getAuthenticatedUser(request) {
+  const authHeader = request.headers.get("authorization") || "";
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null;
+
+  if (!token) {
+    return {
+      error: NextResponse.json(
+        { success: false, error: "Missing bearer token" },
+        { status: 401 }
+      ),
+    };
+  }
+
+  try {
+    const decoded = await adminAuth.verifyIdToken(token);
+
+    const [rows] = await pool.query(
+      "SELECT * FROM MemberInfo WHERE uuid = ? LIMIT 1",
+      [decoded.uid]
+    );
+
+    return {
+      decoded,
+      memberRow: rows[0] || null,
+      roleId: rows[0]?.roleId ?? ROLES.GUEST,
+    };
+  } catch (error) {
+    return {
+      error: NextResponse.json(
+        { success: false, error: "Invalid or expired token" },
+        { status: 401 }
+      ),
+    };
+  }
+}
+
+function isAdmin(roleId) {
+  const id = Number(roleId);
+  return id === ROLES.ADMIN || id === ROLES.SUPERADMIN;
+}
+
+function isSuperAdmin(roleId) {
+  return Number(roleId) === ROLES.SUPERADMIN;
+}
 
 export async function GET(request) {
   try {
+    const authResult = await getAuthenticatedUser(request);
+    if (authResult.error) return authResult.error;
+
+    const { decoded, memberRow, roleId } = authResult;
     const { searchParams } = new URL(request.url);
-    const uid = searchParams.get("uid");
+    const requestedMemberID = searchParams.get("memberID");
 
-    const connection = await pool.getConnection();
-    connection.release();
+    // Admin / Superadmin can fetch all members
+    // or one specific member if memberID is provided
+    if (isAdmin(roleId)) {
+      if (requestedMemberID) {
+        const [rows] = await pool.query(
+          "SELECT * FROM MemberInfo WHERE uuid = ?",
+          [requestedMemberID]
+        );
 
-    if (uid) {
-      const [rows] = await pool.query(
-        "SELECT * FROM MemberInfo WHERE memberID = ?",
-        [uid]
-      );
+        return NextResponse.json({
+          success: true,
+          count: rows.length,
+          data: rows,
+        });
+      }
+
+      const [rows] = await pool.query("SELECT * FROM MemberInfo");
 
       return NextResponse.json({
         success: true,
         count: rows.length,
-        isMember: rows.length > 0,
         data: rows,
       });
     }
 
-    const [rows] = await pool.query("SELECT * FROM MemberInfo");
-
+    // Non-admin users only get their own row
     return NextResponse.json({
       success: true,
-      count: rows.length,
-      isMember: false,
-      data: rows,
+      count: memberRow ? 1 : 0,
+      isMember: !!memberRow,
+      data: memberRow ? [memberRow] : [],
+      firebaseUid: decoded.uid,
     });
   } catch (err) {
     console.error("[GET /api/Database/MemberInfo]", err);
-
     return NextResponse.json(
       {
         success: false,
@@ -53,10 +119,22 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const body = await request.json();
+    const authResult = await getAuthenticatedUser(request);
+    if (authResult.error) return authResult.error;
 
+    const { roleId, decoded } = authResult;
+
+    if (!isAdmin(roleId)) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
     const {
-      memberID,
+      uuid,
+      roleId: newRoleId,
       name,
       dateOfBirth,
       applicationDate,
@@ -67,29 +145,42 @@ export async function POST(request) {
       email,
     } = body;
 
-    if (!memberID || !name || !email) {
+    if (!uuid || !name || !email) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required fields: memberID, name, email",
+          error: "Missing required fields: uuid, name, email",
         },
         { status: 400 }
       );
     }
 
+    if (
+      (newRoleId === ROLES.ADMIN || newRoleId === ROLES.SUPERADMIN) &&
+      !isSuperAdmin(roleId)
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Only superadmin can create admin accounts" },
+        { status: 403 }
+      );
+    }
+
+    const assignedRoleId = newRoleId ?? ROLES.MEMBER;
+
     const [result] = await pool.query(
-      `INSERT INTO MemberInfo
-      (memberID, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO MemberInfo 
+      (uuid, roleId, name, dateOfBirth, applicationDate, address, postalCode, primaryPhone, secondaryPhone, email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        memberID,
+        uuid,
+        assignedRoleId,
         name,
-        dateOfBirth,
-        applicationDate,
-        address,
-        postalCode,
-        primaryPhone,
-        secondaryPhone,
+        dateOfBirth ?? null,
+        applicationDate ?? null,
+        address ?? null,
+        postalCode ?? null,
+        primaryPhone ?? null,
+        secondaryPhone ?? null,
         email,
       ]
     );
@@ -98,10 +189,10 @@ export async function POST(request) {
       success: true,
       message: "Member added",
       insertId: result.insertId,
+      createdBy: decoded.uid,
     });
   } catch (err) {
     console.error("[POST /api/Database/MemberInfo]", err);
-
     return NextResponse.json(
       {
         success: false,
@@ -119,36 +210,44 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
+    const authResult = await getAuthenticatedUser(request);
+    if (authResult.error) return authResult.error;
+
+    const { roleId } = authResult;
+
+    if (!isAdmin(roleId)) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
-    const memberID = searchParams.get("memberID");
+    const memberID = searchParams.get("uuid");
+
     if (!memberID) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Missing required query parameter: memberID",
-        },
+        { success: false, error: "Missing required query parameter: uuid" },
         { status: 400 }
       );
     }
 
     const [result] = await pool.query(
-      "DELETE FROM MemberInfo WHERE memberID = ?",
+      "DELETE FROM MemberInfo WHERE uuid = ?",
       [memberID]
     );
+
     if (result.affectedRows === 0) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "No member found with the provided memberID",
-        },
+        { success: false, error: "No member found with the provided uuid" },
         { status: 404 }
       );
-    } else {
-      return NextResponse.json({
-        success: true,
-        message: "Member deleted",
-      });
     }
+
+    return NextResponse.json({
+      success: true,
+      message: "Member deleted",
+    });
   } catch (err) {
     console.error("[DELETE /api/Database/MemberInfo]", err);
     return NextResponse.json(
@@ -168,30 +267,44 @@ export async function DELETE(request) {
 
 export async function PATCH(request) {
   try {
+    const authResult = await getAuthenticatedUser(request);
+    if (authResult.error) return authResult.error;
+
+    const { roleId, memberRow, decoded } = authResult;
     const body = await request.json();
 
-    const { 
-      memberID,
+    const {
+      uuid,
+      roleId: requestedRoleId,
       name,
-      applicationDate, 
-      address, 
-      postalCode, 
-      primaryPhone, 
-      secondaryPhone, 
-      email 
+      applicationDate,
+      address,
+      postalCode,
+      primaryPhone,
+      secondaryPhone,
+      email,
     } = body;
 
-    if (!memberID) {
+    let targetUUID = uuid;
+
+    // Members can only update themselves
+    if (!isAdmin(roleId)) {
+      if (!memberRow) {
+        return NextResponse.json(
+          { success: false, error: "No member profile found for this user" },
+          { status: 404 }
+        );
+      }
+      targetUUID = memberRow.uuid;
+    }
+
+    if (!targetUUID) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "memberID is required",
-        },
+        { success: false, error: "uuid is required" },
         { status: 400 }
       );
     }
 
-    // Store fields dynamically
     const fields = [];
     const values = [];
 
@@ -199,63 +312,60 @@ export async function PATCH(request) {
       fields.push("name = ?");
       values.push(name);
     }
-
     if (applicationDate !== undefined) {
       fields.push("applicationDate = ?");
       values.push(applicationDate);
     }
-
     if (address !== undefined) {
       fields.push("address = ?");
       values.push(address);
     }
-
     if (postalCode !== undefined) {
       fields.push("postalCode = ?");
       values.push(postalCode);
     }
-
     if (primaryPhone !== undefined) {
       fields.push("primaryPhone = ?");
       values.push(primaryPhone);
     }
-
     if (secondaryPhone !== undefined) {
       fields.push("secondaryPhone = ?");
       values.push(secondaryPhone);
     }
-
     if (email !== undefined) {
       fields.push("email = ?");
       values.push(email);
     }
 
-    // Prevent empty update
+    // Only superadmin can change roleID
+    if (requestedRoleId !== undefined) {
+      if (!isSuperAdmin(roleId)) {
+        return NextResponse.json(
+          { success: false, error: "Only superadmin can change roleID" },
+          { status: 403 }
+        );
+      }
+      fields.push("roleID = ?");
+      values.push(requestedRoleId);
+    }
+
     if (fields.length === 0) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "No fields provided to update",
-        },
+        { success: false, error: "No fields provided to update" },
         { status: 400 }
       );
     }
 
-    values.push(memberID);
+    values.push(targetUUID);
 
     const [result] = await pool.query(
-      `UPDATE MemberInfo
-       SET ${fields.join(", ")}
-       WHERE memberID = ?`,
+      `UPDATE MemberInfo SET ${fields.join(", ")} WHERE uuid = ?`,
       values
     );
 
     if (result.affectedRows === 0) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Member not found",
-        },
+        { success: false, error: "Member not found" },
         { status: 404 }
       );
     }
@@ -263,18 +373,16 @@ export async function PATCH(request) {
     return NextResponse.json({
       success: true,
       message: "Member updated successfully",
+      updatedBy: decoded.uid,
     });
-
   } catch (error) {
-
-  console.error("PATCH ERROR:", error);
-
-  return NextResponse.json(
-    {
-      success:false,
-      error:error.message   // SHOW REAL ERROR
-    },
-    { status:500 }
-  );
-}
+    console.error("[PATCH /api/Database/MemberInfo]", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
 }
