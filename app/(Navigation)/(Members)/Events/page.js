@@ -96,7 +96,7 @@ export default function Events() {
 					event.datetime >= now,
 			)
 			.sort((a, b) => a.datetime - b.datetime)
-			.slice(0, 6);
+			.slice(0, 10);
 	}, [testEvents]);
 
 	const todayLabel = useMemo(() => {
@@ -172,7 +172,7 @@ export default function Events() {
 				<div className="p-6 bg-white rounded-lg shadow-lg">
 					<h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
 
-					<div className="flex flex-col gap-3">
+					<div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto pr-2 md:max-h-128">
 						{upcomingEvents.length === 0 && (
 							<p className="text-sm text-gray-500">
 								No upcoming events right now.
