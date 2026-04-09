@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 //import { v4 as uuidv4 } from "uuid";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const toMySQLDate = (dateStr) => {
   if (!dateStr) return null;
@@ -18,6 +17,7 @@ const toMySQLDate = (dateStr) => {
 };
 
 export async function POST(req) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
 
