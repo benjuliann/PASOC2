@@ -4,7 +4,9 @@ import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export async function POST(req) {
   const { name, email } = await req.json();
