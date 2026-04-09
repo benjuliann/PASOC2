@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 
-const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -105,26 +104,37 @@ export default function EventManagerPage() {
 
   useEffect(() => { loadEvents(); }, [loadEvents]);
 
-  // Calendar data
-  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
-  const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
-  const prevMonthDays = getDaysInMonth(viewYear, viewMonth === 0 ? 11 : viewMonth - 1);
-  const prevFill = Array.from({ length: firstDay }, (_, i) => ({ day: prevMonthDays - firstDay + 1 + i, current: false }));
-  const currDays = Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, current: true }));
-  const totalCells = prevFill.length + currDays.length;
-  const nextFill = Array.from({ length: (7 - (totalCells % 7)) % 7 }, (_, i) => ({ day: i + 1, current: false }));
-  const calendarCells = [...prevFill, ...currDays, ...nextFill];
-
-  const eventDates = useMemo(() => {
-    const set = new Set();
+  // Calendar data – weeks-based grid (matches Members calendar)
+  const eventsByDate = useMemo(() => {
+    const grouped = {};
     events.forEach((ev) => {
       if (ev.date) {
-        const d = new Date(ev.date + "T00:00:00");
-        if (d.getFullYear() === viewYear && d.getMonth() === viewMonth) set.add(d.getDate());
+        if (!grouped[ev.date]) grouped[ev.date] = [];
+        grouped[ev.date].push(ev);
       }
     });
-    return set;
-  }, [events, viewYear, viewMonth]);
+    return grouped;
+  }, [events]);
+
+  const getEventsForDay = (day) => {
+    if (!day) return [];
+    const key = formatDateStr(viewYear, viewMonth, day);
+    return eventsByDate[key] || [];
+  };
+
+  const weeks = useMemo(() => {
+    const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
+    const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+    const result = [];
+    let week = new Array(firstDay).fill(null);
+    for (let day = 1; day <= daysInMonth; day++) {
+      week.push(day);
+      if (week.length === 7) { result.push(week); week = []; }
+    }
+    while (week.length < 7) week.push(null);
+    if (!week.every((d) => d === null)) result.push(week);
+    return result;
+  }, [viewYear, viewMonth]);
 
   const todayDay = today.getDate();
   const todayMonth = today.getMonth();
@@ -258,9 +268,9 @@ export default function EventManagerPage() {
         </div>
 
         {/* Main Content */}
-        <div className="w-full max-w-5xl mx-auto flex flex-col md:flex-row gap-8 mt-4 px-4">
-          {/* Left Side */}
-          <div className="flex-1 flex flex-col">
+        <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-8 mt-4 px-4">
+          {/* Left Side: Upcoming Events */}
+          <div className="w-full md:w-auto md:max-w-sm flex flex-col">
             <div className="mb-4">
               <div className="inline-block border border-[#2a2420] rounded-full px-6 py-2">
                 <span className="font-serif text-lg font-semibold text-[#2a2420]">{selLabel}</span>
@@ -296,50 +306,89 @@ export default function EventManagerPage() {
             </div>
           </div>
 
-          {/* Right Side: Calendar */}
-          <div className="flex flex-col items-center">
-            <div className="flex items-center gap-4 mb-3">
-              <button onClick={prevMonth} className="text-[#556B2F] text-2xl font-bold hover:text-[#6b8e23] transition px-2">&lt;</button>
-              <span className="font-serif text-3xl font-bold text-[#2a2420]">{MONTHS[viewMonth]} {viewYear}</span>
-              <button onClick={nextMonth} className="text-[#556B2F] text-2xl font-bold hover:text-[#6b8e23] transition px-2">&gt;</button>
-            </div>
-            <div className="rounded-2xl bg-white p-3" style={{ width: 392 }}>
-              <div className="grid grid-cols-7 bg-[#556B2F] rounded-full mb-2">
-                {DAYS.map((d) => (
-                  <div key={d} className="text-center text-xs font-bold py-2 text-white tracking-wider">{d}</div>
-                ))}
+          {/* Right Side: Calendar (full-grid style) */}
+          <div className="flex-1 flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-[#2a2420]">
+                {MONTHS[viewMonth]} {viewYear}
+              </h2>
+              <div>
+                <button
+                  className="px-3 py-1 bg-[#556B2F] text-white rounded hover:bg-[#6b8a3a] mx-2"
+                  onClick={prevMonth}
+                >
+                  &lt;
+                </button>
+                <button
+                  className="px-3 py-1 bg-[#556B2F] text-white rounded hover:bg-[#6b8a3a] mx-2"
+                  onClick={nextMonth}
+                >
+                  &gt;
+                </button>
               </div>
-              <div className="grid grid-cols-7 gap-1.5">
-                {calendarCells.map((cell, i) => {
-                  const isToday = cell.current && cell.day === todayDay && viewMonth === todayMonth && viewYear === todayYear;
-                  const dateStr = cell.current ? formatDateStr(viewYear, viewMonth, cell.day) : "";
-                  const isSelected = cell.current && dateStr === selectedDate;
-                  const hasEvent = cell.current && eventDates.has(cell.day);
+            </div>
+
+            <div className="grid grid-cols-7 gap-2 text-center font-semibold mb-2">
+              <div>Sun</div>
+              <div>Mon</div>
+              <div>Tue</div>
+              <div>Wed</div>
+              <div>Thu</div>
+              <div>Fri</div>
+              <div>Sat</div>
+            </div>
+
+            <div
+              className="grid grid-cols-7 gap-2"
+              style={{ gridTemplateRows: `repeat(${weeks.length}, 1fr)` }}
+            >
+              {weeks.map((week, i) =>
+                week.map((day, j) => {
+                  const dayEvents = getEventsForDay(day);
                   return (
                     <div
-                      key={i}
-                      onClick={() => { if (cell.current) setSelectedDate(dateStr); }}
-                      className={
-                        "flex items-center justify-center text-base font-semibold rounded-lg cursor-pointer transition select-none " +
-                        (!cell.current
-                          ? "bg-[#d6d2c7] text-[#aaa] "
-                          : isToday
-                            ? "bg-[#556B2F] text-white font-bold shadow "
-                            : isSelected && !isToday
-                              ? "bg-[#6b8e23] text-white font-bold shadow "
-                              : hasEvent
-                                ? "bg-[#d3d3c0] border-2 border-[#556B2F] text-[#2a2420] "
-                                : "bg-[#d3d3c0] text-[#2a2420] hover:bg-[#c5c2b3] ")
-                      }
-                      style={{ height: 44, width: "100%" }}
+                      key={`${i}-${j}`}
+                      className="border border-gray-300 bg-gray-50 p-2 flex flex-col items-center justify-start h-32 overflow-hidden cursor-pointer"
+                      onClick={() => {
+                        if (day) setSelectedDate(formatDateStr(viewYear, viewMonth, day));
+                      }}
                     >
-                      {cell.day}
+                      {day && (
+                        <>
+                          <span
+                            className={`font-semibold ${
+                              day === todayDay &&
+                              viewMonth === todayMonth &&
+                              viewYear === todayYear
+                                ? "bg-[#556B2F] text-white rounded-full w-8 h-8 flex items-center justify-center"
+                                : ""
+                            }`}
+                          >
+                            {day}
+                          </span>
+                          <div className="mt-2 flex flex-col gap-1 w-full">
+                            {dayEvents.map((event) => (
+                              <div
+                                key={event.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openForm(event);
+                                }}
+                                className="text-xs bg-[#dfe8ce] rounded px-2 py-1 truncate cursor-pointer hover:bg-[#cfdcb5]"
+                              >
+                                {event.title}
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                   );
-                })}
-              </div>
+                })
+              )}
             </div>
-            <div className="flex gap-4 mt-4 w-full">
+
+            <div className="flex gap-4 mt-4">
               <button
                 className="bg-[#556B2F] hover:bg-[#6b8e23] text-white font-semibold px-6 py-3 rounded-lg shadow transition text-base flex-1"
                 onClick={() => openForm()}
