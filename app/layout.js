@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./_utils/auth-context";
