@@ -105,7 +105,7 @@ export default function Bulletin() {
 			/>
 			{/* BULLETIN */}
 			<section className="bg-neutral-100 py-24 px-6">
-				<div className="max-w-4xl mx-auto flex flex-col gap-6">
+				<div className="max-w-6xl mx-auto flex flex-col gap-6">
 					{isLoading && (
 						<p className="text-neutral-700 leading-relaxed text-lg">
 							Loading bulletins...
@@ -145,7 +145,7 @@ export default function Bulletin() {
 									key={bulletin.bulletinId}
 									className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm"
 								>
-									<div className="flex flex-col gap-4 p-6 md:p-8">
+									<div className="flex flex-col gap-6 p-6 md:p-8">
 										<h2 className="text-3xl font-bold leading-tight text-neutral-900 md:text-4xl">
 											{bulletin.title}
 										</h2>
