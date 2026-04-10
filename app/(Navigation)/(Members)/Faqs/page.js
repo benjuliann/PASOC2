@@ -3,6 +3,8 @@
 import React from "react";
 import { HeroSection } from "../UI/HeroSection.jsx";
 
+const PAGE_LIMIT = 5;
+
 function FaqItem({ question, answer }) {
 	const [isOpen, setIsOpen] = React.useState(false);
 	const answerLines = String(answer || "")
@@ -45,6 +47,13 @@ function FaqItem({ question, answer }) {
 
 export default function FaqsPage() {
 	const [faqs, setFaqs] = React.useState([]);
+	const [currentPage, setCurrentPage] = React.useState(1);
+	const [pagination, setPagination] = React.useState({
+		page: 1,
+		pageCount: 1,
+		hasPrevPage: false,
+		hasNextPage: false,
+	});
 	const [isLoading, setIsLoading] = React.useState(true);
 	const [errorMessage, setErrorMessage] = React.useState("");
 
@@ -53,7 +62,11 @@ export default function FaqsPage() {
 			try {
 				setIsLoading(true);
 				setErrorMessage("");
-				const response = await fetch("/api/Database/faqs", {
+				const searchParams = new URLSearchParams({
+					page: String(currentPage),
+					limit: String(PAGE_LIMIT),
+				});
+				const response = await fetch(`/api/Database/faqs?${searchParams.toString()}`, {
 					cache: "no-store",
 				});
 				const data = await response.json();
@@ -62,7 +75,26 @@ export default function FaqsPage() {
 					throw new Error(data.error || "Failed to load FAQs");
 				}
 
-				setFaqs(Array.isArray(data) ? data : []);
+				const rows = Array.isArray(data?.data)
+					? data.data
+					: Array.isArray(data)
+						? data
+						: [];
+				const meta = data.pagination || {};
+				const page = Number(meta.page) || 1;
+				const pageCount = Math.max(1, Number(meta.pageCount) || 1);
+
+				setFaqs(rows);
+				setPagination({
+					page,
+					pageCount,
+					hasPrevPage: Boolean(meta.hasPrevPage),
+					hasNextPage: Boolean(meta.hasNextPage),
+				});
+
+				if (page !== currentPage) {
+					setCurrentPage(page);
+				}
 			} catch (error) {
 				setErrorMessage(error.message || "Failed to load FAQs");
 			} finally {
@@ -71,7 +103,17 @@ export default function FaqsPage() {
 		};
 
 		loadFaqs();
-	}, []);
+	}, [currentPage]);
+
+	const pageWindowStart = Math.max(
+		1,
+		Math.min(pagination.page - 1, pagination.pageCount - 2),
+	);
+	const pageWindowEnd = Math.min(pagination.pageCount, pageWindowStart + 2);
+	const visiblePageNumbers = Array.from(
+		{ length: pageWindowEnd - pageWindowStart + 1 },
+		(_, index) => pageWindowStart + index,
+	);
 
 	return (
 		<main>
@@ -82,6 +124,8 @@ export default function FaqsPage() {
 				)}
 				{isLoading ? (
 					<p className="text-gray-700">Loading FAQs...</p>
+				) : !errorMessage && faqs.length === 0 ? (
+					<p className="text-gray-700">No FAQs found.</p>
 				) : (
 					faqs.map((faq) => (
 						<FaqItem
@@ -91,6 +135,88 @@ export default function FaqsPage() {
 						/>
 					))
 				)}
+
+				{!isLoading &&
+					!errorMessage &&
+					pagination.pageCount > 1 && (
+						<nav
+							className="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm"
+							aria-label="FAQs pagination"
+						>
+							<button
+								type="button"
+								onClick={() => setCurrentPage(1)}
+								disabled={!pagination.hasPrevPage}
+								className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
+								aria-label="Go to first page"
+							>
+								&lt;&lt;
+							</button>
+							<button
+								type="button"
+								onClick={() =>
+									setCurrentPage((previous) => Math.max(1, previous - 1))
+								}
+								disabled={!pagination.hasPrevPage}
+								className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
+							>
+								previous
+							</button>
+
+							{visiblePageNumbers.map((pageNumber, index) => {
+								const isActive = pageNumber === pagination.page;
+								const showComma = index < visiblePageNumbers.length - 1;
+
+								return (
+									<span key={pageNumber} className="flex items-center gap-0">
+										<button
+											type="button"
+											onClick={() => setCurrentPage(pageNumber)}
+											className={`font-semibold transition-colors ${
+												isActive
+													? "text-black"
+													: "text-neutral-500 hover:text-neutral-700"
+											}`}
+											aria-label={`Go to page ${pageNumber}`}
+											aria-current={isActive ? "page" : undefined}
+										>
+											{pageNumber}
+										</button>
+										{showComma && (
+											<span
+												className="font-semibold text-neutral-500"
+												aria-hidden="true"
+											>
+												,
+											</span>
+										)}
+									</span>
+								);
+							})}
+
+							<button
+								type="button"
+								onClick={() =>
+									setCurrentPage((previous) =>
+										Math.min(pagination.pageCount, previous + 1),
+									)
+								}
+								disabled={!pagination.hasNextPage}
+								className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
+							>
+								next
+							</button>
+							<button
+								type="button"
+								onClick={() => setCurrentPage(pagination.pageCount)}
+								disabled={!pagination.hasNextPage}
+								className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
+								aria-label="Go to last page"
+							>
+								&gt;&gt;
+							</button>
+						</nav>
+					)}
 			</section>
 		</main>
 	);
