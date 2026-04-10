@@ -14,7 +14,7 @@ export async function POST(req) {
     event = stripe.webhooks.constructEvent(
       body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET_LOCAL,
+      process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err.message);
@@ -23,11 +23,11 @@ export async function POST(req) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    console.log("Session metadata:", session.metadata); // ← add this
-    console.log("Session type:", session.metadata?.type); // ← and this
+    console.log("Session metadata:", session.metadata);
+    console.log("Session type:", session.metadata?.type);
 
     if (session.metadata?.type !== "donation") {
-      console.log("Skipping - not a donation"); // ← and this
+      console.log("Skipping - not a donation");
       return NextResponse.json({ received: true });
     }
 
