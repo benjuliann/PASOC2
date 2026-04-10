@@ -25,7 +25,7 @@ export async function POST(req) {
           quantity: 1,
         },
       ],
-      metadata: metadata || {},
+      metadata: { ...(metadata || {}), type: type },
       success_url: type === "donation"
         ? `${process.env.NEXT_PUBLIC_BASE_URL}/Donate?success=true&amount=${amount}`
         : `${process.env.NEXT_PUBLIC_BASE_URL}/success?type=${type}`,
