@@ -13,16 +13,36 @@ import { Divider } from "../Membership/components/FormUI";
 import RecaptchaWidget from "../components/RecaptchaWidget";
 import { verifyRecaptchaToken } from "../../../_utils/Recaptcha"
 
-
 export default function LoginPage() {
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const { emailSignIn, googleSignIn, facebookSignIn, resetPassword } = useUserAuth();
+  const { emailSignIn, googleSignIn, facebookSignIn, resetPassword, firebaseSignOut } = useUserAuth();
   const [loading, setLoading] = useState(false); // Prevent multiple clicks on login button while processing
   const [recaptchaToken, setRecaptchaToken] = useState(""); // Stores reCAPTCHA token once user completes verification
   const [recaptchaError, setRecaptchaError] = useState("");
   const router = useRouter();
+
+  // Check if Firebase user exists in MemberInfo table
+  const checkIfMember = async (firebaseUser) => {
+    const token = await firebaseUser.getIdToken();
+
+    const res = await fetch("/api/Database/MemberInfo", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to verify membership.");
+    }
+
+    return !!data.isMember || (Array.isArray(data.data) && data.data.length > 0);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,10 +92,32 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await googleSignIn();
+      const result = await googleSignIn();
+      const signedInUser = result?.user;
+
+      // Ensure user object exists
+      if (!signedInUser) {
+        throw new Error("Google sign-in failed.");
+      }
+
+      // Check if user exists in MemberInfo
+      const isMember = await checkIfMember(signedInUser);
+
+      // If NOT a member → sign out + show message
+      if (!isMember) {
+        await firebaseSignOut();
+        setError("No member account found. Please sign up first.");
+        return;
+      }
+
+      // If member → continue
       router.push('/');
     } catch (err) {
-      setError(getFirebaseErrorMessage(err.code));
+      setError(
+        err.code
+          ? getFirebaseErrorMessage(err.code)
+          : err.message || "Google sign-in failed"
+      );
     } finally {
       setLoading(false);
     }
