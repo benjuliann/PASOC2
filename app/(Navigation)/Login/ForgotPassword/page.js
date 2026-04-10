@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
       subtitle="Enter your email and we’ll send you a password reset link."
     >
       <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
-        <div className="w-full max-w-[460px] space-y-6 [&_input]:text-center [&_input::placeholder]:text-center">
+        <div className="w-full max-w-115 space-y-6 [&_input]:text-center [&_input::placeholder]:text-center">
           <Divider />
 
           <InputFields
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
         ) : (
           <Link
             href="/Login/Member"
-            className="mt-6 w-full max-w-[460px] text-center bg-[#556B2F] text-white py-3 rounded-xl shadow-md hover:brightness-95 transition"
+            className="mt-6 w-full max-w-115 text-center bg-[#556B2F] text-white py-3 rounded-xl shadow-md hover:brightness-95 transition"
           >
             Back to Login
           </Link>

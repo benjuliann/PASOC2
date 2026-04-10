@@ -13,6 +13,9 @@ import { REQUIRED_FIELDS, initialMembershipForm } from "../../../_utils/membersh
 import { sanitizeByKey } from "../../../_utils/membershipFormSanitizers";
 import { getPasswordChecks, validateField, validateAll } from "../../../_utils/membershipFormValidators";
 
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../../_utils/firebase";
+
 // ─── Age helper (no pricing dependency — safe outside component) ──────────────
 const getAge = (birthday) => {
   if (!birthday) return null;
@@ -207,75 +210,91 @@ export default function MembershipForm() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const touchThese = {};
-    for (const key of REQUIRED) {
-      touchThese[key] = true;
-    }
+  const touchThese = {};
+  for (const key of REQUIRED) {
+    touchThese[key] = true;
+  }
 
-    if (form.hasChildren === "yes") {
-      form.dependants.forEach((_, i) => {
-        touchThese[`dep_${i}_firstName`] = true;
-        touchThese[`dep_${i}_lastName`] = true;
-        touchThese[`dep_${i}_birthday`] = true;
-      });
-    }
+  if (form.hasChildren === "yes") {
+    form.dependants.forEach((_, i) => {
+      touchThese[`dep_${i}_firstName`] = true;
+      touchThese[`dep_${i}_lastName`] = true;
+      touchThese[`dep_${i}_birthday`] = true;
+    });
+  }
 
-    setTouched((t) => ({ ...t, ...touchThese }));
+  setTouched((t) => ({ ...t, ...touchThese }));
 
-    const nextErrors = validateAll(form, REQUIRED);
-    setErrors(nextErrors);
+  const nextErrors = validateAll(form, REQUIRED);
+  setErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length > 0) {
-      setShowErrorModal(true);
-      return;
-    }
+  if (Object.keys(nextErrors).length > 0) {
+    setShowErrorModal(true);
+    return;
+  }
 
-    // All validation passed — proceed to Stripe
-    setLoading(true);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: membershipTotal,
+  setLoading(true);
+  let firebaseUser = null;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+    firebaseUser = userCredential.user;
+    const firebaseUID = firebaseUser.uid;
+
+    console.log(`✅ Firebase user created: ${firebaseUID}`);
+
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: membershipTotal,
+        type: "membership",
+        metadata: {
           type: "membership",
-          metadata: {
-            type: "membership",
-            first_name: form.firstName,
-            last_name: form.lastName,
-            email: form.email,
-            phone: form.phone,
-            date_of_birth: form.birthday,
-            address: `${form.address}, ${form.city}`,
-            postal_code: form.postalCode,
-            price_id: String(pricing?.priceId ?? ""),
-            dependants: String(form.hasChildren === "yes" ? form.dependants.length : 0),
-            description: pricingDescription,
-            // Dependant details
-            ...Object.fromEntries(
-              form.hasChildren === "yes"
-                ? form.dependants.flatMap((dep, i) => [
-                    [`dep_${i}_name`, `${dep.firstName} ${dep.lastName}`.trim()],
-                    [`dep_${i}_dob`, dep.birthday],
-                  ])
-                : []
-            ),
-          },
-        }),
-      });
+          firebase_uid: firebaseUID,
+          first_name: form.firstName,
+          last_name: form.lastName,
+          email: form.email,
+          phone: form.phone,
+          date_of_birth: form.birthday,
+          address: `${form.address}, ${form.city}`,
+          postal_code: form.postalCode,
+          price_id: String(pricing?.priceId ?? ""),
+          dependants: String(form.hasChildren === "yes" ? form.dependants.length : 0),
+          description: pricingDescription,
+          ...Object.fromEntries(
+            form.hasChildren === "yes"
+              ? form.dependants.flatMap((dep, i) => [
+                  [`dep_${i}_name`, `${dep.firstName} ${dep.lastName}`.trim()],
+                  [`dep_${i}_dob`, dep.birthday],
+                ])
+              : []
+          ),
+        },
+      }),
+    });
 
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+    const data = await res.json();
+
+    if (!data.url) {
+      if (firebaseUser) await firebaseUser.delete();
+      throw new Error("Checkout session failed to create");
     }
-  };
+
+    window.location.href = data.url;
+  } catch (err) {
+    console.error(err);
+    if (firebaseUser) {
+      firebaseUser.delete().catch((e) => console.error("Cleanup failed:", e));
+    }
+    alert(`Error: ${err.message}`);
+  }
+
+  setLoading(false);
+};
 
   // GUARD: don't render form until pricing is loaded
   if (!pricing) {
@@ -327,7 +346,7 @@ export default function MembershipForm() {
       )}
 
       <div className="min-h-dvh px-4 flex justify-center items-start md:items-center py-10">
-        <div className="w-full max-w-[640px] bg-white/40 rounded-2xl p-6 sm:p-8 shadow-sm border border-black/10">
+        <div className="w-full max-w-160 bg-white/40 rounded-2xl p-6 sm:p-8 shadow-sm border border-black/10">
           <h1 className="font-serif text-3xl sm:text-4xl text-[#556B2F] tracking-wide text-center">
             Membership Registration
           </h1>

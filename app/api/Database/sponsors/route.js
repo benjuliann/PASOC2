@@ -2,6 +2,10 @@ import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
+const FEATURED_SPONSOR_LIMIT = 5;
+const FEATURED_LIMIT_REACHED_MESSAGE =
+	"Featured limit is reached. Move one to Over the Years first.";
+
 function toDbSponsorStatus(value) {
 	const normalized = String(value || "")
 		.trim()
@@ -61,6 +65,20 @@ export async function POST(request) {
 				{ error: "Status must be Current or Previous" },
 				{ status: 400 },
 			);
+		}
+
+		if (status === "Current") {
+			const [countRows] = await pool.query(
+				`SELECT COUNT(*) AS total FROM SponsorInfo WHERE sponsorStatus = 'Current'`,
+			);
+			const featuredCount = Number(countRows?.[0]?.total || 0);
+
+			if (featuredCount >= FEATURED_SPONSOR_LIMIT) {
+				return NextResponse.json(
+					{ error: FEATURED_LIMIT_REACHED_MESSAGE },
+					{ status: 400 },
+				);
+			}
 		}
 
 		const moderationError = getSponsorModerationError(name, description);
