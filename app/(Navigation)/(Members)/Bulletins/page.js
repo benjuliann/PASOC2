@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { HeroSection } from "@/app/(Navigation)/(Members)/UI/HeroSection";
 
 function formatDisplayDate(value) {
@@ -20,25 +20,17 @@ function formatDisplayDate(value) {
 	}).format(date);
 }
 
-function sortBulletins(items) {
-	return [...items].sort((left, right) => {
-		const leftDate = new Date(
-			left.publishDate || left.createdAt || left.updatedAt || 0,
-		).getTime();
-		const rightDate = new Date(
-			right.publishDate || right.createdAt || right.updatedAt || 0,
-		).getTime();
-
-		if (rightDate !== leftDate) {
-			return rightDate - leftDate;
-		}
-
-		return Number(right.bulletinId || 0) - Number(left.bulletinId || 0);
-	});
-}
+const PAGE_LIMIT = 5;
 
 export default function Bulletin() {
 	const [bulletins, setBulletins] = useState([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [pagination, setPagination] = useState({
+		page: 1,
+		pageCount: 1,
+		hasPrevPage: false,
+		hasNextPage: false,
+	});
 	const [isLoading, setIsLoading] = useState(true);
 	const [errorMessage, setErrorMessage] = useState("");
 
@@ -47,17 +39,43 @@ export default function Bulletin() {
 			try {
 				setIsLoading(true);
 				setErrorMessage("");
-				const response = await fetch("/api/Database/bulletins", {
-					cache: "no-store",
+				const searchParams = new URLSearchParams({
+					page: String(currentPage),
+					limit: String(PAGE_LIMIT),
+					published: "true",
 				});
+				const response = await fetch(
+					`/api/Database/bulletins?${searchParams.toString()}`,
+					{
+						cache: "no-store",
+					},
+				);
 				const data = await response.json();
 
 				if (!response.ok) {
 					throw new Error(data.error || "Failed to load bulletins");
 				}
 
-				const rows = Array.isArray(data) ? data : [];
+				const rows = Array.isArray(data.data)
+					? data.data
+					: Array.isArray(data)
+						? data
+						: [];
+				const meta = data.pagination || {};
+				const page = Number(meta.page) || 1;
+				const pageCount = Math.max(1, Number(meta.pageCount) || 1);
+
 				setBulletins(rows);
+				setPagination({
+					page,
+					pageCount,
+					hasPrevPage: Boolean(meta.hasPrevPage),
+					hasNextPage: Boolean(meta.hasNextPage),
+				});
+
+				if (page !== currentPage) {
+					setCurrentPage(page);
+				}
 			} catch (error) {
 				setErrorMessage(error.message || "Failed to load bulletins");
 			} finally {
@@ -66,11 +84,16 @@ export default function Bulletin() {
 		};
 
 		loadBulletins();
-	}, []);
+	}, [currentPage]);
 
-	const publishedBulletins = useMemo(
-		() => sortBulletins(bulletins.filter((item) => item.isPublished)),
-		[bulletins],
+	const pageWindowStart = Math.max(
+		1,
+		Math.min(pagination.page - 1, pagination.pageCount - 2),
+	);
+	const pageWindowEnd = Math.min(pagination.pageCount, pageWindowStart + 2);
+	const visiblePageNumbers = Array.from(
+		{ length: pageWindowEnd - pageWindowStart + 1 },
+		(_, index) => pageWindowStart + index,
 	);
 
 	return (
@@ -95,17 +118,15 @@ export default function Bulletin() {
 						</p>
 					)}
 
-					{!isLoading &&
-						!errorMessage &&
-						publishedBulletins.length === 0 && (
-							<p className="text-neutral-700 leading-relaxed text-lg">
-								No bulletins have been published yet.
-							</p>
-						)}
+					{!isLoading && !errorMessage && bulletins.length === 0 && (
+						<p className="text-neutral-700 leading-relaxed text-lg">
+							No bulletins have been published yet.
+						</p>
+					)}
 
 					{!isLoading &&
 						!errorMessage &&
-						publishedBulletins.map((bulletin) => {
+						bulletins.map((bulletin) => {
 							const publishAnchorTime = bulletin.publishDate
 								? new Date(bulletin.publishDate).getTime()
 								: bulletin.createdAt
@@ -151,6 +172,106 @@ export default function Bulletin() {
 								</article>
 							);
 						})}
+
+					{!isLoading &&
+						!errorMessage &&
+						pagination.pageCount > 1 && (
+							<nav
+								className="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm"
+								aria-label="Bulletins pagination"
+							>
+								<button
+									type="button"
+									onClick={() => setCurrentPage(1)}
+									disabled={!pagination.hasPrevPage}
+									className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
+									aria-label="Go to newest page"
+								>
+									&lt;&lt;
+								</button>
+								<button
+									type="button"
+									onClick={() =>
+										setCurrentPage((previous) =>
+											Math.max(1, previous - 1),
+										)
+									}
+									disabled={!pagination.hasPrevPage}
+									className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
+								>
+									previous
+								</button>
+
+								{visiblePageNumbers.map((pageNumber, index) => {
+									const isActive =
+										pageNumber === pagination.page;
+									const showComma =
+										index < visiblePageNumbers.length - 1;
+
+									return (
+										<span
+											key={pageNumber}
+											className="flex items-center gap-0"
+										>
+											<button
+												type="button"
+												onClick={() =>
+													setCurrentPage(pageNumber)
+												}
+												className={`font-semibold transition-colors ${
+													isActive
+														? "text-black"
+														: "text-neutral-500 hover:text-neutral-700"
+												}`}
+												aria-label={`Go to page ${pageNumber}`}
+												aria-current={
+													isActive
+														? "page"
+														: undefined
+												}
+											>
+												{pageNumber}
+											</button>
+											{showComma && (
+												<span
+													className="font-semibold text-neutral-500"
+													aria-hidden="true"
+												>
+													,
+												</span>
+											)}
+										</span>
+									);
+								})}
+
+								<button
+									type="button"
+									onClick={() =>
+										setCurrentPage((previous) =>
+											Math.min(
+												pagination.pageCount,
+												previous + 1,
+											),
+										)
+									}
+									disabled={!pagination.hasNextPage}
+									className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
+								>
+									next
+								</button>
+								<button
+									type="button"
+									onClick={() =>
+										setCurrentPage(pagination.pageCount)
+									}
+									disabled={!pagination.hasNextPage}
+									className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
+									aria-label="Go to oldest page"
+								>
+									&gt;&gt;
+								</button>
+							</nav>
+						)}
 				</div>
 			</section>
 		</main>
