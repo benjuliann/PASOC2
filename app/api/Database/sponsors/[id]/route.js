@@ -1,6 +1,9 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
+import {
+	shouldRejectForModeration,
+	getModerationErrorMessage, 
+} from "@/app/_utils/moderationHelpers";
 
 function toDbSponsorStatus(value) {
 	const normalized = String(value || "")
@@ -11,119 +14,83 @@ function toDbSponsorStatus(value) {
 	return null;
 }
 
-function getSponsorModerationError(key, value) {
-	if (!value) return "";
+async function getSponsorModerationError(name, description) {
+	const nameResult = await shouldRejectForModeration("name", name);
+	if (nameResult.shouldReject) {
+		return getModerationErrorMessage(nameResult);
+	}
 
-	if (containsProfanity(value)) {
-		return key === "name"
-			? "Sponsor name contains inappropriate language."
-			: "Sponsor description contains inappropriate language.";
+	const descriptionResult = await shouldRejectForModeration(
+		"description",
+		description,
+	);
+	if (descriptionResult.shouldReject) {
+		return getModerationErrorMessage(descriptionResult);
 	}
 
 	return "";
 }
 
-export async function PUT(request, context) {
+export async function GET() {
 	try {
-		const { id } = await context.params;
-		const body = await request.json();
-
-		const fields = [];
-		const values = [];
-
-		if (typeof body.name === "string") {
-			const trimmedName = body.name.trim();
-			const nameModerationError = getSponsorModerationError(
-				"name",
-				trimmedName,
-			);
-
-			if (nameModerationError) {
-				return NextResponse.json(
-					{ error: nameModerationError },
-					{ status: 400 },
-				);
-			}
-
-			fields.push("sponsorName = ?");
-			values.push(trimmedName);
-		}
-		if (typeof body.description === "string") {
-			const trimmedDescription = body.description.trim();
-			const descriptionModerationError = getSponsorModerationError(
-				"description",
-				trimmedDescription,
-			);
-
-			if (descriptionModerationError) {
-				return NextResponse.json(
-					{ error: descriptionModerationError },
-					{ status: 400 },
-				);
-			}
-
-			fields.push("sponsorDescription = ?");
-			values.push(trimmedDescription);
-		}
-		if (typeof body.status === "string") {
-			const normalizedStatus = toDbSponsorStatus(body.status);
-			if (!normalizedStatus) {
-				return NextResponse.json(
-					{ error: "Status must be Current or Previous" },
-					{ status: 400 },
-				);
-			}
-			fields.push("sponsorStatus = ?");
-			values.push(normalizedStatus);
-		}
-
-		if (!fields.length) {
-			return NextResponse.json(
-				{ error: "No fields provided" },
-				{ status: 400 },
-			);
-		}
-
-		values.push(id);
-
-		const [result] = await pool.query(
-			`UPDATE SponsorInfo SET ${fields.join(", ")} WHERE sponsorId = ?`,
-			values,
-		);
-
-		if (result.affectedRows === 0) {
-			return NextResponse.json(
-				{ error: "Sponsor not found" },
-				{ status: 404 },
-			);
-		}
-
-		return NextResponse.json({ ok: true });
+		const [rows] = await pool.query(`
+            SELECT
+                sponsorId AS id,
+                sponsorName AS name,
+                sponsorDescription AS description,
+				LOWER(sponsorStatus) AS status
+			FROM SponsorInfo
+            ORDER BY sponsorName ASC
+        `);
+		return NextResponse.json(rows);
 	} catch (err) {
-		console.error("[PUT /api/Database/sponsors/:id]", err.message);
+		console.error("[GET /api/Database/sponsors]", err.message);
 		return NextResponse.json({ error: err.message }, { status: 500 });
 	}
 }
 
-export async function DELETE(_request, context) {
+export async function POST(request) {
 	try {
-		const { id } = await context.params;
+		const body = await request.json();
+		const id = `sp_${Date.now()}`;
+		const name = (body.name || "").trim();
+		const description = (body.description || "").trim();
+		const status = toDbSponsorStatus(body.status || "current");
 
-		const [result] = await pool.query(
-			`DELETE FROM SponsorInfo WHERE sponsorId = ?`,
-			[id],
-		);
-
-		if (result.affectedRows === 0) {
+		if (!name) {
 			return NextResponse.json(
-				{ error: "Sponsor not found" },
-				{ status: 404 },
+				{ error: "Name is required" },
+				{ status: 400 },
 			);
 		}
 
-		return NextResponse.json({ ok: true });
+		if (!status) {
+			return NextResponse.json(
+				{ error: "Status must be Current or Previous" },
+				{ status: 400 },
+			);
+		}
+
+		const moderationError = await getSponsorModerationError(name, description);
+		if (moderationError) {
+			return NextResponse.json(
+				{ error: moderationError },
+				{ status: 400 },
+			);
+		}
+
+		await pool.query(
+			`INSERT INTO SponsorInfo (sponsorId, sponsorName, sponsorDescription, sponsorStatus)
+             VALUES (?, ?, ?, ?)`,
+			[id, name, description, status],
+		);
+
+		return NextResponse.json(
+			{ id, name, description, status: status.toLowerCase() },
+			{ status: 201 },
+		);
 	} catch (err) {
-		console.error("[DELETE /api/Database/sponsors/:id]", err.message);
+		console.error("[POST /api/Database/sponsors]", err.message);
 		return NextResponse.json({ error: err.message }, { status: 500 });
 	}
 }

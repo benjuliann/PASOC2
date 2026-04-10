@@ -5,7 +5,6 @@ import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import CurrentSponsorCard from "./CurrentSponsorCard";
 import PreviousSponsorCard from "./PreviousSponsorCard";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 export function SponsorsManager() {
 	const [currentSponsors, setCurrentSponsors] = useState([]);
@@ -42,16 +41,16 @@ export function SponsorsManager() {
 		}));
 	};
 
-	const getSponsorModerationError = (sponsorDraft) => {
+	const getSponsorValidationError = (sponsorDraft) => {
 		const name = sponsorDraft.name.trim();
 		const description = sponsorDraft.description.trim();
 
-		if (containsProfanity(name)) {
-			return "Sponsor name contains inappropriate language.";
+		if (!name) {
+			return "Sponsor name is required.";
 		}
 
-		if (containsProfanity(description)) {
-			return "Description contains inappropriate language.";
+		if (!description) {
+			return "Description is required.";
 		}
 
 		return "";
@@ -172,9 +171,9 @@ export function SponsorsManager() {
 		event.preventDefault();
 		if (!newSponsor.name.trim()) return;
 
-		const moderationError = getSponsorModerationError(newSponsor);
-		if (moderationError) {
-			setFormError(moderationError);
+		const validationError = getSponsorValidationError(newSponsor);
+		if (validationError) {
+			setFormError(validationError);
 			return;
 		}
 

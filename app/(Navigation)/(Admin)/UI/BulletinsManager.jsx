@@ -2,7 +2,6 @@
 
 import React from "react";
 import { BulletinCard } from "./BulletinsCard.jsx";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 function normalizePublishedFlag(value) {
 	return value === true || value === 1 || value === "1";
@@ -31,14 +30,6 @@ function getBulletinValidationError(titleValue, bodyValue) {
 
 	if (!trimmedTitle || !trimmedBody) {
 		return "Title and body are required.";
-	}
-
-	if (containsProfanity(trimmedTitle)) {
-		return "Title contains inappropriate language.";
-	}
-
-	if (containsProfanity(trimmedBody)) {
-		return "Body contains inappropriate language.";
 	}
 
 	return "";
