@@ -26,15 +26,15 @@
     "resend": "^6.9.4",
     "stripe": "^20.4.1",
     "tailwind-merge": "^3.4.0",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "tailwindcss": "^4",
+    "@tailwindcss/postcss": "^4.2.2"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "shadcn": "^3.8.4",
-    "tailwindcss": "^4"
+    "shadcn": "^3.8.4"
   },
   "engines": {
     "node": ">=22.0.0",
