@@ -1,6 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase-admin";
+import { getAdminAuth } from "@/lib/firebase-admin";
 
 const ROLES = {
   SUPERADMIN: 1,
@@ -25,7 +25,7 @@ async function getAuthenticatedUser(request) {
   }
 
   try {
-    const decoded = await adminAuth.verifyIdToken(token);
+    const decoded = await getAdminAuth().verifyIdToken(token);
 
     const [rows] = await pool.query(
       "SELECT * FROM MemberInfo WHERE uuid = ? LIMIT 1",
