@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { User, Menu, X } from "lucide-react";
 import { useUserAuth } from "../../../_utils/auth-context";
+import PortalToggleButton from "../../(Admin)/UI/PortalToggleButton";
 
 const navLinks = [
 	{ label: "Home", href: "/" },
@@ -77,6 +78,8 @@ export function Header() {
 
 				{/* Right-side actions */}
 				<div className="flex items-center gap-2 shrink-0">
+					<PortalToggleButton />
+
 					{user ? (
 						<Link
 							href={`/Profile`}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { User, Menu, X } from "lucide-react";
 import { useUserAuth } from "../../../_utils/auth-context";
+import PortalToggleButton from "./PortalToggleButton"
 
 const navLinks = [
 	{ label: "Overview", href: "/Dashboard" },
@@ -50,7 +51,8 @@ export function Header() {
 				</Link>
 
 				<div className="flex items-center gap-3 shrink-0">
-					{/* User icon — links to Profile if logged in, Login if not */}
+					<PortalToggleButton />
+
 					<Link
 						href={user ? "/Profile" : "/Login"}
 						title={user ? "Profile" : "Login"}

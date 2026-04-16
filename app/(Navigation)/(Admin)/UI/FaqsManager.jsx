@@ -2,7 +2,6 @@
 
 import React from "react";
 import { FaqsCard } from "./FaqsCard.jsx";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 const PAGE_LIMIT = 5;
 
@@ -32,14 +31,6 @@ export function FaqsManager() {
 	const getFaqValidationError = (questionValue, answerValue) => {
 		const trimmedQuestion = String(questionValue || "").trim();
 		const trimmedAnswer = String(answerValue || "").trim();
-
-		if (trimmedQuestion && containsProfanity(trimmedQuestion)) {
-			return "Question contains inappropriate language.";
-		}
-
-		if (trimmedAnswer && containsProfanity(trimmedAnswer)) {
-			return "Answer contains inappropriate language.";
-		}
 
 		if (!trimmedQuestion || !trimmedAnswer) {
 			return "Question and answer are required.";
