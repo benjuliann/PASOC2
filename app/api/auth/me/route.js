@@ -1,6 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase-admin";
+import { getAdminAuth } from "@/lib/firebase-admin";
 
 const ROLES = {
 	SUPERADMIN: 1,
@@ -29,7 +29,7 @@ export async function GET(request) {
 		}
 
     // verify the Firebase token using admin SDK. this gives us access to the decoded user info (like uid)
-		const decoded = await adminAuth.verifyIdToken(token);
+		const decoded = await getAdminAuth().verifyIdToken(token);
 
     // use the Firebase UID to look up the user in our DB, our app links Firebase users to MemberInfo via uuid
 		const [rows] = await pool.query(
