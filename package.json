@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@azure-rest/ai-content-safety": "^1.0.1",
+    "@azure/core-auth": "^1.10.1",
     "@stripe/stripe-js": "^8.11.0",
     "bad-words": "^4.0.0",
     "class-variance-authority": "^0.7.1",

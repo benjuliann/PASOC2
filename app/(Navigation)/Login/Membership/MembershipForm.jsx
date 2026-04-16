@@ -236,6 +236,38 @@ const handleSubmit = async (e) => {
     return;
   }
 
+  // Text moderation for forms using Azure AI content safety
+const moderationRes = await fetch("/api/moderate", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    fields: {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      preferredName: form.preferredName,
+      currentOrgInvolvement: form.currentOrgInvolvement,
+      positionsHeld: form.positionsHeld,
+    },
+    dependants: form.hasChildren === "yes" ? form.dependants : [],
+  }),
+});
+
+const moderationData = await moderationRes.json();
+
+if (!moderationRes.ok) {
+  throw new Error(moderationData.error || "Moderation check failed.");
+}
+
+if (Object.keys(moderationData.moderationErrors).length > 0) {
+  setErrors((prev) => ({
+    ...prev,
+    ...moderationData.moderationErrors,
+  }));
+
+  setShowErrorModal(true);
+  return;
+}
+
   setLoading(true);
   let firebaseUser = null;
 
