@@ -22,7 +22,6 @@ async function getEvents() {
 export default function Events() {
 	const [today, setToday] = useState(() => new Date());
 
-	// single source of truth for viewed month
 	const [viewDate, setViewDate] = useState(
 		new Date(today.getFullYear(), today.getMonth(), 1),
 	);
@@ -32,7 +31,6 @@ export default function Events() {
 	const [testEvents, setTestEvents] = useState([]);
 	const [selectedEvent, setSelectedEvent] = useState(null);
 
-	// Fetch events on mount and whenever month/year changes
 	useEffect(() => {
 		async function loadEvents() {
 			const eventsFromApi = await getEvents();
@@ -42,7 +40,6 @@ export default function Events() {
 		loadEvents();
 	}, []);
 
-	// Data structure transformation: group events by date for easy lookup
 	const events = useMemo(() => {
 		const grouped = {};
 
@@ -56,8 +53,9 @@ export default function Events() {
 			if (!grouped[key]) grouped[key] = [];
 
 			grouped[key].push({
+				eventId: event.eventId,
 				title: event.title,
-				datetime: event.startDatetime, // full raw value
+				datetime: event.startDatetime,
 				date: new Date(event.startDatetime).toLocaleDateString(),
 				time: new Date(event.startDatetime).toLocaleTimeString([], {
 					hour: "numeric",
@@ -78,7 +76,9 @@ export default function Events() {
 			.filter((event) => event?.startDatetime)
 			.map((event) => {
 				const start = new Date(event.startDatetime);
+
 				return {
+					eventId: event.eventId,
 					title: event.title,
 					datetime: start,
 					date: start.toLocaleDateString(),
@@ -96,7 +96,7 @@ export default function Events() {
 					event.datetime >= now,
 			)
 			.sort((a, b) => a.datetime - b.datetime)
-			.slice(0, 6);
+			.slice(0, 10);
 	}, [testEvents]);
 
 	const todayLabel = useMemo(() => {
@@ -112,15 +112,12 @@ export default function Events() {
 
 	useEffect(() => {
 		const updateToday = () => setToday(new Date());
-
-		// Keep the highlighted day and header date accurate if the page stays open.
 		updateToday();
-		const intervalId = setInterval(updateToday, 60 * 1000);
 
+		const intervalId = setInterval(updateToday, 60 * 1000);
 		return () => clearInterval(intervalId);
 	}, []);
 
-	// Get events for a specific day
 	const getEventsForDay = (day) => {
 		if (!day) return [];
 
@@ -131,6 +128,7 @@ export default function Events() {
 	const handleEventsClick = (event) => {
 		setSelectedEvent(event);
 	};
+
 	const firstDay = new Date(year, month, 1).getDay();
 	const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -148,31 +146,27 @@ export default function Events() {
 	while (week.length < 7) week.push(null);
 	if (!week.every((d) => d === null)) weeks.push(week);
 
-	// Handles calender changes (next and prev month)
 	const prevMonth = () => {
 		setViewDate(
 			(prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
 		);
 	};
+
 	const nextMonth = () => {
 		setViewDate(
 			(prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
 		);
-	};
-	const currentMonth = () => {
-		setViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
 	};
 
 	return (
 		<div className="min-h-screen flex flex-col md:flex-row gap-10 py-10 mx-5 text-gray-800">
 			<FloatingButton />
 
-			{/* UPCOMING EVENTS */}
 			<section className="w-full md:w-auto max-w-md">
 				<div className="p-6 bg-white rounded-lg shadow-lg">
 					<h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
 
-					<div className="flex flex-col gap-3">
+					<div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto pr-2 md:max-h-128">
 						{upcomingEvents.length === 0 && (
 							<p className="text-sm text-gray-500">
 								No upcoming events right now.
@@ -181,7 +175,7 @@ export default function Events() {
 
 						{upcomingEvents.map((event, index) => (
 							<button
-								key={`${event.title}-${index}`}
+								key={`${event.eventId}-${event.title}-${index}`}
 								onClick={() => handleEventsClick(event)}
 								className="w-full text-left border border-gray-200 bg-gray-50 rounded-md px-3 py-2 hover:bg-[#eef3e3] hover:border-[#b8c99a] transition-colors"
 							>
@@ -197,7 +191,6 @@ export default function Events() {
 				</div>
 			</section>
 
-			{/* FULL CALENDAR */}
 			<section className="p-6 w-full md:w-4/5 shadow-lg rounded-lg">
 				<div className="flex justify-between items-center mb-4">
 					<h2 className="text-xl font-bold">{todayLabel}</h2>
@@ -242,14 +235,12 @@ export default function Events() {
 									key={`${i}-${j}`}
 									className="border border-gray-300 bg-gray-50 p-2 flex flex-col items-center justify-start h-32 overflow-hidden"
 								>
-									{/* DAY NUMBER AND EVENTS */}
 									{day && (
 										<>
 											<span
 												className={`font-semibold ${
 													day === today.getDate() &&
-													month ===
-														today.getMonth() &&
+													month === today.getMonth() &&
 													year === today.getFullYear()
 														? "bg-[#556B2F] text-white rounded-full w-8 h-8 flex items-center justify-center"
 														: ""
@@ -258,16 +249,11 @@ export default function Events() {
 												{day}
 											</span>
 
-											{/* EVENTS */}
 											<div className="mt-2 flex flex-col gap-1">
 												{dayEvents.map((event, idx) => (
 													<div
-														key={idx}
-														onClick={() =>
-															handleEventsClick(
-																event,
-															)
-														}
+														key={`${event.eventId}-${idx}`}
+														onClick={() => handleEventsClick(event)}
 														className="text-xs bg-[#dfe8ce] rounded px-2 py-1 truncate cursor-pointer hover:bg-[#cfdcb5]"
 													>
 														{event.title}
@@ -284,6 +270,7 @@ export default function Events() {
 
 				{selectedEvent && (
 					<EventInformation
+						eventId={selectedEvent.eventId}
 						title={selectedEvent.title}
 						date={selectedEvent.date}
 						time={selectedEvent.time}
