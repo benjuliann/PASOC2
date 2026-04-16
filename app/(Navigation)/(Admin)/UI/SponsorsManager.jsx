@@ -5,7 +5,6 @@ import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import FeaturedSponsorCard from "./FeaturedSponsorCard";
 import OverTheYearsSponsorCard from "./OverTheYearsSponsorCard";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
 
 const FEATURED_SPONSOR_LIMIT = 5;
 const FEATURED_LIMIT_REACHED_MESSAGE =
@@ -46,16 +45,16 @@ export function SponsorsManager() {
 		}));
 	};
 
-	const getSponsorModerationError = (sponsorDraft) => {
+	const getSponsorValidationError = (sponsorDraft) => {
 		const name = sponsorDraft.name.trim();
 		const description = sponsorDraft.description.trim();
 
-		if (containsProfanity(name)) {
-			return "Sponsor name contains inappropriate language.";
+		if (!name) {
+			return "Sponsor name is required.";
 		}
 
-		if (containsProfanity(description)) {
-			return "Description contains inappropriate language.";
+		if (!description) {
+			return "Description is required.";
 		}
 
 		return "";
@@ -176,17 +175,9 @@ export function SponsorsManager() {
 		event.preventDefault();
 		if (!newSponsor.name.trim()) return;
 
-		if (
-			!editingSponsorId &&
-			currentSponsors.length >= FEATURED_SPONSOR_LIMIT
-		) {
-			setFormError(FEATURED_LIMIT_REACHED_MESSAGE);
-			return;
-		}
-
-		const moderationError = getSponsorModerationError(newSponsor);
-		if (moderationError) {
-			setFormError(moderationError);
+		const validationError = getSponsorValidationError(newSponsor);
+		if (validationError) {
+			setFormError(validationError);
 			return;
 		}
 
