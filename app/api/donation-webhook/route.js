@@ -2,9 +2,8 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
 export async function POST(req) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
 
@@ -14,7 +13,7 @@ export async function POST(req) {
     event = stripe.webhooks.constructEvent(
       body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET,
+      process.env.STRIPE_WEBHOOK_DONATIONS_SECRET,
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err.message);
