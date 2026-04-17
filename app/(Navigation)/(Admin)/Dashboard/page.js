@@ -176,7 +176,7 @@ export default async function AdminDashboard() {
   return (
     <main className="flex-1 flex flex-col items-center px-6 py-10 bg-[#f0ece1] min-h-screen">
       {/* Page header */}
-      <div className="w-full max-w-5xl mb-10">
+      <div className="w-full max-w-7xl mb-10">
         <div className="flex items-center gap-4">
           <div className="bg-[#556B2F] text-white rounded-xl p-3">
             <LayoutDashboard size={28} />
@@ -189,7 +189,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stat Cards */}
-      <section className="w-full max-w-5xl mb-10">
+      <section className="w-full max-w-7xl mb-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((s) => (
             <StatCard
@@ -203,7 +203,7 @@ export default async function AdminDashboard() {
       </section>
 
       {/* Activity feed + Upcoming Events */}
-      <section className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <section className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         {/* Recent Activity */}
         <div className="bg-white border border-[#556B2F]/10 rounded-2xl p-6 shadow-sm">
           <h2
@@ -295,7 +295,7 @@ export default async function AdminDashboard() {
       </section>
 
       {/* Manager Tiles */}
-      <section className="w-full max-w-5xl">
+      <section className="w-full max-w-7xl">
         <p className="text-xs font-semibold text-[#556B2F]/50 uppercase tracking-widest mb-4">
           Manager Tools
         </p>

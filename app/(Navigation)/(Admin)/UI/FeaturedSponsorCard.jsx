@@ -9,7 +9,7 @@ export default function FeaturedSponsorCard({
 	onMoveToPrevious,
 }) {
 	return (
-		<div className="relative w-full max-w-4xl rounded-3xl border border-[#d8d2c4] bg-white p-5 md:p-7 shadow-[0_16px_36px_rgba(0,0,0,0.08)]">
+		<div className="relative w-full max-w-7xl rounded-3xl border border-[#d8d2c4] bg-white p-5 md:p-7 shadow-[0_16px_36px_rgba(0,0,0,0.08)]">
 			<div className="flex flex-col md:flex-row gap-5 md:gap-7">
 				<div className="w-24 h-24 md:w-30 md:h-30 rounded-2xl border border-gray-300 bg-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
 					<Image

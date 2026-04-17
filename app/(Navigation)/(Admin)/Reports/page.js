@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Handshake, CheckCircle, Users, Landmark, CalendarDays } from "lucide-react";
+import { Handshake, CheckCircle, Users, Landmark, CalendarDays, FolderCog } from "lucide-react";
 
 const reportTiles = [
   { label: "Sponsor Reports", Icon: Handshake, href: "/Admin/Reports/Sponsor" },
@@ -27,15 +27,15 @@ export default function ReportsPage() {
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
       <main className="flex-1 flex flex-col items-center px-6 py-12">
-        <div className="w-full max-w-4xl mx-auto">
-        {/* Page Header */}
-          <div className="w-full max-w-4xl mx-auto mb-8 flex flex-col items-center">
-            <div className="flex items-center w-full justify-between mb-2">
-              <hr className="flex-1 border-t border-[#556B2F] mx-4" />
-              <h1 className="text-3xl font-serif font-bold text-[#556B2F] tracking-wide">
-                REPORTS
-              </h1>
-              <hr className="flex-1 border-t border-[#556B2F] mx-4" />
+        <div className="w-full max-w-7xl mx-auto">
+        {/* Header */}
+          <div className="flex items-center gap-4 mb-10">
+            <div className="bg-[#556B2F] text-white rounded-xl p-3">
+              <FolderCog size={28} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-serif text-[#556B2F]">Reports</h1>
+              <p className="text-sm text-[#556B2F]/60 mt-0.5">Generate and view reports</p>
             </div>
           </div>
           <p className="text-center text-lg text-[#556B2F] mb-12">Select which type of report you would like to generate</p>
