@@ -1,9 +1,11 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { useUserAuth } from "../../../_utils/auth-context";
 
 export function HeroSection({ title, description }) {
 	const [showButtons, setShowButtons] = React.useState(false);
+	const { user, roleId, loading } = useUserAuth();
 
 	React.useEffect(() => {
 		// window is undefined on the server; only read it in the browser
@@ -11,6 +13,8 @@ export function HeroSection({ title, description }) {
 			setShowButtons(window.location.pathname === "/");
 		}
 	}, []);
+
+	const isMember = user && roleId && roleId !== 4;
 
 	return (
 		<section className="relative flex flex-col w-full min-h-75 overflow-hidden">
@@ -30,20 +34,31 @@ export function HeroSection({ title, description }) {
 					{description}
 				</p>
 
-				{showButtons && (
+				{showButtons && !loading && (
 					<div className="flex flex-wrap gap-4 mt-7 text-[20px] font-semibold text-black">
-						<Link
-							href="/Login/Membership"
-							className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white"
-						>
-							Become a Member
-						</Link>
-						<Link
-							href="/Guest"
-							className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white"
-						>
-							Join Newsletter
-						</Link>
+						{isMember ? (
+							<Link
+								href="/Events"
+								className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white"
+							>
+								View Events
+							</Link>
+						) : (
+							<>
+								<Link
+									href="/Login/Membership"
+									className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white"
+								>
+									Become a Member
+								</Link>
+								<Link
+									href="/Guest"
+									className="flex items-center justify-center py-3 px-8 rounded-full bg-[#f3f4f6] shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:bg-white"
+								>
+									Join Newsletter
+								</Link>
+							</>
+						)}
 					</div>
 				)}
 			</div>

@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Users, Search, ChevronDown, ChevronUp } from "lucide-react";
 import { useUserAuth } from "../../../_utils/auth-context";
+import Link from "next/link";
 
 export default function ManageMembersPage() {
   const { user } = useUserAuth();
@@ -152,16 +153,26 @@ export default function ManageMembersPage() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative mb-6 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#556B2F]/50" />
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#556B2F]/20 bg-white text-sm text-[#333] placeholder:text-[#999] focus:outline-none focus:ring-2 focus:ring-[#7E9A45]/40"
-          />
+        {/* Search  & Add Admin Button*/}
+        <div className="flex items-center justify-between mb-6">
+          {/* Search */}
+          <div className="relative max-w-sm w-full">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#556B2F]/50" />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#556B2F]/20 bg-white text-sm text-[#333] placeholder:text-[#999] focus:outline-none focus:ring-2 focus:ring-[#7E9A45]/40"
+            />
+          </div>
+
+          {/* Add Admin Button */}
+          <Link
+            href="/CreateAdmin"
+            className="px-4 py-2 rounded-xl bg-[#556B2F] text-white text-sm font-medium hover:bg-[#6f8440] transition">
+              Add Admin Account
+          </Link>
         </div>
 
         {/* States */}

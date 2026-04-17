@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { randomUUID } from "crypto";
 
 export async function POST(req) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -22,43 +23,58 @@ export async function POST(req) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    console.log("Session metadata:", session.metadata);
-    console.log("Session type:", session.metadata?.type);
 
     if (session.metadata?.type !== "donation") {
-      console.log("Skipping - not a donation");
       return NextResponse.json({ received: true });
     }
 
     const meta = session.metadata;
+    const amount = session.amount_total / 100;
+    const donorEmail = session.customer_details?.email || meta.donor_email || null;
+    const fullName = meta.fullName || null;
+    const purposeId = meta.purposeId || null;
+    const purposeTitle = meta.purposeTitle || null;
 
     try {
       const paymentIntent = await stripe.paymentIntents.retrieve(
         session.payment_intent,
-        {
-          expand: ["payment_method"],
-        },
+        { expand: ["payment_method"] },
       );
 
-      const card = paymentIntent.payment_method.card;
+      const card = paymentIntent.payment_method?.card;
       const paymentType = card?.brand ? `card_${card.brand}` : "stripe";
 
       await pool.execute(
-        `INSERT INTO Donations (donationId, email, paymentType, donationAmount, confirmation, donationDate)
-   VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO Donations
+          (donationId, email, paymentType, donationAmount, confirmation, donationDate, purposeId, campaign)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           session.payment_intent,
-          session.customer_details?.email || null,
+          donorEmail,
           paymentType,
-          session.amount_total / 100,
+          amount,
           1,
           new Date(session.created * 1000),
+          purposeId || null,
+          purposeTitle || null,
         ],
       );
 
-      console.log(
-        `Donation saved: ${session.amount_total / 100} ${session.currency}`,
+      await pool.execute(
+        `INSERT INTO DonationReceipt
+          (receiptId, donationId, fullName, paymentType, donationAmount, purposeTitle)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          randomUUID(),
+          session.payment_intent,
+          fullName,
+          paymentType,
+          amount,
+          purposeTitle || null,
+        ],
       );
+
+      console.log(`Donation saved: $${amount} from ${donorEmail}`);
     } catch (dbErr) {
       console.error("DB insert error:", dbErr);
       return NextResponse.json({ error: "DB error" }, { status: 500 });
