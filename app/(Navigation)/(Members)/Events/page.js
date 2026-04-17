@@ -28,6 +28,7 @@ export default function Events() {
 
 	const month = viewDate.getMonth();
 	const year = viewDate.getFullYear();
+	const monthName = viewDate.toLocaleDateString('en-US', { month: 'long' });
 	const [testEvents, setTestEvents] = useState([]);
 	const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -193,7 +194,7 @@ export default function Events() {
 
 			<section className="p-6 w-full md:w-4/5 shadow-lg rounded-lg">
 				<div className="flex justify-between items-center mb-4">
-					<h2 className="text-xl font-bold">{todayLabel}</h2>
+					<h2 className="text-xl font-bold">{monthName} {year}</h2>
 
 					<div>
 						<button
