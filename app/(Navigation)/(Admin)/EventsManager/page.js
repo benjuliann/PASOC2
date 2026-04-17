@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { CalendarDays } from "lucide-react";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -257,18 +258,21 @@ export default function EventManagerPage() {
 
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
-      <main className="flex-1 flex flex-col items-center py-10">
-        {/* Page Header */}
-        <div className="w-full max-w-4xl mx-auto mb-8 flex flex-col items-center">
-          <div className="flex items-center w-full justify-between mb-2">
-            <hr className="flex-1 border-t border-[#556B2F] mx-4" />
-            <h1 className="text-3xl font-serif font-bold text-[#556B2F] tracking-wide">EVENT MANAGER</h1>
-            <hr className="flex-1 border-t border-[#556B2F] mx-4" />
+      <main className="flex-1 py-10">
+        <div className="max-w-7xl mx-auto px-6">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="bg-[#556B2F] text-white rounded-xl p-3">
+            <CalendarDays size={28} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-serif text-[#556B2F]">Events</h1>
+            <p className="text-sm text-[#556B2F]/60 mt-0.5">Event Manager</p>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row gap-8 mt-4 px-4">
+        <div className="flex flex-col md:flex-row gap-8 mt-4">
           {/* Left Side: Upcoming Events */}
           <div className="w-full md:w-auto md:max-w-sm flex flex-col">
             <div className="mb-4">
@@ -509,6 +513,7 @@ export default function EventManagerPage() {
             </div>
           </div>
         )}
+        </div>
       </main>
     </div>
   );
