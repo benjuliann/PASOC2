@@ -6,9 +6,12 @@ import { HeroSection } from "./(Navigation)/(Members)/UI/HeroSection";
 import { FloatingButton } from "./(Navigation)/(Members)/UI/FloatingButton";
 import { LatestBulletinsSection } from "./(Navigation)/(Members)/UI/LatestBulletinsSection";
 import { UpcomingEventsSection } from "./(Navigation)/(Members)/UI/UpcomingEventsSection";
+import { useUserAuth } from "./_utils/auth-context";
 
 export default function HomePage() {
 	const router = useRouter();
+	const { user, roleId, loading } = useUserAuth();
+	const isMember = user && roleId && roleId !== 4;
 
 	return (
 		<main className="w-full">
@@ -86,12 +89,23 @@ export default function HomePage() {
 						friendships.
 					</p>
 
-					<button
-						onClick={() => router.push("/Login/Membership")}
-						className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200"
-					>
-						Become a Member
-					</button>
+					{!loading && (
+						isMember ? (
+							<button
+								onClick={() => router.push("/Events")}
+								className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200"
+							>
+								View Events
+							</button>
+						) : (
+							<button
+								onClick={() => router.push("/Login/Membership")}
+								className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200"
+							>
+								Become a Member
+							</button>
+						)
+					)}
 				</div>
 			</section>
 		</main>
