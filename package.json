@@ -12,6 +12,7 @@
     "@azure-rest/ai-content-safety": "^1.0.1",
     "@azure/core-auth": "^1.10.1",
     "@stripe/stripe-js": "^8.11.0",
+    "@tailwindcss/postcss": "^4.2.2",
     "bad-words": "^4.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -25,12 +26,12 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-icons": "^5.5.0",
+    "recharts": "^3.8.1",
     "resend": "^6.9.4",
     "stripe": "^20.4.1",
     "tailwind-merge": "^3.4.0",
-    "uuid": "^13.0.0",
     "tailwindcss": "^4",
-    "@tailwindcss/postcss": "^4.2.2"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "babel-plugin-react-compiler": "1.0.0",
