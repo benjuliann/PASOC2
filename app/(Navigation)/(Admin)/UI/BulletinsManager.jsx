@@ -2,7 +2,8 @@
 
 import React from "react";
 import { BulletinCard } from "./BulletinsCard.jsx";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
+
+const PAGE_LIMIT = 5;
 
 function normalizePublishedFlag(value) {
 	return value === true || value === 1 || value === "1";
@@ -33,14 +34,6 @@ function getBulletinValidationError(titleValue, bodyValue) {
 		return "Title and body are required.";
 	}
 
-	if (containsProfanity(trimmedTitle)) {
-		return "Title contains inappropriate language.";
-	}
-
-	if (containsProfanity(trimmedBody)) {
-		return "Body contains inappropriate language.";
-	}
-
 	return "";
 }
 
@@ -58,6 +51,13 @@ function mapBulletinRecord(record) {
 
 export function BulletinManager() {
 	const [bulletins, setBulletins] = React.useState([]);
+	const [currentPage, setCurrentPage] = React.useState(1);
+	const [pagination, setPagination] = React.useState({
+		page: 1,
+		pageCount: 1,
+		hasPrevPage: false,
+		hasNextPage: false,
+	});
 	const [title, setTitle] = React.useState("");
 	const [body, setBody] = React.useState("");
 	const [editingId, setEditingId] = React.useState(null);
@@ -73,36 +73,61 @@ export function BulletinManager() {
 		bulletinId: null,
 	});
 
-	const loadBulletins = React.useCallback(async () => {
-		try {
-			setIsLoading(true);
-			setErrorMessage("");
-			const response = await fetch("/api/Database/bulletins", {
-				cache: "no-store",
-			});
-			const data = await response.json();
+	const loadBulletins = React.useCallback(
+		async (pageToLoad = currentPage) => {
+			try {
+				setIsLoading(true);
+				setErrorMessage("");
+				const searchParams = new URLSearchParams({
+					page: String(pageToLoad),
+					limit: String(PAGE_LIMIT),
+					published: "all",
+				});
+				const response = await fetch(
+					`/api/Database/bulletins?${searchParams.toString()}`,
+					{
+						cache: "no-store",
+					},
+				);
+				const data = await response.json();
 
-			if (!response.ok) {
-				throw new Error(data.error || "Failed to load bulletins");
+				if (!response.ok) {
+					throw new Error(data.error || "Failed to load bulletins");
+				}
+
+				const rows = Array.isArray(data)
+					? data
+					: Array.isArray(data.data)
+						? data.data
+						: [];
+
+				const meta = data.pagination || {};
+				const page = Number(meta.page) || 1;
+				const pageCount = Math.max(1, Number(meta.pageCount) || 1);
+
+				setBulletins(sortBulletins(rows.map(mapBulletinRecord)));
+				setPagination({
+					page,
+					pageCount,
+					hasPrevPage: Boolean(meta.hasPrevPage),
+					hasNextPage: Boolean(meta.hasNextPage),
+				});
+
+				if (page !== pageToLoad) {
+					setCurrentPage(page);
+				}
+			} catch (error) {
+				setErrorMessage(error.message || "Failed to load bulletins");
+			} finally {
+				setIsLoading(false);
 			}
-
-			const rows = Array.isArray(data)
-				? data
-				: Array.isArray(data.data)
-					? data.data
-					: [];
-
-			setBulletins(sortBulletins(rows.map(mapBulletinRecord)));
-		} catch (error) {
-			setErrorMessage(error.message || "Failed to load bulletins");
-		} finally {
-			setIsLoading(false);
-		}
-	}, []);
+		},
+		[currentPage],
+	);
 
 	React.useEffect(() => {
-		loadBulletins();
-	}, [loadBulletins]);
+		loadBulletins(currentPage);
+	}, [currentPage, loadBulletins]);
 
 	const resetCreateForm = () => {
 		setTitle("");
@@ -146,7 +171,8 @@ export function BulletinManager() {
 				throw new Error(data.error || "Failed to add bulletin");
 			}
 
-			await loadBulletins();
+			await loadBulletins(1);
+			setCurrentPage(1);
 			resetCreateForm();
 			setIsAdding(false);
 			return true;
@@ -193,7 +219,7 @@ export function BulletinManager() {
 				throw new Error(data.error || "Failed to update bulletin");
 			}
 
-			await loadBulletins();
+			await loadBulletins(currentPage);
 			resetEditForm();
 			return true;
 		} catch (error) {
@@ -256,9 +282,7 @@ export function BulletinManager() {
 	const publishBulletin = async (id, nextIsPublished) => {
 		try {
 			setErrorMessage("");
-			const bulletin = bulletins.find(
-				(item) => item.bulletinId === id,
-			);
+			const bulletin = bulletins.find((item) => item.bulletinId === id);
 
 			if (!bulletin) {
 				setErrorMessage("Bulletin not found.");
@@ -279,13 +303,17 @@ export function BulletinManager() {
 			const data = await response.json();
 
 			if (!response.ok) {
-				throw new Error(data.error || "Failed to update bulletin status");
+				throw new Error(
+					data.error || "Failed to update bulletin status",
+				);
 			}
 
-			await loadBulletins();
+			await loadBulletins(currentPage);
 			return true;
 		} catch (error) {
-			setErrorMessage(error.message || "Failed to update bulletin status");
+			setErrorMessage(
+				error.message || "Failed to update bulletin status",
+			);
 			return false;
 		}
 	};
@@ -317,9 +345,7 @@ export function BulletinManager() {
 				throw new Error(data.error || "Failed to delete bulletin");
 			}
 
-			setBulletins((previous) =>
-				previous.filter((bulletin) => bulletin.bulletinId !== id),
-			);
+			await loadBulletins(currentPage);
 			if (editingId === id) {
 				cancelEdit();
 			}
@@ -337,6 +363,15 @@ export function BulletinManager() {
 	const editBulletinTitle = editTitle.trim() || "this bulletin";
 	const showGlobalError =
 		Boolean(errorMessage) && !isAdding && editingId === null;
+	const pageWindowStart = Math.max(
+		1,
+		Math.min(pagination.page - 1, pagination.pageCount - 2),
+	);
+	const pageWindowEnd = Math.min(pagination.pageCount, pageWindowStart + 2);
+	const visiblePageNumbers = Array.from(
+		{ length: pageWindowEnd - pageWindowStart + 1 },
+		(_, index) => pageWindowStart + index,
+	);
 
 	const confirmAction = async () => {
 		if (confirmModal.action === "create") {
@@ -398,7 +433,7 @@ export function BulletinManager() {
 							}
 						}}
 						placeholder="Title"
-						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black"
+						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 					/>
 					<textarea
 						value={body}
@@ -410,7 +445,7 @@ export function BulletinManager() {
 						}}
 						placeholder="Body"
 						rows={6}
-						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black"
+						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 					/>
 					<div className="flex justify-end gap-2">
 						<button
@@ -418,7 +453,7 @@ export function BulletinManager() {
 							onClick={openCreateConfirmModal}
 							className="rounded-md bg-[#556B2F] px-4 py-2 text-base font-semibold text-white hover:bg-[#6b8e23]"
 						>
-							Add Bulletin
+							Create Post
 						</button>
 						<button
 							type="button"
@@ -440,58 +475,159 @@ export function BulletinManager() {
 						onClick={() => setIsAdding(true)}
 						className="rounded-md bg-[#556B2F] px-4 py-2 text-base font-semibold text-white hover:bg-[#6b8e23]"
 					>
-						Add Bulletin
+						Create Post
 					</button>
 				</div>
 			)}
 
 			{isLoading ? (
 				<p className="text-gray-700">Loading bulletins...</p>
+			) : bulletins.length === 0 ? (
+				<p className="text-gray-700">No bulletins found.</p>
 			) : (
-				bulletins.map((bulletin) => (
-					<BulletinCard
-						key={bulletin.bulletinId}
-						title={bulletin.title}
-						body={bulletin.body}
-						publishDate={bulletin.publishDate}
-						createdAt={bulletin.createdAt}
-						updatedAt={bulletin.updatedAt}
-						isPublished={bulletin.isPublished}
-						onEdit={() => startEdit(bulletin)}
-						onDelete={() =>
-							openDeleteConfirmModal(bulletin.bulletinId)
-						}
-						isEditing={editingId === bulletin.bulletinId}
-						editTitle={editTitle}
-						editBody={editBody}
-						editIsPublished={editIsPublished}
-						onPublish={() =>
-							openPublishConfirmModal(
-								bulletin.bulletinId,
-								!bulletin.isPublished,
-							)
-						}
-						onChangeEditTitle={(value) => {
-							setEditTitle(value);
-							if (errorMessage) {
-								setErrorMessage("");
+				<>
+					{bulletins.map((bulletin) => (
+						<BulletinCard
+							key={bulletin.bulletinId}
+							title={bulletin.title}
+							body={bulletin.body}
+							publishDate={bulletin.publishDate}
+							createdAt={bulletin.createdAt}
+							updatedAt={bulletin.updatedAt}
+							isPublished={bulletin.isPublished}
+							onEdit={() => startEdit(bulletin)}
+							onDelete={() =>
+								openDeleteConfirmModal(bulletin.bulletinId)
 							}
-						}}
-						onChangeEditBody={(value) => {
-							setEditBody(value);
-							if (errorMessage) {
-								setErrorMessage("");
+							isEditing={editingId === bulletin.bulletinId}
+							editTitle={editTitle}
+							editBody={editBody}
+							editIsPublished={editIsPublished}
+							onPublish={() =>
+								openPublishConfirmModal(
+									bulletin.bulletinId,
+									!bulletin.isPublished,
+								)
 							}
-						}}
-						editErrorMessage={
-							editingId === bulletin.bulletinId
-								? errorMessage
-								: ""
-						}
-						onSave={() => openEditConfirmModal(bulletin.bulletinId)}
-						onCancel={cancelEdit}
-					/>
-				))
+							onChangeEditTitle={(value) => {
+								setEditTitle(value);
+								if (errorMessage) {
+									setErrorMessage("");
+								}
+							}}
+							onChangeEditBody={(value) => {
+								setEditBody(value);
+								if (errorMessage) {
+									setErrorMessage("");
+								}
+							}}
+							editErrorMessage={
+								editingId === bulletin.bulletinId
+									? errorMessage
+									: ""
+							}
+							onSave={() =>
+								openEditConfirmModal(bulletin.bulletinId)
+							}
+							onCancel={cancelEdit}
+						/>
+					))}
+
+					{pagination.pageCount > 1 && (
+						<nav
+							className="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm"
+							aria-label="Admin bulletins pagination"
+						>
+							<button
+								type="button"
+								onClick={() => setCurrentPage(1)}
+								disabled={!pagination.hasPrevPage}
+								className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
+								aria-label="Go to newest page"
+							>
+								&lt;&lt;
+							</button>
+							<button
+								type="button"
+								onClick={() =>
+									setCurrentPage((previous) =>
+										Math.max(1, previous - 1),
+									)
+								}
+								disabled={!pagination.hasPrevPage}
+								className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
+							>
+								previous
+							</button>
+
+							{visiblePageNumbers.map((pageNumber, index) => {
+								const isActive = pageNumber === pagination.page;
+								const showComma =
+									index < visiblePageNumbers.length - 1;
+
+								return (
+									<span
+										key={pageNumber}
+										className="flex items-center gap-0"
+									>
+										<button
+											type="button"
+											onClick={() =>
+												setCurrentPage(pageNumber)
+											}
+											className={`font-semibold transition-colors ${
+												isActive
+													? "text-black"
+													: "text-neutral-500 hover:text-neutral-700"
+											}`}
+											aria-label={`Go to page ${pageNumber}`}
+											aria-current={
+												isActive ? "page" : undefined
+											}
+										>
+											{pageNumber}
+										</button>
+										{showComma && (
+											<span
+												className="font-semibold text-neutral-500"
+												aria-hidden="true"
+											>
+												,
+											</span>
+										)}
+									</span>
+								);
+							})}
+
+							<button
+								type="button"
+								onClick={() =>
+									setCurrentPage((previous) =>
+										Math.min(
+											pagination.pageCount,
+											previous + 1,
+										),
+									)
+								}
+								disabled={!pagination.hasNextPage}
+								className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
+							>
+								next
+							</button>
+							<button
+								type="button"
+								onClick={() =>
+									setCurrentPage(pagination.pageCount)
+								}
+								disabled={!pagination.hasNextPage}
+								className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
+								aria-label="Go to oldest page"
+							>
+								&gt;&gt;
+							</button>
+						</nav>
+					)}
+				</>
 			)}
 
 			{confirmModal.isOpen && (
@@ -506,7 +642,7 @@ export function BulletinManager() {
 										? `Are you sure you want to publish "${selectedBulletinTitle}"?`
 										: confirmModal.action === "unpublish"
 											? `Are you sure you want to unpublish "${selectedBulletinTitle}"?`
-									: `Are you sure you want to delete "${selectedBulletinTitle}"?`}
+											: `Are you sure you want to delete "${selectedBulletinTitle}"?`}
 						</h3>
 
 						<div className="mt-6 flex justify-end gap-2">
@@ -535,9 +671,10 @@ export function BulletinManager() {
 										? "Save"
 										: confirmModal.action === "publish"
 											? "Publish"
-											: confirmModal.action === "unpublish"
+											: confirmModal.action ===
+												  "unpublish"
 												? "Unpublish"
-										: "Delete"}
+												: "Delete"}
 							</button>
 						</div>
 					</div>

@@ -1,9 +1,12 @@
+export const dynamic = 'force-dynamic';
+
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(req) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  
   try {
     const { amount, metadata, type } = await req.json();
 
@@ -25,7 +28,7 @@ export async function POST(req) {
           quantity: 1,
         },
       ],
-      metadata: metadata || {},
+      metadata: { ...(metadata || {}), type: type },
       success_url: type === "donation"
         ? `${process.env.NEXT_PUBLIC_BASE_URL}/Donate?success=true&amount=${amount}`
         : `${process.env.NEXT_PUBLIC_BASE_URL}/success?type=${type}`,

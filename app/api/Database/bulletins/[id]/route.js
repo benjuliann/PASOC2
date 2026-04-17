@@ -1,6 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
+import {
+	shouldRejectForModeration,
+	getModerationErrorMessage,
+} from "@/app/_utils/moderationHelpers";
 
 function toIsoString(value) {
 	if (!value) {
@@ -23,13 +28,15 @@ function getCurrentTimestamp() {
 	return new Date();
 }
 
-function getBulletinModerationError(title, body) {
-	if (containsProfanity(title)) {
-		return "Title contains inappropriate language.";
+async function getBulletinModerationError(title, body) {
+	const titleResult = await shouldRejectForModeration("title", title);
+	if (titleResult.shouldReject) {
+		return getModerationErrorMessage(titleResult);
 	}
 
-	if (containsProfanity(body)) {
-		return "Body contains inappropriate language.";
+	const bodyResult = await shouldRejectForModeration("body", body);
+	if (bodyResult.shouldReject) {
+		return getModerationErrorMessage(bodyResult);
 	}
 
 	return "";
@@ -70,7 +77,7 @@ export async function PUT(request, context) {
 			);
 		}
 
-		const moderationError = getBulletinModerationError(title, bulletinBody);
+		const moderationError = await getBulletinModerationError(title, bulletinBody);
 		if (moderationError) {
 			return NextResponse.json(
 				{ error: moderationError },

@@ -1,14 +1,21 @@
+export const dynamic = 'force-dynamic';
+
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
+import {
+	shouldRejectForModeration,
+	getModerationErrorMessage,
+} from "@/app/_utils/moderationHelpers"
 
-function getFaqModerationError(question, answer) {
-	if (containsProfanity(question)) {
-		return "Question contains inappropriate language.";
+async function getFaqModerationError(question, answer) {
+	const questionResult = await shouldRejectForModeration("question", question);
+	if (questionResult.shouldReject) {
+		return getModerationErrorMessage(questionResult);
 	}
 
-	if (containsProfanity(answer)) {
-		return "Answer contains inappropriate language.";
+	const answerResult = await shouldRejectForModeration("answer", answer);
+	if (answerResult.shouldReject) {
+		return getModerationErrorMessage(answerResult);
 	}
 
 	return "";
@@ -28,7 +35,7 @@ export async function PUT(request, context) {
 			);
 		}
 
-		const moderationError = getFaqModerationError(question, answer);
+		const moderationError = await getFaqModerationError(question, answer);
 		if (moderationError) {
 			return NextResponse.json(
 				{ error: moderationError },

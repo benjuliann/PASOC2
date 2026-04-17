@@ -2,10 +2,18 @@
 
 import React from "react";
 import { FaqsCard } from "./FaqsCard.jsx";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
+
+const PAGE_LIMIT = 5;
 
 export function FaqsManager() {
 	const [faqs, setFaqs] = React.useState([]);
+	const [currentPage, setCurrentPage] = React.useState(1);
+	const [pagination, setPagination] = React.useState({
+		page: 1,
+		pageCount: 1,
+		hasPrevPage: false,
+		hasNextPage: false,
+	});
 	const [question, setQuestion] = React.useState("");
 	const [answer, setAnswer] = React.useState("");
 	const [editingId, setEditingId] = React.useState(null);
@@ -24,14 +32,6 @@ export function FaqsManager() {
 		const trimmedQuestion = String(questionValue || "").trim();
 		const trimmedAnswer = String(answerValue || "").trim();
 
-		if (trimmedQuestion && containsProfanity(trimmedQuestion)) {
-			return "Question contains inappropriate language.";
-		}
-
-		if (trimmedAnswer && containsProfanity(trimmedAnswer)) {
-			return "Answer contains inappropriate language.";
-		}
-
 		if (!trimmedQuestion || !trimmedAnswer) {
 			return "Question and answer are required.";
 		}
@@ -39,30 +39,59 @@ export function FaqsManager() {
 		return "";
 	};
 
-	const loadFaqs = React.useCallback(async () => {
-		try {
-			setIsLoading(true);
-			setErrorMessage("");
-			const response = await fetch("/api/Database/faqs", {
-				cache: "no-store",
-			});
-			const data = await response.json();
+	const loadFaqs = React.useCallback(
+		async (pageToLoad = currentPage) => {
+			try {
+				setIsLoading(true);
+				setErrorMessage("");
+				const searchParams = new URLSearchParams({
+					page: String(pageToLoad),
+					limit: String(PAGE_LIMIT),
+				});
+				const response = await fetch(
+					`/api/Database/faqs?${searchParams.toString()}`,
+					{
+						cache: "no-store",
+					},
+				);
+				const data = await response.json();
 
-			if (!response.ok) {
-				throw new Error(data.error || "Failed to load FAQs");
+				if (!response.ok) {
+					throw new Error(data.error || "Failed to load FAQs");
+				}
+
+				const rows = Array.isArray(data?.data)
+					? data.data
+					: Array.isArray(data)
+						? data
+						: [];
+				const meta = data.pagination || {};
+				const page = Number(meta.page) || 1;
+				const pageCount = Math.max(1, Number(meta.pageCount) || 1);
+
+				setFaqs(rows);
+				setPagination({
+					page,
+					pageCount,
+					hasPrevPage: Boolean(meta.hasPrevPage),
+					hasNextPage: Boolean(meta.hasNextPage),
+				});
+
+				if (page !== pageToLoad) {
+					setCurrentPage(page);
+				}
+			} catch (error) {
+				setErrorMessage(error.message || "Failed to load FAQs");
+			} finally {
+				setIsLoading(false);
 			}
-
-			setFaqs(Array.isArray(data) ? data : []);
-		} catch (error) {
-			setErrorMessage(error.message || "Failed to load FAQs");
-		} finally {
-			setIsLoading(false);
-		}
-	}, []);
+		},
+		[currentPage],
+	);
 
 	React.useEffect(() => {
-		loadFaqs();
-	}, [loadFaqs]);
+		loadFaqs(currentPage);
+	}, [currentPage, loadFaqs]);
 
 	const addFaq = async () => {
 		const trimmedQuestion = question.trim();
@@ -93,7 +122,8 @@ export function FaqsManager() {
 				throw new Error(data.error || "Failed to add FAQ");
 			}
 
-			setFaqs((previous) => [...previous, data]);
+			await loadFaqs(1);
+			setCurrentPage(1);
 			setQuestion("");
 			setAnswer("");
 			setIsAdding(false);
@@ -139,17 +169,7 @@ export function FaqsManager() {
 				throw new Error(data.error || "Failed to update FAQ");
 			}
 
-			setFaqs((previous) =>
-				previous.map((faq) =>
-					faq.id === id
-						? {
-								...faq,
-								question: trimmedQuestion,
-								answer: trimmedAnswer,
-							}
-						: faq,
-				),
-			);
+			await loadFaqs(currentPage);
 			setEditingId(null);
 			setEditQuestion("");
 			setEditAnswer("");
@@ -242,7 +262,7 @@ export function FaqsManager() {
 				throw new Error(data.error || "Failed to delete FAQ");
 			}
 
-			setFaqs((previous) => previous.filter((faq) => faq.id !== id));
+			await loadFaqs(currentPage);
 			if (editingId === id) {
 				cancelEdit();
 			}
@@ -259,6 +279,15 @@ export function FaqsManager() {
 	const editFaqQuestion = editQuestion.trim() || "this FAQ";
 	const showGlobalError =
 		Boolean(errorMessage) && !isAdding && editingId === null;
+	const pageWindowStart = Math.max(
+		1,
+		Math.min(pagination.page - 1, pagination.pageCount - 2),
+	);
+	const pageWindowEnd = Math.min(pagination.pageCount, pageWindowStart + 2);
+	const visiblePageNumbers = Array.from(
+		{ length: pageWindowEnd - pageWindowStart + 1 },
+		(_, index) => pageWindowStart + index,
+	);
 
 	const confirmAction = async () => {
 		if (confirmModal.action === "create") {
@@ -304,7 +333,7 @@ export function FaqsManager() {
 							}
 						}}
 						placeholder="Question"
-						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black"
+						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 					/>
 					<textarea
 						value={answer}
@@ -316,7 +345,7 @@ export function FaqsManager() {
 						}}
 						placeholder="Answer"
 						rows={4}
-						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black"
+						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 					/>
 					<div className="flex justify-end gap-2">
 						<button
@@ -324,7 +353,7 @@ export function FaqsManager() {
 							onClick={openCreateConfirmModal}
 							className="rounded-md bg-[#556B2F] px-4 py-2 text-base font-semibold text-white hover:bg-[#6b8e23]"
 						>
-							Add FAQs
+							Create FAQs
 						</button>
 						<button
 							type="button"
@@ -347,13 +376,15 @@ export function FaqsManager() {
 						onClick={() => setIsAdding(true)}
 						className="rounded-md bg-[#556B2F] px-4 py-2 text-base font-semibold text-white hover:bg-[#6b8e23]"
 					>
-						Add FAQs
+						Create FAQs
 					</button>
 				</div>
 			)}
 
 			{isLoading ? (
 				<p className="text-gray-700">Loading FAQs...</p>
+			) : faqs.length === 0 ? (
+				<p className="text-gray-700">No FAQs found.</p>
 			) : (
 				faqs.map((faq) => (
 					<FaqsCard
@@ -384,6 +415,91 @@ export function FaqsManager() {
 						onCancel={cancelEdit}
 					/>
 				))
+			)}
+
+			{!isLoading && pagination.pageCount > 1 && (
+				<nav
+					className="flex flex-wrap items-center justify-center gap-3 pt-2 text-sm"
+					aria-label="Admin FAQs pagination"
+				>
+					<button
+						type="button"
+						onClick={() => setCurrentPage(1)}
+						disabled={!pagination.hasPrevPage}
+						className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
+						aria-label="Go to first page"
+					>
+						&lt;&lt;
+					</button>
+					<button
+						type="button"
+						onClick={() =>
+							setCurrentPage((previous) =>
+								Math.max(1, previous - 1),
+							)
+						}
+						disabled={!pagination.hasPrevPage}
+						className="font-semibold text-neutral-700 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-400"
+					>
+						previous
+					</button>
+
+					{visiblePageNumbers.map((pageNumber, index) => {
+						const isActive = pageNumber === pagination.page;
+						const showComma = index < visiblePageNumbers.length - 1;
+
+						return (
+							<span
+								key={pageNumber}
+								className="flex items-center gap-0"
+							>
+								<button
+									type="button"
+									onClick={() => setCurrentPage(pageNumber)}
+									className={`font-semibold transition-colors ${
+										isActive
+											? "text-black"
+											: "text-neutral-500 hover:text-neutral-700"
+									}`}
+									aria-label={`Go to page ${pageNumber}`}
+									aria-current={isActive ? "page" : undefined}
+								>
+									{pageNumber}
+								</button>
+								{showComma && (
+									<span
+										className="font-semibold text-neutral-500"
+										aria-hidden="true"
+									>
+										,
+									</span>
+								)}
+							</span>
+						);
+					})}
+
+					<button
+						type="button"
+						onClick={() =>
+							setCurrentPage((previous) =>
+								Math.min(pagination.pageCount, previous + 1),
+							)
+						}
+						disabled={!pagination.hasNextPage}
+						className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
+					>
+						next
+					</button>
+					<button
+						type="button"
+						onClick={() => setCurrentPage(pagination.pageCount)}
+						disabled={!pagination.hasNextPage}
+						className="font-semibold text-neutral-500 transition-colors hover:text-black disabled:cursor-not-allowed disabled:text-neutral-300"
+						aria-label="Go to last page"
+					>
+						&gt;&gt;
+					</button>
+				</nav>
 			)}
 
 			{confirmModal.isOpen && (

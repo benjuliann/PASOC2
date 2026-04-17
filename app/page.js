@@ -2,35 +2,16 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { HeroSection } from "./(Navigation)/(Members)/UI/HeroSection";
-import { ReadMore } from "./(Navigation)/(Members)/UI/ReadMoreNews";
 import { FloatingButton } from "./(Navigation)/(Members)/UI/FloatingButton";
+import { LatestBulletinsSection } from "./(Navigation)/(Members)/UI/LatestBulletinsSection";
+import { UpcomingEventsSection } from "./(Navigation)/(Members)/UI/UpcomingEventsSection";
+import { useUserAuth } from "./_utils/auth-context";
 
 export default function HomePage() {
 	const router = useRouter();
-	const [extend, setExtend] = useState(false);
-	const [selectedNews, setSelectedNews] = useState(null);
-	{
-		/* Sample news data; in a real app, this would likely come from the facebook api or the database */
-	}
-	const news = [
-		{
-			title: "2026 Scholarship Awardees",
-			description:
-				"Congratulations to this year’s recipients recognized for academic excellence, leadership, and community involvement.",
-		},
-		{
-			title: "Summer Picnic — Stampede Weekend",
-			description:
-				"Join us for a fun-filled day of food, games, and community bonding at our annual summer picnic during Stampede weekend.",
-		},
-		{
-			title: "Annual Camping Weekend",
-			description:
-				"Reconnect with nature and fellow members at our annual camping weekend, featuring outdoor activities and campfire stories.",
-		},
-	];
+	const { user, roleId, loading } = useUserAuth();
+	const isMember = user && roleId && roleId !== 4;
 
 	return (
 		<main className="w-full">
@@ -42,88 +23,8 @@ export default function HomePage() {
 				description="Explore our community, stay informed on upcoming events, and get involved. Become a full member to access all that PASOC has to offer, or sign up for our newsletter to stay connected with community news and announcements."
 			/>
 
-			{/* NEWS */}
-			<section className="bg-white py-24 px-6 text-neutral-900">
-				<div className="max-w-6xl mx-auto flex flex-col gap-12">
-					<h2 className="text-3xl font-bold">Latest News</h2>
-
-					<div className="grid md:grid-cols-3 gap-8">
-						{news.map((item, index) => (
-							<div
-								key={index}
-								className="bg-neutral-100 p-8 rounded-2xl transition-all duration-200 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)]"
-							>
-								<h3 className="text-xl font-semibold text-primary-600 mb-4">
-									{item.title}
-								</h3>
-
-								<p className="text-neutral-700 leading-relaxed mb-6">
-									{item.description}
-								</p>
-
-								<button
-									className="text-primary-600 font-semibold text-sm hover:underline"
-									onClick={() =>
-										setSelectedNews(item) && setExtend(true)
-									}
-								>
-									Read more →
-								</button>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-
-			{/* MODEL */}
-			{selectedNews && (
-				<ReadMore
-					Title={selectedNews.title}
-					Description={selectedNews.description}
-					onCancel={() => setSelectedNews(null) && setExtend(false)}
-				/>
-			)}
-
-			{/* EVENTS */}
-			<section className="bg-primary-50 py-24 px-6 text-neutral-900">
-				<div
-					className="max-w-6xl mx-auto flex flex-col gap-12"
-					onClick={() => router.push("/Events")}
-				>
-					<h2 className="text-3xl font-bold text-neutral-900">
-						Upcoming Events
-					</h2>
-
-					<div className="flex flex-col gap-6">
-						{[
-							{
-								name: "Summer Picnic — Stampede Weekend",
-								date: "July 2026",
-							},
-							{
-								name: "Annual Camping Weekend",
-								date: "August 2026",
-							},
-							{
-								name: "Christmas Dinner & Dance",
-								date: "December 2026",
-							},
-						].map((event, index) => (
-							<div
-								key={index}
-								className="flex justify-between items-center bg-neutral-100 px-8 py-6 rounded-xl"
-							>
-								<span className="text-lg font-medium text-neutral-900">
-									{event.name}
-								</span>
-								<span className="text-primary-600 font-semibold">
-									{event.date}
-								</span>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
+			<LatestBulletinsSection />
+			<UpcomingEventsSection />
 
 			{/* SCHOLARSHIP FEATURE */}
 			<section className="bg-white py-32 px-6 text-neutral-900">
@@ -165,9 +66,11 @@ export default function HomePage() {
 						</p>
 					</div>
 
-					<img
+					<Image
 						src="/PasocLeadership2012_01.jpg"
 						alt="PASOC Leadership 2012"
+						width={800}
+						height={600}
 						className="w-full h-105 object-cover rounded-2xl bg-gray-300 shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
 					/>
 				</div>
@@ -186,12 +89,23 @@ export default function HomePage() {
 						friendships.
 					</p>
 
-					<button
-						onClick={() => router.push("/Login/Membership")}
-						className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200"
-					>
-						Become a Member
-					</button>
+					{!loading && (
+						isMember ? (
+							<button
+								onClick={() => router.push("/Events")}
+								className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200"
+							>
+								View Events
+							</button>
+						) : (
+							<button
+								onClick={() => router.push("/Login/Membership")}
+								className="bg-[#556B2F] text-white border border-white px-10 py-4 rounded-xl font-semibold hover:bg-primary-700 transition-all duration-200"
+							>
+								Become a Member
+							</button>
+						)
+					)}
 				</div>
 			</section>
 		</main>

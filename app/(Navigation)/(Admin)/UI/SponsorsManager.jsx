@@ -3,9 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
-import CurrentSponsorCard from "./CurrentSponsorCard";
-import PreviousSponsorCard from "./PreviousSponsorCard";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
+import FeaturedSponsorCard from "./FeaturedSponsorCard";
+import OverTheYearsSponsorCard from "./OverTheYearsSponsorCard";
+
+const FEATURED_SPONSOR_LIMIT = 5;
+const FEATURED_LIMIT_REACHED_MESSAGE =
+	"Featured limit is reached. Move one to Over the Years first.";
 
 export function SponsorsManager() {
 	const [currentSponsors, setCurrentSponsors] = useState([]);
@@ -42,16 +45,16 @@ export function SponsorsManager() {
 		}));
 	};
 
-	const getSponsorModerationError = (sponsorDraft) => {
+	const getSponsorValidationError = (sponsorDraft) => {
 		const name = sponsorDraft.name.trim();
 		const description = sponsorDraft.description.trim();
 
-		if (containsProfanity(name)) {
-			return "Sponsor name contains inappropriate language.";
+		if (!name) {
+			return "Sponsor name is required.";
 		}
 
-		if (containsProfanity(description)) {
-			return "Description contains inappropriate language.";
+		if (!description) {
+			return "Description is required.";
 		}
 
 		return "";
@@ -172,9 +175,9 @@ export function SponsorsManager() {
 		event.preventDefault();
 		if (!newSponsor.name.trim()) return;
 
-		const moderationError = getSponsorModerationError(newSponsor);
-		if (moderationError) {
-			setFormError(moderationError);
+		const validationError = getSponsorValidationError(newSponsor);
+		if (validationError) {
+			setFormError(validationError);
 			return;
 		}
 
@@ -218,36 +221,25 @@ export function SponsorsManager() {
 	return (
 		<div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
 			<main className="flex-1 flex flex-col items-center py-12 px-6 md:px-8">
-				{/* Page Header */}
-				<div className="w-full max-w-4xl mx-auto mb-8 flex flex-col items-center">
-					<div className="flex items-center w-full justify-between mb-2">
-						<hr className="flex-1 border-t border-[#556B2F] mx-4" />
-						<h1 className="text-3xl font-serif font-bold text-[#556B2F] tracking-wide">
-							SPONSORS
-						</h1>
-						<hr className="flex-1 border-t border-[#556B2F] mx-4" />
-					</div>
-				</div>
-
 				{/* Current Sponsors Section */}
-				<section className="w-full max-w-4xl mb-16">
+				<section className="w-full max-w-7xl mb-16">
 					<div className="flex items-center justify-center gap-3 mb-8">
-						<h2 className="text-2xl font-semibold underline text-[#2a2420]">
-							Current Sponsors
+						<h2 className="text-2xl md:text-3xl font-bold text-[#2a2420]">
+							Featured
 						</h2>
 						<button
 							type="button"
-							aria-label="Add current sponsor"
-							className="w-8 h-8 rounded-full bg-[#556B2F] flex items-center justify-center hover:bg-[#6b8e23] focus:outline-none text-white"
+							aria-label="Create featured sponsor"
+							className="ml-auto rounded-md bg-[#556B2F] px-4 py-2 text-base font-semibold text-white hover:bg-[#6b8e23] focus:outline-none"
 							onClick={() => setIsAddSponsorModalOpen(true)}
 						>
-							<Plus size={16} strokeWidth={3} />
+							Create Sponsor
 						</button>
 					</div>
 
 					<div className="flex flex-col gap-8 items-center">
 						{currentSponsors.map((sponsor) => (
-							<CurrentSponsorCard
+							<FeaturedSponsorCard
 								key={sponsor.id}
 								sponsor={sponsor}
 								onDelete={handleDeleteCurrentSponsor}
@@ -259,16 +251,16 @@ export function SponsorsManager() {
 				</section>
 
 				{/* Divider */}
-				<div className="w-full max-w-4xl h-px bg-[#556B2F] mb-16"></div>
+				<div className="w-full max-w-7xl h-px bg-[#556B2F] mb-16"></div>
 
 				{/* Previous Sponsors Section */}
-				<section className="w-full max-w-4xl mb-16">
-					<h2 className="text-2xl font-semibold text-center mb-8 underline text-[#2a2420]">
-						Previous Sponsors
+				<section className="w-full max-w-7xl mb-16">
+					<h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-[#2a2420]">
+						Over the Years
 					</h2>
 					<div className="flex flex-wrap justify-center gap-6">
 						{previousSponsors.map((sponsor) => (
-							<PreviousSponsorCard
+							<OverTheYearsSponsorCard
 								key={sponsor.id}
 								sponsor={sponsor}
 								onDelete={handleDeletePreviousSponsor}
@@ -279,12 +271,12 @@ export function SponsorsManager() {
 
 				{isAddSponsorModalOpen && (
 					<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-						<div className="w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
+						<div className="w-full max-w-2xl rounded-3xl border border-gray-200 bg-white p-6 shadow-lg">
 							<div className="relative mb-4">
 								<h3 className="text-center text-xl font-bold text-gray-800">
 									{editingSponsorId
 										? "Edit Sponsor"
-										: "Current Sponsor"}
+										: "Featured Sponsor"}
 								</h3>
 								<button
 									type="button"
@@ -305,7 +297,7 @@ export function SponsorsManager() {
 										{formError}
 									</p>
 								)}
-								<div className="mx-auto flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-gray-300 bg-gray-200">
+								<div className="mx-auto flex h-32 w-32 shrink-0 flex-col items-center justify-center rounded-2xl border-2 border-gray-300 bg-gray-200">
 									<Image
 										src="/pasoc_logo.png"
 										alt="PASOC logo placeholder"
@@ -330,7 +322,7 @@ export function SponsorsManager() {
 											value={newSponsor.name}
 											onChange={handleSponsorFieldChange}
 											required
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#556B2F] focus:ring-2 focus:ring-[#556B2F]"
+											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 										/>
 									</div>
 
@@ -347,7 +339,7 @@ export function SponsorsManager() {
 											rows={4}
 											value={newSponsor.description}
 											onChange={handleSponsorFieldChange}
-											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#556B2F] focus:ring-2 focus:ring-[#556B2F]"
+											className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 outline-none focus:outline-none focus:ring-2 focus:ring-[#556B2F]/50"
 										/>
 									</div>
 
@@ -369,12 +361,12 @@ export function SponsorsManager() {
 
 				{confirmModal.isOpen && (
 					<div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
-						<div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-lg">
+						<div className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-6 shadow-lg">
 							<h3 className="text-lg font-bold text-gray-800">
 								{confirmModal.action === "delete"
 									? `Are you sure you want to delete "${selectedSponsorName}"?`
 									: confirmModal.action === "move"
-										? `Are you sure you want to move "${selectedSponsorName}" to previous sponsor?`
+										? `Are you sure you want to move "${selectedSponsorName}" to over the years?`
 										: confirmModal.action === "add"
 											? `${editingSponsorId ? `Are you sure you want to save changes to "${newSponsor.name.trim()}"?` : `Do you want to create "${newSponsor.name.trim()}"?`}`
 											: "Confirm action?"}

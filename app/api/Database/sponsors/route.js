@@ -1,6 +1,15 @@
+export const dynamic = 'force-dynamic';
+
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import { containsProfanity } from "@/app/_utils/moderationHelpers";
+import {
+	shouldRejectForModeration,
+	getModerationErrorMessage, 
+} from "@/app/_utils/moderationHelpers";
+
+const FEATURED_SPONSOR_LIMIT = 5;
+const FEATURED_LIMIT_REACHED_MESSAGE =
+	"Featured limit is reached. Move one to Over the Years first.";
 
 function toDbSponsorStatus(value) {
 	const normalized = String(value || "")
@@ -11,13 +20,18 @@ function toDbSponsorStatus(value) {
 	return null;
 }
 
-function getSponsorModerationError(name, description) {
-	if (containsProfanity(name)) {
-		return "Sponsor name contains inappropriate language.";
+async function getSponsorModerationError(name, description) {
+	const nameResult = await shouldRejectForModeration("name", name);
+	if (nameResult.shouldReject) {
+		return getModerationErrorMessage(nameResult);
 	}
 
-	if (containsProfanity(description)) {
-		return "Sponsor description contains inappropriate language.";
+	const descriptionResult = await shouldRejectForModeration(
+		"description",
+		description,
+	);
+	if (descriptionResult.shouldReject) {
+		return getModerationErrorMessage(descriptionResult);
 	}
 
 	return "";
@@ -63,7 +77,7 @@ export async function POST(request) {
 			);
 		}
 
-		const moderationError = getSponsorModerationError(name, description);
+		const moderationError = await getSponsorModerationError(name, description);
 		if (moderationError) {
 			return NextResponse.json(
 				{ error: moderationError },

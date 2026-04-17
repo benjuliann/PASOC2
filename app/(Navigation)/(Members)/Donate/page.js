@@ -1,10 +1,9 @@
 "use client";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const PRESET_AMOUNTS = [5, 10, 20, 50, 100, 150];
 
-// Separated into its own component because useSearchParams needs Suspense
 function DonateContent() {
   const searchParams = useSearchParams();
   const success = searchParams.get("success");
@@ -13,7 +12,21 @@ function DonateContent() {
 
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [customAmount, setCustomAmount] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [purposeId, setPurposeId] = useState("");
+  const [purposes, setPurposes] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/Database/DonationPurposes")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setPurposes(data.data);
+      })
+      .catch(() => {});
+  }, []);
 
   const total = selectedAmount || parseFloat(customAmount) || 0;
 
@@ -33,6 +46,17 @@ function DonateContent() {
       alert("Please enter a donation amount.");
       return;
     }
+    if (!firstName.trim() || !lastName.trim()) {
+      alert("Please enter your full name.");
+      return;
+    }
+    if (!email.trim()) {
+      alert("Please enter your email address.");
+      return;
+    }
+
+    const selectedPurpose = purposes.find((p) => p.purposeId === purposeId);
+
     setLoading(true);
     try {
       const res = await fetch("/api/checkout", {
@@ -41,7 +65,12 @@ function DonateContent() {
         body: JSON.stringify({
           amount: total,
           type: "donation",
-          metadata: { donor_email: "" },
+          metadata: {
+            fullName: `${firstName.trim()} ${lastName.trim()}`,
+            donor_email: email.trim(),
+            purposeId: purposeId || "",
+            purposeTitle: selectedPurpose?.title || "",
+          },
         }),
       });
       const data = await res.json();
@@ -66,7 +95,6 @@ function DonateContent() {
         <div className="flex-1 h-px bg-gray-300"></div>
       </div>
 
-      {/* ✅ Thank You Banner */}
       {success && (
         <div className="bg-green-50 border border-green-300 rounded-xl p-6 mb-8 text-center shadow-sm">
           <div className="text-5xl mb-3">🎉</div>
@@ -79,7 +107,6 @@ function DonateContent() {
         </div>
       )}
 
-      {/* ❌ Cancelled Banner */}
       {cancelled && (
         <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-4 mb-6 text-center shadow-sm">
           <p className="text-sm text-yellow-800 font-medium">
@@ -89,17 +116,24 @@ function DonateContent() {
       )}
 
       <form className="bg-gray-50 border border-gray-300 rounded-xl p-6 shadow-sm" onSubmit={handleDonate}>
+
         {/* Amount */}
         <div className="mb-6">
           <h2 className="text-sm font-semibold text-neutral-900 mb-1">Enter your donation</h2>
-          <p className="text-xs text-neutral-700 mb-3">Choose from the pre-selected amount or enter the amount you would like to donate</p>
+          <p className="text-xs text-neutral-700 mb-3">
+            Choose a preset amount or enter your own
+          </p>
           <div className="flex flex-wrap gap-2 mb-3">
             {PRESET_AMOUNTS.map((amt) => (
               <button
                 type="button"
                 key={amt}
                 onClick={() => handleAmountClick(amt)}
-                className={`amount-btn px-4 py-1.5 rounded-full border border-gray-300 text-sm font-semibold text-neutral-700 bg-white hover:border-[#556B2F] hover:text-[#556B2F] transition-all ${selectedAmount === amt ? "bg-[#556B2F] text-neutral-700 border-[#556B2F]" : ""}`}
+                className={`px-4 py-1.5 rounded-full border text-sm font-semibold transition-all ${
+                  selectedAmount === amt
+                    ? "bg-[#556B2F] text-white border-[#556B2F]"
+                    : "border-gray-300 text-neutral-700 bg-white hover:border-[#556B2F] hover:text-[#556B2F]"
+                }`}
               >
                 ${amt}
               </button>
@@ -119,19 +153,63 @@ function DonateContent() {
           </div>
         </div>
 
+        {/* Purpose */}
+        {purposes.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-sm font-semibold text-neutral-900 mb-1">Donation purpose</h2>
+            <p className="text-xs text-neutral-700 mb-3">
+              Optionally designate where your donation goes
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {purposes.map((p) => (
+                <button
+                  type="button"
+                  key={p.purposeId}
+                  onClick={() => setPurposeId(purposeId === p.purposeId ? "" : p.purposeId)}
+                  className={`px-4 py-1.5 rounded-full border text-sm font-semibold transition-all ${
+                    purposeId === p.purposeId
+                      ? "bg-[#556B2F] text-white border-[#556B2F]"
+                      : "border-gray-300 text-neutral-700 bg-white hover:border-[#556B2F] hover:text-[#556B2F]"
+                  }`}
+                >
+                  {p.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Donor Info */}
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-neutral-900 mb-3">Enter your information</h2>
+          <h2 className="text-sm font-semibold text-neutral-900 mb-3">Your information</h2>
           <div className="mb-3">
             <label className="block text-xs text-neutral-700 mb-1">Name</label>
             <div className="grid grid-cols-2 gap-2">
-              <input type="text" placeholder="First" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
-              <input type="text" placeholder="Last" className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
+              <input
+                type="text"
+                placeholder="First"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400"
+              />
+              <input
+                type="text"
+                placeholder="Last"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400"
+              />
             </div>
           </div>
           <div>
             <label className="block text-xs text-neutral-700 mb-1">Email</label>
-            <input type="email" placeholder="yourname@email.com" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400 transition-all" />
+            <input
+              type="email"
+              placeholder="yourname@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-neutral-900 placeholder-neutral-400"
+            />
           </div>
         </div>
 

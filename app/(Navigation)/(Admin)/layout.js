@@ -17,10 +17,11 @@ export default async function AdminLayout({ children }) {
 
   try {
     const [rows] = await db.execute(
-      "SELECT roleId FROM MemberInfo WHERE uuid = ? LIMIT 1",
+      "SELECT * FROM MemberInfo WHERE uuid = ? LIMIT 1",
       [uid],
     );
     user = rows[0];
+    console.log("User Info:", user);
   } catch (error) {
     console.error("Database error during admin check:", error);
     redirect("/");
