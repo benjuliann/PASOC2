@@ -1,14 +1,13 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Handshake, CheckCircle, Users, Landmark, CalendarDays, FolderCog } from "lucide-react";
+import { CheckCircle, Users, Landmark, CalendarDays, FolderCog } from "lucide-react";
 
 const reportTiles = [
-  { label: "Sponsor Reports", Icon: Handshake, href: "/Admin/Reports/Sponsor" },
-  { label: "Attendence Reports", Icon: CheckCircle, href: "/Admin/Reports/Attendence" },
-  { label: "Membership Reports", Icon: Users, href: "/Admin/Reports/Membership" },
-  { label: "Donation Reports", Icon: Landmark, href: "/Admin/Reports/Donation" },
-  { label: "Event Reports", Icon: CalendarDays, href: "/Admin/Reports/Event" },
+  { label: "Attendance Reports", Icon: CheckCircle, href: "/Reports/Attendance" },
+  { label: "Membership Reports", Icon: Users, href: "/Reports/Membership" },
+  { label: "Donation Reports", Icon: Landmark, href: "/Reports/Donation" },
+  { label: "Event Reports", Icon: CalendarDays, href: "/Reports/Event" },
 ];
 
 function ReportTile({ label, Icon, href }) {

@@ -9,8 +9,8 @@ const managerTiles = [
   { label: "Member Manager", icon: "Users", href: "/MembersManager" },
   { label: "Donation Manager", icon: "Landmark", href: "/DonationsManager" },
   { label: "Event Manager", icon: "CalendarDays", href: "/EventsManager" },
-  { label: "Gallery Manager", icon: "Image", href: "/GalleryManager" },
   { label: "Sponsor Manager", icon: "Handshake", href: "/SponsorsManager" },
+  { label: "Bulletins Manager", icon: "Newspaper", href: "/BulletinsManager" },
   { label: "Reports", icon: "FolderCog", href: "/Reports" },
 ];
 

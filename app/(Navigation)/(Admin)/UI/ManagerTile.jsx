@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Landmark, CalendarDays, Users, Image, Handshake, FolderCog, FileText, UserPlus, Receipt } from "lucide-react";
+import { Landmark, CalendarDays, Users, Newspaper, Handshake, FolderCog, FileText, UserPlus, Receipt } from "lucide-react";
 
-const iconMap = { Landmark, CalendarDays, Users, Image, Handshake, FolderCog, FileText, UserPlus, Receipt };
+const iconMap = { Landmark, CalendarDays, Users, Newspaper, Handshake, FolderCog, FileText, UserPlus, Receipt };
 
 export function ManagerTile({ label, icon, href, variant = "large" }) {
 	const Icon = iconMap[icon];
