@@ -27,7 +27,7 @@ export default function ReportsPage() {
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
       <main className="flex-1 flex flex-col items-center px-6 py-12">
-        <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
           <div className="flex items-center gap-4 mb-10">
             <div className="bg-[#556B2F] text-white rounded-xl p-3">

@@ -221,19 +221,8 @@ export function SponsorsManager() {
 	return (
 		<div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
 			<main className="flex-1 flex flex-col items-center py-12 px-6 md:px-8">
-				{/* Page Header */}
-				<div className="w-full max-w-4xl mx-auto mb-8 flex flex-col items-center">
-					<div className="flex items-center w-full justify-between mb-2">
-						<hr className="flex-1 border-t border-[#556B2F] mx-4" />
-						<h1 className="text-3xl font-serif font-bold text-[#556B2F] tracking-wide">
-							SPONSORS
-						</h1>
-						<hr className="flex-1 border-t border-[#556B2F] mx-4" />
-					</div>
-				</div>
-
 				{/* Current Sponsors Section */}
-				<section className="w-full max-w-4xl mb-16">
+				<section className="w-full max-w-7xl mb-16">
 					<div className="flex items-center justify-center gap-3 mb-8">
 						<h2 className="text-2xl md:text-3xl font-bold text-[#2a2420]">
 							Featured
@@ -262,10 +251,10 @@ export function SponsorsManager() {
 				</section>
 
 				{/* Divider */}
-				<div className="w-full max-w-4xl h-px bg-[#556B2F] mb-16"></div>
+				<div className="w-full max-w-7xl h-px bg-[#556B2F] mb-16"></div>
 
 				{/* Previous Sponsors Section */}
-				<section className="w-full max-w-4xl mb-16">
+				<section className="w-full max-w-7xl mb-16">
 					<h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-[#2a2420]">
 						Over the Years
 					</h2>

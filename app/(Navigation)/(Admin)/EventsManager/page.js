@@ -258,9 +258,10 @@ export default function EventManagerPage() {
 
   return (
     <div className="min-h-screen bg-[#f0ece1] flex flex-col font-sans">
-      <main className="flex-1 flex flex-col items-center py-10">
+      <main className="flex-1 py-10">
+        <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8 w-full max-w-7xl mx-auto">
+        <div className="flex items-center gap-4 mb-8">
           <div className="bg-[#556B2F] text-white rounded-xl p-3">
             <CalendarDays size={28} />
           </div>
@@ -271,7 +272,7 @@ export default function EventManagerPage() {
         </div>
 
         {/* Main Content */}
-        <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row gap-8 mt-4 px-4">
+        <div className="flex flex-col md:flex-row gap-8 mt-4">
           {/* Left Side: Upcoming Events */}
           <div className="w-full md:w-auto md:max-w-sm flex flex-col">
             <div className="mb-4">
@@ -512,6 +513,7 @@ export default function EventManagerPage() {
             </div>
           </div>
         )}
+        </div>
       </main>
     </div>
   );
